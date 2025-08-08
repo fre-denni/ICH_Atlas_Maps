@@ -13,6 +13,7 @@ The objective of this mapping is to define for Cultural Creative Industries, Edu
 This project is a collaboration between [iCoolHunt](https://www.nextatlas.com/) and Politecnico di Milano.
 
 Research and mapping done by Chiara Di Lodovico, Federica Rubino, Davide Spallazzo
+
 Coding and Design of Data Visualisation done by Chiara di Lodovico and [Federico Denni](https://federicodenni.com/)
 
 Made with best intentions and open-source code :heart:
