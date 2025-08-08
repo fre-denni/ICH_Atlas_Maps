@@ -1,11 +1,12 @@
 /*global css style --> more inline styles inside the various .html files*/
 :root{
-    //here global style
-    --background-color-light: #F5F5F0;
+    /*here global style*/
+    --white: #F5F5F0;
     --black: #121212;
     --primary: #440eb3;
     --primary-light: #8f8AEB;
     --primary-dark: #2E2369;
+    --gray: #A3A3A3;
 }
 
 /*---DECLARE FONTS---*/
@@ -130,16 +131,23 @@
 .logo {
     display: flex;
     flex-direction: row;
-    width: 14.214rem;
+    max-width: 14.214rem;
+    height: 3rem;
     align-items: center;
     gap: 1rem;
+    margin-top: 1.5rem;
     margin-bottom: 1.5rem;
-    position: absolute;
+    aspect-ratio: 199/42;
 }
 
 .logo img{
     flex: 1 0 0;
     align-self: stretch;
+    transition: transform 2s ease-in-out;
+}
+
+.logo:hover img{
+    transform: rotate(360deg);
 }
 
 .logotype {
@@ -155,8 +163,25 @@
 
 body {
     display: flex;
-    justify-content: center;
-    align-items: start;
+    flex-direction:column;
+    justify-content: flex-start;
+    align-items: center;
     min-height: 100vh;
+    font-size: 2rem;
+    background-color: var(--white);
     margin: 0;
+}
+
+/* MENU */
+
+.menu {
+    padding: 10rem 15%;
+    line-height: 115%;
+    align-items: center;
+}
+
+.menu hr{
+    border: 0.5px solid var(--gray);
+    width: 100%;
+    margin: 0 0 3rem 0;
 }
