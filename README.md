@@ -30,3 +30,4 @@ Made with best intentions and open-source code :heart:
         - [ ] importare d3.js nelle pagine
         - [ ] importare data
     - [ ] Pulizia e importazione dinamica data
+    - [ ] Vedi alternative di hosting
