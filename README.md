@@ -26,7 +26,7 @@ Made with best intentions and open-source code :heart:
     - [ ] Importare CSS globale e applicare alle pagine
     - [ ] Fare menu e link da index.html
         - [ ] Impostare UI per navigazione sito
-        - [ ] Importa icone e favicon
+        - [x] Importa icone e favicon
     - [ ] Fare script di base per visualizzazioni
         - [ ] importare d3.js nelle pagine
         - [ ] importare data
