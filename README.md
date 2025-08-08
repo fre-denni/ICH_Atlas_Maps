@@ -1,4 +1,4 @@
-# ICH-ATLAS Visualisations Repo
+# ICH-ATLAS Visualisations
 
 A github repo containing all the resources and scripts for the visualisations visible at: [ich-atlas.com](https://tramadev.nextatlas.com/)
 
@@ -13,7 +13,20 @@ The objective of this mapping is to define for Cultural Creative Industries, Edu
 This project is a collaboration between [iCoolHunt](https://www.nextatlas.com/) and Politecnico di Milano.
 
 Research and mapping done by Chiara Di Lodovico, Federica Rubino, Davide Spallazzo
-
 Coding and Design of Data Visualisation done by Chiara di Lodovico and [Federico Denni](https://federicodenni.com/)
 
 Made with best intentions and open-source code :heart:
+
+---
+
+### Operativo 
+
+- [ ] Finire impostazione sito
+    - [ ] Importare CSS globale e applicare alle pagine
+    - [ ] Fare menu e link da index.html
+        - [ ] Impostare UI per navigazione sito
+        - [ ] Importa icone e favicon
+    - [ ] Fare script di base per visualizzazioni
+        - [ ] importare d3.js nelle pagine
+        - [ ] importare data
+    - [ ] Pulizia e importazione dinamica data
