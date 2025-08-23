@@ -167,15 +167,19 @@ body {
     justify-content: flex-start;
     align-items: center;
     min-height: 100vh;
-    font-size: 2rem;
+    font-size: 1.5rem; /*define or 2rem (32px) or minus*/
     background-color: var(--white);
     margin: 0;
+}
+
+a {
+    color: var(--primary);
 }
 
 /* MENU */
 
 .menu {
-    padding: 0 15%;
+    padding: 0 15%; /* change to margin and set padding better*/
     line-height: 115%;
     align-items: center;
 }
@@ -184,4 +188,12 @@ body {
     border: 0.5px solid var(--gray);
     width: 100%;
     margin: 0 0 3rem 0;
+}
+
+.list{
+    /*adjust list styling*/
+}
+
+.list li{
+    /*adjust spacing and text style*/
 }
