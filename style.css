@@ -61,6 +61,15 @@ a:hover {
   font-weight: 500;
 }
 
+@media only screen and (max-width: 500px) {
+  body{
+    font-size: 18px;
+  }
+
+  li {
+    line-height: 20px;
+  }
+}
 
 
 
