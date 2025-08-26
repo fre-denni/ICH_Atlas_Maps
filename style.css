@@ -9,191 +9,58 @@
     --gray: #A3A3A3;
 }
 
-/*---DECLARE FONTS---*/
-
-.ibm-plex-serif-thin {
-  font-family: "IBM Plex Serif", serif;
-  font-weight: 100;
-  font-style: normal;
-}
-
-.ibm-plex-serif-extralight {
-  font-family: "IBM Plex Serif", serif;
-  font-weight: 200;
-  font-style: normal;
-}
-
-.ibm-plex-serif-light {
-  font-family: "IBM Plex Serif", serif;
-  font-weight: 300;
-  font-style: normal;
-}
-
-.ibm-plex-serif-regular {
-  font-family: "IBM Plex Serif", serif;
-  font-weight: 400;
-  font-style: normal;
-}
-
-.ibm-plex-serif-medium {
-  font-family: "IBM Plex Serif", serif;
-  font-weight: 500;
-  font-style: normal;
-}
-
-.ibm-plex-serif-semibold {
-  font-family: "IBM Plex Serif", serif;
-  font-weight: 600;
-  font-style: normal;
-}
-
-.ibm-plex-serif-bold {
-  font-family: "IBM Plex Serif", serif;
-  font-weight: 700;
-  font-style: normal;
-}
-
-.ibm-plex-serif-thin-italic {
-  font-family: "IBM Plex Serif", serif;
-  font-weight: 100;
-  font-style: italic;
-}
-
-.ibm-plex-serif-extralight-italic {
-  font-family: "IBM Plex Serif", serif;
-  font-weight: 200;
-  font-style: italic;
-}
-
-.ibm-plex-serif-light-italic {
-  font-family: "IBM Plex Serif", serif;
-  font-weight: 300;
-  font-style: italic;
-}
-
-.ibm-plex-serif-regular-italic {
-  font-family: "IBM Plex Serif", serif;
-  font-weight: 400;
-  font-style: italic;
-}
-
-.ibm-plex-serif-medium-italic {
-  font-family: "IBM Plex Serif", serif;
-  font-weight: 500;
-  font-style: italic;
-}
-
-.ibm-plex-serif-semibold-italic {
-  font-family: "IBM Plex Serif", serif;
-  font-weight: 600;
-  font-style: italic;
-}
-
-.ibm-plex-serif-bold-italic {
-  font-family: "IBM Plex Serif", serif;
-  font-weight: 700;
-  font-style: italic;
-}
-
-.inter-regular {
-  font-family: "Inter", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: 400;
-  font-style: normal;
-}
-
-.inter-semibold {
-  font-family: "Inter", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: 600;
-  font-style: normal;
-}
-
-.inter-italic {
-  font-family: "Inter", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: 400;
-  font-style: italic;
-}
-
-/* Define COLORS */
-
-.text-color{
-    color: var(--black);
-}
-
-.primary-color{
-    color: var(--primary);
-}
-
-/* Define LOGO */
-
-.logo {
-    display: flex;
-    flex-direction: row;
-    max-width: 14.214rem;
-    height: 3rem;
-    align-items: center;
-    gap: 1rem;
-    margin-top: 1.5rem;
-    margin-bottom: 1.5rem;
-    aspect-ratio: 199/42;
-}
-
-.logo img{
-    flex: 1 0 0;
-    align-self: stretch;
-    transition: transform 2s ease-in-out;
-}
-
-.logo:hover img{
-    transform: rotate(360deg);
-}
-
-.logotype {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    font-size: 2.5rem;
-    line-height: 3rem;
-    letter-spacing: -0.125rem;
-}
-
-/* DEFINE BODY */
-
 body {
-    display: flex;
-    flex-direction:column;
-    justify-content: flex-start;
-    align-items: center;
-    min-height: 100vh;
-    font-size: 1.5rem; /*define or 2rem (32px) or minus*/
-    background-color: var(--white);
-    margin: 0;
+  font-family: "IBM Plex Serif", serif;
+  font-weight: 400;
+  font-size: 22px;
+  text-align: center;
+  background-color: var(--white);
+}
+
+div {
+  max-width: 660px;
+  margin: auto;
+  padding: 10px;
+}
+
+h1 {
+  font-weight: 300;
+  font-size: 46px;
+  color: var(--primary);
+}
+
+p {
+  margin: 16px 0;
+  text-align: justify;
+  line-height: 115%;
+}
+
+ul {
+  padding-left: 0;
+  margin: 60px 0;
+  text-transform: uppercase;
+  font-family: "Inter", sans-serif;
+}
+
+li {
+  list-style-type: none;
+  border-bottom: 1px solid var(--gray);
+  margin: 10px 0 30px;
+  line-height: 7px;
 }
 
 a {
-    color: var(--primary);
+  text-decoration: none;
+  color: var(--primary);
+  background: var(--white);
+  padding: 0 10px;
 }
 
-/* MENU */
-
-.menu {
-    padding: 0 15%; /* change to margin and set padding better*/
-    line-height: 115%;
-    align-items: center;
+a:hover {
+  color: var(--primary-dark);
+  font-weight: 500;
 }
 
-.menu hr{
-    border: 0.5px solid var(--gray);
-    width: 100%;
-    margin: 0 0 3rem 0;
-}
 
-.list{
-    /*adjust list styling*/
-}
 
-.list li{
-    /*adjust spacing and text style*/
-}
+
