@@ -12,13 +12,13 @@
 body {
   font-family: "IBM Plex Serif", serif;
   font-weight: 400;
-  font-size: 22px;
+  font-size: 20px;
   text-align: center;
   background-color: var(--white);
 }
 
 div {
-  max-width: 660px;
+  max-width: 600px;
   margin: auto;
   padding: 10px;
 }
