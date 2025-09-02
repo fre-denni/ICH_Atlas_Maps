@@ -2,7 +2,6 @@
 
 A github repo containing all the resources and scripts for the visualisations visible at: [ich-atlas.com](https://tramadev.nextatlas.com/)
 
-```
 .
 ├── 404.html
 ├── about.html
@@ -32,7 +31,6 @@ A github repo containing all the resources and scripts for the visualisations vi
     ├── competences-map.html
     ├── creative-approaches.html
     └── digitalisation-flux.html
-```
 
 ---
 
