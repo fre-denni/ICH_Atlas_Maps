@@ -7,7 +7,6 @@
 let modal = document.getElementById("legend-modal");
 let btn = document.getElementById("menu-legend");
 let span = document.getElementById("modal-close");
-let content = document.getElementById("modal-content");
 
 // When the user clicks the button, open the modal
 btn.onclick = function () {
@@ -22,9 +21,14 @@ span.onclick = function () {
 // When the user clicks anywhere outside of the modal, close it
 window.onclick = function (event) {
   if (event.target == modal) {
-    console.log("cliccato fuori");
     modal.style.display = "none";
   }
 };
 
 //manage content of the modal
+let header = document.getElementById("modal-header");
+let body = document.getElementById("modal-body");
+
+// get online csv table
+const content =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vTeYDnRxpivnff_CQ04R-kYBf90xNLwbSsODJiYp5NnKr8zGrvxk280BoTk83m0si1Vox7vuKyLnlkt/pub?output=csv";

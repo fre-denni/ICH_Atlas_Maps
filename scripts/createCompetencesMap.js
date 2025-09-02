@@ -9,6 +9,7 @@
 ▝▚▄▄▖▝▚▄▞▘▐▌  ▐▌▐▌   ▐▙▄▄▖  █  ▐▙▄▄▖▐▌  ▐▌▝▚▄▄▖▐▙▄▄▖▗▄▄▞▘    ▐▌  ▐▌▐▌ ▐▌▐▌   
 
     * Designed by Federico Denni & Chiara di Lodovico
+    * Data researched and classified by Federica Rubino & Chiara di Lodovico
     * Coded by Federico Denni for Project TRAMA
     * seen on ichatlas.com
     * Politecnico di Milano - Design Department
@@ -22,6 +23,4 @@
 // This tool is built upon d3.js and bboxCollide libraries, and visualises
 // the mapping of competences and technologies required to different fruitions output of projects
 
-const createCompetencesMap = (container, data) => {
-    
-}
+const createCompetencesMap = (container, data) => {};
