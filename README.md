@@ -2,6 +2,38 @@
 
 A github repo containing all the resources and scripts for the visualisations visible at: [ich-atlas.com](https://tramadev.nextatlas.com/)
 
+```
+.
+├── 404.html
+├── about.html
+├── assets
+│   ├── favicon-96x96.png
+│   ├── favicon.ico
+│   ├── favicon.svg
+│   └── Logo.svg
+├── data
+│   └── links.csv
+├── index.html
+├── lib
+│   ├── d3-bboxCollide.min.js
+│   └── d3.js
+├── README.md
+├── scripts
+│   ├── createComparisonsTool.js
+│   ├── createCompetencesMap.js
+│   ├── createCreativeMap.js
+│   ├── createDigitalisationMap.js
+│   ├── fetchData.py
+│   ├── menu.js
+│   └── modal.js
+├── style.css
+└── visualisations
+    ├── comparisons-tool.html
+    ├── competences-map.html
+    ├── creative-approaches.html
+    └── digitalisation-flux.html
+```
+
 ---
 
 This external website to the project contains all the results and visualisation of the Quality Research conducted by the Trama Research Group of [Politecnico di Milano](https://dipartimentodesign.polimi.it/it) regarding the mapping of design and heritage projects on [intangible cultural heritage](https://ich.unesco.org/en/what-is-intangible-heritage-00003).
