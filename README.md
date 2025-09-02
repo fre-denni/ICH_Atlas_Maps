@@ -20,15 +20,15 @@ Made with best intentions and open-source code :heart:
 
 ---
 
-### Operativo 
+### Operativo
 
 - [ ] Finire impostazione sito
-    - [ ] Importare CSS globale e applicare alle pagine
-    - [ ] Fare menu e link da index.html
-        - [ ] Impostare UI per navigazione sito
-        - [x] Importa icone e favicon
-    - [ ] Fare script di base per visualizzazioni
-        - [ ] importare d3.js nelle pagine
-        - [ ] importare data
-    - [ ] Pulizia e importazione dinamica data
-    - [ ] Vedi alternative di hosting
+  - [x] Importare CSS globale e applicare alle pagine
+  - [ ] Fare menu e link da index.html
+    - [ ] Impostare UI per navigazione sito _in corso_
+    - [x] Importa icone e favicon
+  - [ ] Fare script di base per visualizzazioni
+    - [ ] importare d3.js nelle pagine
+    - [ ] importare data
+  - [ ] Pulizia e importazione dinamica data
+  - [ ] Vedi alternative di hosting
