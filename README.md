@@ -54,13 +54,26 @@ Made with best intentions and open-source code :heart:
 
 ### Operativo
 
-- [ ] Finire impostazione sito
+#### Fase 1
+
+- [x] Finire impostazione sito
+
   - [x] Importare CSS globale e applicare alle pagine
-  - [ ] Fare menu e link da index.html
-    - [ ] Impostare UI per navigazione sito _in corso_
+  - [x] Fare menu e link da index.html
+    - [x] Impostare UI per navigazione sito
     - [x] Importa icone e favicon
-  - [ ] Fare script di base per visualizzazioni
-    - [ ] importare d3.js nelle pagine
-    - [ ] importare data
-  - [ ] Pulizia e importazione dinamica data
+  - [x] Fare script di base per visualizzazioni
+    - [x] importare d3.js nelle pagine
+    - [x] importare data
   - [ ] Vedi alternative di hosting
+    - [ ] Vedi come nascondere parti della Ui per l'`<i-frame>`
+
+  #### Fase 2
+
+- [ ] Connect and host the cleaned data
+- [ ] Comparison Tool
+  - [ ] Redesign Ui to stay next to the existing one
+  - [ ]
+- [ ] Creative Map
+- [ ] Competences Map
+- [ ] Digitalisation Map
