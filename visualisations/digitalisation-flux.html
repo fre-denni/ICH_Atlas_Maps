@@ -29,7 +29,6 @@
 
     <script src="../lib/d3.js"></script>
     <script src="../lib/d3-bboxCollide.min.js"></script>
-
     <script src="../scripts/createDigitalisationFlux.js"></script>
   </head>
   <body style="overflow: hidden">
@@ -63,15 +62,12 @@
     <div id="legend-modal" class="modal">
       <div class="modal-content">
         <span class="close" id="modal-close">&times;</span>
-        <div class="modal-header">
-          <h2>Modal Header</h2>
-        </div>
-        <div class="modal-body">
-          <p>Some text in the Modal Body</p>
-          <p>Some other text...</p>
-        </div>
+        <div id="modal-header"></div>
+        <div id="modal-body"></div>
       </div>
     </div>
+
+    <script src="../scripts/modal.js"></script>
 
     <script type="text/javascript">
       let container = document.getElementById("chart-container");
@@ -79,11 +75,8 @@
       let height = width;
 
       //load data
-
       createDigitalisationMap(container, data);
     </script>
-
     <script src="../scripts/menu.js"></script>
-    <script src="../scripts/modal.js"></script>
   </body>
 </html>
