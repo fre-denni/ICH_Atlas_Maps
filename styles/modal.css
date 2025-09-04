@@ -1,4 +1,6 @@
 /* --- MODAL --- */
+@import url(global.css);
+
 .modal {
   display: none;
   gap: 2rem;
