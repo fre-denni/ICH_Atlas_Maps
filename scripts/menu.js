@@ -22,7 +22,7 @@ function checkIframe() {
 
 if (checkIframe()) {
   //element to not display when in <iframe>
-  document.getElementById("more").style.display = "none";
+  document.getElementById("prova").style.display = "none";
 
   //Opzione 2: aggiungi a tutti gli elementi un "in-an-iframe"
   //class e rendi il default "display none" con CSS se JS fallisce
