@@ -5,6 +5,14 @@
  * -> open to the website of the project
  ***********************************************/
 
+const menu = document.getElementById("menu");
+const nav = document.getElementById("floating-nav");
+
+//animations
+menu.addEventListener("click", () => {
+  nav.classList.toggle("is-open");
+});
+
 // search dataset function (triggered on main code)
 
 // Show labels and content modal on menu elements

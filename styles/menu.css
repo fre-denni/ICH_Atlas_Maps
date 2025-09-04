@@ -2,62 +2,144 @@
 @import url(global.css);
 
 nav {
+  --anim-duration: 0.4s;
+  --anim-ease: cubic-bezier(0.25, 1, 0.5, 1);
+
   position: fixed;
   left: 5%;
   top: 5%;
   display: inline-flex;
-  padding: 0.5rem;
+  padding: 8px;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.875rem;
   border-radius: 2rem;
   background-color: var(--white);
   box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.25);
+  transition: all var(--anim-duration) var(--anim-ease);
+}
+
+.menu-item {
+  max-height: 0;
+  height: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  margin-top: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  transition: max-height var(--anim-duration) var(--anim-ease),
+    opacity var(--anim-duration) var(--anim-ease),
+    margin-top var(--anim-duration) var(--anim-ease),
+    padding var(--anim-duration) var(--anim-ease);
+}
+
+nav.is-open .menu-item {
+  max-height: 60px;
+  opacity: 1;
+  pointer-events: auto;
+  margin-top: 8px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+/* Closing Delays (reverse order: the last item closes first) */
+label[for="search"] {
+  transition-delay: 0.15s;
+} /* This item will disappear last */
+label[for="info"] {
+  transition-delay: 0.1s;
+}
+label[for="download"] {
+  transition-delay: 0.05s;
+}
+label[for="more"] {
+  transition-delay: 0s;
+} /* This item will disappear first */
+
+/* Opening Delays (forward order: the first item opens first) */
+nav.is-open label[for="search"] {
+  transition-delay: 0.1s;
+}
+nav.is-open label[for="info"] {
+  transition-delay: 0.2s;
+}
+nav.is-open label[for="download"] {
+  transition-delay: 0.3s;
+}
+nav.is-open label[for="more"] {
+  transition-delay: 0.4s;
 }
 
 input[type="checkbox"] {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 .icon {
   background: var(--white);
   cursor: pointer;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   height: 24px;
-  padding: 8px;
   width: 24px;
+  padding: 8px;
   border-radius: 24px;
   box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.15);
+  transition: background-color 0.3s ease, transform 0.3s ease,
+    padding var(--anim-duration) var(--anim-ease);
 }
 
-label .icon {
-  position: fixed;
-  z-index: 200;
+label.icon:not(:first-of-type) {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+nav.is-open .icon {
+  padding: 8px;
 }
 
 .icon .menu,
 .icon .menu::before,
 .icon .menu::after {
-  background: var(--gray);
+  max-width: none;
+  margin: 0;
+  padding: 0;
   content: "";
+  background-color: var(--gray);
   display: block;
   height: 2px;
-  position: absolute;
-  transition: background ease 0.3s, top ease 0.3s 0.3s, transform ease 0.3s;
   width: 20px;
+  border-radius: 2px;
+  transition: all 0.3s ease-in-out;
 }
 
 .icon:hover .menu,
 .icon:hover .menu::before,
 .icon:hover .menu::after {
-  background: var(--primary);
+  background: var(--white);
+}
+
+.icon:hover {
+  background-color: var(--primary);
+  transform: scale(1.1);
 }
 
 .icon .menu {
-  left: 18px;
-  top: 27px;
+  position: relative;
+}
+
+.icon .menu::before,
+.icon .menu::after {
+  content: "";
+  position: absolute;
+  left: 0;
 }
 
 .icon .menu::before {
@@ -84,8 +166,4 @@ label .icon {
 #menu:checked + .icon .menu::after {
   top: 0;
   transition: top ease 0.3s, transform ease 0.3s 0.3s;
-}
-
-.more {
-  display: none;
 }
