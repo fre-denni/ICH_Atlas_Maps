@@ -189,8 +189,8 @@ nav {
 }
 
 #menu:checked + .icon:hover,
-#search:checked + .icon,
-#info:checked + .icon,
+#search:checked + .icon:hover,
+#info:checked + .icon:hover,
 #more:checked + .icon:hover {
   background-color: var(--primary);
 }
