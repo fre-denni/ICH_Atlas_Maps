@@ -186,6 +186,7 @@ nav {
 #more:checked + .icon {
   background-color: var(--primary-light);
   color: var(--white);
+  transition: all ease 0.3s;
 }
 
 #menu:checked + .icon:hover,
@@ -193,4 +194,5 @@ nav {
 #info:checked + .icon:hover,
 #more:checked + .icon:hover {
   background-color: var(--primary);
+  transition: all ease 0.3s;
 }
