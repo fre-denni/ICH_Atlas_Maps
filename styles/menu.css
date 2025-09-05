@@ -2,7 +2,7 @@
 @import url(global.css);
 
 nav {
-  --anim-duration: 0.4s;
+  --anim-duration: 0.25s;
   --anim-ease: cubic-bezier(0.25, 1, 0.5, 1);
 
   position: fixed;
