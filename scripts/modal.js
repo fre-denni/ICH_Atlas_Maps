@@ -6,7 +6,7 @@
 document.addEventListener("DOMContentLoaded", function () {
   // Get the modal element (div, menu button, x,  and content)
   let modal = document.getElementById("legend-modal");
-  let btn = document.getElementById("menu-legend");
+  let btn = document.getElementById("info");
   let span = document.getElementById("modal-close");
 
   //manage content of the modal
