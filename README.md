@@ -65,15 +65,37 @@ Made with best intentions and open-source code :heart:
   - [x] Fare script di base per visualizzazioni
     - [x] importare d3.js nelle pagine
     - [x] importare data
-  - [ ] Vedi alternative di hosting
-    - [ ] Vedi come nascondere parti della Ui per l'`<i-frame>`
+  - [ ] Vedi alternative di hosting -- coordinarsi con icoolhunt
+    - [x] Vedi come nascondere parti della Ui per l'`<i-frame>`
 
   #### Fase 2
 
 - [ ] Connect and host the cleaned data
 - [ ] Comparison Tool
-  - [ ] Redesign Ui to stay next to the existing one
-  - [ ]
+  - [ ] Migliorare etichette e UI (leggibilità e lettura)
+  - [ ] Impostare gerarchia visiva differente
+  - [ ] Impostazione preliminare e visiva dei data (pre-cleaning)
 - [ ] Creative Map
+  - [ ] Capire come visualizzare (sketch e prove di viz)
+  - [ ] Impostazione sheet, excel, data e lettura
+  - [ ] Impostazione preliminare e visiva dei data
 - [ ] Competences Map
+  - [ ] Impostazione base (importare e pulire sheet)
+  - [ ] Impostazione preliminare e visiva dei data
 - [ ] Digitalisation Map
+  - [ ] Impostazione base (fake dataset)
+  - [ ] Impostazione preliminare e visiva dei data
+
+### Fase 3
+
+- [ ] Connettere e visualizzare le visualizzazioni
+  - [ ] Comparison Tool
+  - [ ] Creative Map
+  - [ ] Competences Map
+  - [ ] Digitalisation Map
+- [ ] Finire menu di navigazione
+  - [ ] impostare modale search e codice (lunr.js)
+    - [ ] zooming su nodi id
+    - [ ] modale data quando cliccati
+  - [ ] impostare modale "more" e linking
+  - [ ] label dinamiche per funzionalità bottone (animazione e titoli)
