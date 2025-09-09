@@ -34,8 +34,6 @@
     <script src="../scripts/createDigitalisationFlux.js"></script>
   </head>
   <body style="overflow: hidden">
-    <h1 id="prova">Hello</h1>
-
     <nav id="floating-nav">
       <input type="checkbox" id="menu" />
       <label for="menu" class="icon">
@@ -69,6 +67,7 @@
       </label>
 
       <input type="checkbox" id="download" />
+      <a id="trigger" href="#" style="display: none"></a>
       <label for="download" class="icon menu-item">
         <svg viewBox="0 0 16 16" fill="none">
           <path
@@ -96,7 +95,7 @@
     <!-- chart-->
     <div id="chart-container"></div>
 
-    <!-- legend modal-->
+    <!-- legend modal -->
     <div id="legend-modal" class="modal">
       <div class="modal-content">
         <span class="close" id="modal-close">&times;</span>
@@ -104,6 +103,8 @@
         <div id="modal-body"></div>
       </div>
     </div>
+
+    <!-- link modal -->
 
     <script src="../scripts/modal.js"></script>
     <script src="../scripts/menu.js"></script>
@@ -113,7 +114,11 @@
       let width = container.offsetWidth;
       let height = width;
 
-      //load data
+      let data = "../data/comparisons-tool.csv"; //prova
+
+      //let the dataset be downloaded
+      downloadData(data, "TRAMA-digitalisation-flux-dataset.csv");
+      //display dataviz
       createDigitalisationMap(container, data);
     </script>
   </body>

@@ -6,18 +6,30 @@
  ***********************************************/
 
 const menu = document.getElementById("menu");
+const items = document.getElementsByClassName("menu-item");
 const nav = document.getElementById("floating-nav");
+const trigger = document.getElementById("trigger");
+const download = document.getElementById("download");
 
 //animations
 menu.addEventListener("click", () => {
   nav.classList.toggle("is-open");
 });
 
-// search dataset function (triggered on main code)
-
-// Show labels and content modal on menu elements
-
 // download dataset when activated (triggered on main code)
+function downloadData(filePath, fileName) {
+  trigger.href = filePath;
+  trigger.setAttribute("download", fileName);
+
+  download.addEventListener("change", function () {
+    if (this.checked) {
+      trigger.click();
+      this.checked = false;
+    }
+  });
+}
+
+// Search modal and code (to trigger in main code with the dataset)
 
 // check if it is in iframe and hide "more" checkbox
 function checkIframe() {
@@ -30,8 +42,5 @@ function checkIframe() {
 
 if (checkIframe()) {
   //element to not display when in <iframe>
-  document.getElementById("prova").style.display = "none";
-
-  //Opzione 2: aggiungi a tutti gli elementi un "in-an-iframe"
-  //class e rendi il default "display none" con CSS se JS fallisce
+  document.getElementById("more").style.display = "none";
 }
