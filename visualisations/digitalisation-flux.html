@@ -34,6 +34,7 @@
     <script src="../scripts/createDigitalisationFlux.js"></script>
   </head>
   <body style="overflow: hidden">
+    <!-- Navigation Menu -->
     <nav id="floating-nav">
       <input type="checkbox" id="menu" />
       <label for="menu" class="icon">
@@ -79,6 +80,7 @@
         </svg>
       </label>
 
+      <!-- not visible in iframe -->
       <input type="checkbox" id="more" />
       <label for="more" class="icon menu-item">
         <svg viewBox="0 0 12 4" fill="none">
@@ -105,6 +107,13 @@
     </div>
 
     <!-- link modal -->
+    <div id="link-modal" class="modal">
+      <div class="modal-content">
+        <span class="close" id="modal-close">&times;</span>
+        <div id="search-bar"></div>
+        <div id="modal-body"></div>
+      </div>
+    </div>
 
     <script src="../scripts/modal.js"></script>
     <script src="../scripts/menu.js"></script>

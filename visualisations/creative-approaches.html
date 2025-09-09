@@ -35,38 +35,83 @@
     <script src="../scripts/createCreativeMap.js"></script>
   </head>
   <body style="overflow: hidden">
-    <h1>Hello</h1>
+    <!-- Navigation Menu -->
+    <nav id="floating-nav">
+      <input type="checkbox" id="menu" />
+      <label for="menu" class="icon">
+        <div class="menu"></div>
+      </label>
 
-    <!--Navigation tool-->
-    <nav id="navigation">
-      <div id="menu">
-        <button id="menu-search"></button>
-        <!-- To seek specific terms-->
-        <button id="menu-legend"></button>
-        <!-- To display the legend modal-->
-        <ul>
-          <li><a href="../index.html">About this project</a></li>
-          <!-- to open the homepage-->
-          <li><a href="./digitalisation-flux.html">Digitalisation Flux</a></li>
-          <li>
-            <a href="./competences-map.html">Competences and Technologies</a>
-          </li>
-          <li><a href="./comparisons-tool.html">Comparisons Tool</a></li>
-          <li id="menu-site" target="_blank"></li>
-          <!-- to open the project site-->
-        </ul>
-      </div>
+      <input type="checkbox" id="search" />
+      <label for="search" class="icon menu-item">
+        <svg viewBox="0 0 18 18" fill="none">
+          <g transform="translate(1 1)">
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M10.6667 10.2L14.6 14.0667L14.0667 14.6L10.2 10.6667C9.21507 11.5117 7.9644 11.9837 6.66671 12C3.72119 12 1.33337 9.61219 1.33337 6.66667C1.33337 3.72115 3.72119 1.33334 6.66671 1.33334C9.61223 1.33334 12 3.72115 12 6.66667C11.9837 7.96437 11.5118 9.21503 10.6667 10.2ZM2.00004 6.66667C2.00004 9.244 4.08938 11.3333 6.66671 11.3333C7.90438 11.3333 9.09137 10.8417 9.96654 9.9665C10.8417 9.09133 11.3334 7.90435 11.3334 6.66667C11.3334 4.08934 9.24404 2 6.66671 2C4.08938 2 2.00004 4.08934 2.00004 6.66667Z"
+              fill="currentColor"
+            />
+          </g>
+        </svg>
+      </label>
+
+      <input type="checkbox" id="info" />
+      <label for="info" class="icon menu-item">
+        <svg viewBox="0 0 16 16" fill="none">
+          <path
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M1.33337 8C1.33337 4.3181 4.31814 1.33333 8.00004 1.33333C9.76815 1.33333 11.4638 2.03571 12.7141 3.28595C13.9643 4.53619 14.6667 6.23188 14.6667 8C14.6667 11.6819 11.6819 14.6667 8.00004 14.6667C4.31814 14.6667 1.33337 11.6819 1.33337 8ZM2.00004 8C2.00004 11.3137 4.68633 14 8.00004 14C11.3137 14 14 11.3137 14 8C14 4.68629 11.3137 1.99999 8.00004 1.99999C4.68633 1.99999 2.00004 4.68629 2.00004 8ZM7.53337 3.99999H8.53337V5.33333H7.53337V3.99999ZM8.53337 5.99999H7.53337V12H8.53337V5.99999Z"
+            fill="currentColor"
+          />
+        </svg>
+      </label>
+
+      <input type="checkbox" id="download" />
+      <a id="trigger" href="#" style="display: none"></a>
+      <label for="download" class="icon menu-item">
+        <svg viewBox="0 0 16 16" fill="none">
+          <path
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M5.13329 6.6L7.99996 9.46667L10.8666 6.6L10.4 6.13333L8.33329 8.13333V2H7.66663V8.2L5.59996 6.13333L5.13329 6.6ZM12.6666 13V8H13.3333V13C13.3333 13.5523 12.8856 14 12.3333 14H3.66663C3.11434 14 2.66663 13.5523 2.66663 13V8H3.33329V13C3.33329 13.1841 3.48253 13.3333 3.66663 13.3333H12.3333C12.5174 13.3333 12.6666 13.1841 12.6666 13Z"
+            fill="currentColor"
+          />
+        </svg>
+      </label>
+
+      <!-- not visible in iframe -->
+      <input type="checkbox" id="more" />
+      <label for="more" class="icon menu-item">
+        <svg viewBox="0 0 12 4" fill="none">
+          <path
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M0.666626 1.99999C0.666626 1.26361 1.26358 0.666656 1.99996 0.666656C2.73634 0.666656 3.33329 1.26361 3.33329 1.99999C3.33329 2.73637 2.73634 3.33332 1.99996 3.33332C1.26358 3.33332 0.666626 2.73637 0.666626 1.99999ZM1.33329 1.99999C1.33329 2.36818 1.63177 2.66666 1.99996 2.66666C2.36815 2.66666 2.66663 2.36818 2.66663 1.99999C2.66663 1.6318 2.36815 1.33332 1.99996 1.33332C1.63177 1.33332 1.33329 1.6318 1.33329 1.99999ZM5.99996 0.666656C5.26358 0.666656 4.66663 1.26361 4.66663 1.99999C4.66663 2.73637 5.26358 3.33332 5.99996 3.33332C6.73634 3.33332 7.33329 2.73637 7.33329 1.99999C7.33329 1.26361 6.73634 0.666656 5.99996 0.666656ZM5.33329 1.99999C5.33329 2.36818 5.63177 2.66666 5.99996 2.66666C6.18257 2.68838 6.36506 2.62516 6.49509 2.49512C6.62512 2.36509 6.68835 2.1826 6.66663 1.99999C6.66663 1.6318 6.36815 1.33332 5.99996 1.33332C5.63177 1.33332 5.33329 1.6318 5.33329 1.99999ZM9.99996 0.666656C9.26358 0.666656 8.66663 1.26361 8.66663 1.99999C8.66663 2.73637 9.26358 3.33332 9.99996 3.33332C10.7363 3.33332 11.3333 2.73637 11.3333 1.99999C11.3333 1.26361 10.7363 0.666656 9.99996 0.666656ZM9.33329 1.99999C9.33329 2.36818 9.63177 2.66666 9.99996 2.66666C10.1826 2.68838 10.3651 2.62516 10.4951 2.49512C10.6251 2.36509 10.6883 2.1826 10.6666 1.99999C10.6666 1.6318 10.3681 1.33332 9.99996 1.33332C9.63177 1.33332 9.33329 1.6318 9.33329 1.99999Z"
+            fill="currentColor"
+          />
+        </svg>
+      </label>
     </nav>
 
     <!-- chart-->
     <div id="chart-container"></div>
 
-    <!--modal-->
-    <!--modal-->
+    <!-- legend modal -->
     <div id="legend-modal" class="modal">
       <div class="modal-content">
         <span class="close" id="modal-close">&times;</span>
         <div id="modal-header"></div>
+        <div id="modal-body"></div>
+      </div>
+    </div>
+
+    <!-- link modal -->
+    <div id="link-modal" class="modal">
+      <div class="modal-content">
+        <span class="close" id="modal-close">&times;</span>
+        <div id="search-bar"></div>
         <div id="modal-body"></div>
       </div>
     </div>
@@ -76,7 +121,10 @@
       let width = container.offsetWidth;
       let height = width;
 
-      //load data
+      let data = "../data/comparisons-tool.csv"; //prova
+
+      //let the dataset be downloaded
+      downloadData(data, "TRAMA-creative-approaches-dataset.csv");
 
       createCreativeMap(container, data);
     </script>
