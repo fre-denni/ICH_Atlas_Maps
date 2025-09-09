@@ -99,3 +99,4 @@ Made with best intentions and open-source code :heart:
     - [ ] modale data quando cliccati
   - [ ] impostare modale "more" e linking
   - [ ] label dinamiche per funzionalità bottone (animazione e titoli)
+  - [ ] modale con "esperienza migliore con visualizzazione desktop"
