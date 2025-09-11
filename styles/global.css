@@ -16,3 +16,15 @@ body {
   text-align: center;
   background-color: var(--white);
 }
+
+#chart-container {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  position: fixed;
+  z-index: -999;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
