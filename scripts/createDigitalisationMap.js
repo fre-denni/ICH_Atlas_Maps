@@ -50,11 +50,15 @@ const createDigitalisationMap = (container, data) => {
   let element_sim, data_sim, tech_sim, dig_sim;
 
   //set sizes
-  const DEFAULT = 1500;
-  let width,
-    height = DEFAULT;
+  const MIN_WIDTH = 660;
+  let width = max(MIN_WIDTH, container.clientWidth);
+  let height = container.clientHeight;
 
   //set colors
+  const COLORS = {
+    background: "#f7f7f7",
+    //add others
+  };
 
   //create svg container
   const svg = d3
@@ -62,8 +66,14 @@ const createDigitalisationMap = (container, data) => {
     .append("svg")
     .attr("id", "data-visualisation")
     .style("display", "block")
-    .style("background-color", "#fff")
+    .attr("width", width)
+    .attr("height", height)
+    .style("background-color", COLORS.background)
     .style("margin", "0");
+
+  //to handle resizing automatically
+  //https://stackoverflow.com/questions/16265123/resize-svg-when-window-is-resized-in-d3-js
+  // to see later
 
   const g = svg
     .append("g")
