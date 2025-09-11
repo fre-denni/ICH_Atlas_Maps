@@ -93,6 +93,7 @@ Made with best intentions and open-source code :heart:
   - [ ] Creative Map
   - [ ] Competences Map
   - [ ] Digitalisation Map
+- [ ] Responsive resizing (fino a min-width 660px)
 - [ ] Finire menu di navigazione
   - [ ] impostare modale search e codice (lunr.js)
     - [ ] zooming su nodi id
