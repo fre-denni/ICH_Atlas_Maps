@@ -59,7 +59,7 @@ const createCompetencesMap = (container, data) => {
 
   //colors
   const COLORS = {
-    background: "#f7f7f7",
+    background: "#f5f5f0",
     //add others
   };
 

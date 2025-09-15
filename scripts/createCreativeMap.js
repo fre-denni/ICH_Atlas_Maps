@@ -54,7 +54,7 @@ const createCreativeMap = (container, data) => {
     .style("display", "block")
     .attr("width", width)
     .attr("height", height)
-    .style("background-color", "#fff")
+    .style("background-color", "#f5f5f0")
     .style("margin", "0");
 
   //to handle resizing automatically
