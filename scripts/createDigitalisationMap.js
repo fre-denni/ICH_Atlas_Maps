@@ -41,9 +41,15 @@ const createDigitalisationMap = (container, data) => {
   let abs = Math.abs;
 
   //define data variables -- let the user modify them
-  let elementGroup, dataGroup, techGroup;
-  let edges_capturing, edges_representation, edges_dissemination;
-  let fruition, digitization;
+  let ichGroup, dataGroup, capTechGroup, repTechGroup, digzGroup; //parse datasets
+  let ichTosource_nodes, ichTosource_edges; //connect ich elements to data source
+  let dataTocap_nodes, dataTocap_edges; //connect data types to capturing tech
+  let capTorep_nodes, capTorep_edges; //connect capturing tech to representation tech
+  let repTodigz_nodes, repTodigz_edges; //connect representation tech to digitization
+  let digzTodissTofruit_nodes, digzTodissTofruit_edges; //connect digitization to dissemination to fruition
+
+  let fruition = [];
+  let ichModal = [];
 
   //setup data viz
   //define simulations
@@ -56,7 +62,7 @@ const createDigitalisationMap = (container, data) => {
 
   //set colors
   const COLORS = {
-    background: "#f7f7f7",
+    background: "#f5f5f0",
     //add others
   };
 
@@ -75,6 +81,8 @@ const createDigitalisationMap = (container, data) => {
   //https://stackoverflow.com/questions/16265123/resize-svg-when-window-is-resized-in-d3-js
   // to see later
 
+  //add zoom function
+
   const g = svg
     .append("g")
     .attr("transform", `translate(${width / 2}, ${height / 2})`);
@@ -86,12 +94,15 @@ const createDigitalisationMap = (container, data) => {
    * - Spacchettamento dataset -> recupero data in mini dataset
    *      - Tipo di elemento, tipo di data (raggruppamenti)
    *          - calcolo "r" : frequency
+   *      - creare dataset connessioni (edges and nodes)
+   *          - Element - Domain - ICH Specification - Data Source
+   *          - Data source - Data type
+   *          - Capturing technology - Data Type
+   *          - Representation technology - Capturing technology - Digitization output
+   *          - Digitization output - Representation Technology - Fruition output
+   *              - Extract Unique Id fruition output
    *      - connessioni elemento a data source
    *          - edge (node preso da tabelle precedenti)
-   *      - connessioni gruppo data a gruppo tecnologie
-   *          - proposta -> 3 momenti di intervento della tecnologia
-   *      - connessioni tecnologie a digitization
-   *      - digitization e fruition
    * - Force simulation 1/2 per raggruppamento tra nodi
    * - Force simulation verticale per distinzione gruppi
    * - Force simulation positionining edges e distinzioni per gruppo (gravità?)
