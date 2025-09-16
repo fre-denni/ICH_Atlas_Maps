@@ -42,5 +42,5 @@ function checkIframe() {
 
 if (checkIframe()) {
   //element to not display when in <iframe>
-  document.getElementById("more").classList.add("loaded-in-iframe");
+  document.getElementById("label-more").style.display = "none";
 }
