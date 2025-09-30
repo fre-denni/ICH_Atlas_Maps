@@ -121,12 +121,15 @@
       let width = container.offsetWidth;
       let height = width;
 
-      let data = "../data/comparisons-tool.csv"; //prova
+      //datasets management
+      let excelDataset = "../data/download/Competences-Map-Dataset.xlsx";
+      let skillData = "../data/competences-map-skill.csv";
+      let techData = "../data/competences-map-tech.csv";
 
       //let the dataset be downloaded
-      downloadData(data, "TRAMA-competences-map-dataset.csv");
+      downloadData(excelDataset, "TRAMA-competences-map-dataset.csv");
 
-      createCompetencesMap(container, data);
+      createCompetencesMap(container, skillData, techData);
     </script>
 
     <script src="../scripts/menu.js"></script>
