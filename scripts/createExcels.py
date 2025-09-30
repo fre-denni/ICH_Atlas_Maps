@@ -18,7 +18,7 @@ os.makedirs(download, exist_ok=True)
 #change to a for loop for all datasets in a list
   #dataset to a df frame
   # excel = os.path.join(download, "Competences-Map-Dataset.xlsx")
-  writer = pd.ExcelWriter(excel, engine='xlsxwriter')
+writer = pd.ExcelWriter(excel, engine='xlsxwriter')
 
 # Save the Excel files
 writer.close()
