@@ -70,7 +70,8 @@ Made with best intentions and open-source code :heart:
 
   #### Fase 2
 
-- [ ] Connect and host the cleaned data
+- [x] Connect and host the cleaned data
+  - [ ] fare daisy chain dei script di python (execute.py -> fetchData.py -> unifyComp.py -> unifyDig.py -> createExcels.py)
 - [ ] Comparison Tool
   - [ ] Migliorare etichette e UI (leggibilità e lettura)
   - [ ] Impostare gerarchia visiva differente
