@@ -43,7 +43,7 @@
       </label>
 
       <input type="checkbox" id="search" />
-      <label for="search" class="icon menu-item">
+      <label for="search" class="icon menu-item" id="label-search">
         <svg viewBox="0 0 18 18" fill="none">
           <g transform="translate(1 1)">
             <path
@@ -115,7 +115,8 @@
         <div id="modal-body"></div>
       </div>
     </div>
-
+    <script src="../scripts/menu.js"></script>
+    <script src="../scripts/modal.js"></script>
     <script type="text/javascript">
       let container = document.getElementById("chart-container");
       let width = container.offsetWidth;
@@ -131,8 +132,5 @@
 
       createCompetencesMap(container, skillData, techData);
     </script>
-
-    <script src="../scripts/menu.js"></script>
-    <script src="../scripts/modal.js"></script>
   </body>
 </html>

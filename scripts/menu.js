@@ -24,6 +24,7 @@ function downloadData(filePath, fileName) {
   download.addEventListener("change", function () {
     if (this.checked) {
       trigger.click();
+      console.log("donwload started...");
       this.checked = false;
     }
   });
@@ -43,4 +44,5 @@ function checkIframe() {
 if (checkIframe()) {
   //element to not display when in <iframe>
   document.getElementById("label-more").style.display = "none";
+  document.getElementById("label-search").style.display = "none";
 }
