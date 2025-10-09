@@ -25,8 +25,8 @@ for index, row in ldf.iterrows():
     response = requests.get(url, timeout=15)
     response.raise_for_status()
 
-    with open(download_path, 'w', encoding='utf-8') as f:
-      f.write(response.text)
+    with open(download_path, 'wb') as f:
+      f.write(response.content)
 
     print(f"Saved to '{download_path}'")
 
@@ -34,23 +34,29 @@ for index, row in ldf.iterrows():
     # Clean the null values, parse (if needed) and save file to directory "/data"
 
     try:
-      clean = pd.read_csv(download_path, na_values=['NA', '["NA"]'])
-      #keep track of original row count
-      og_rows = len(clean)
+      clean = pd.read_csv(download_path, na_values=['NA', '["NA"]'], encoding='utf-8')
+      print(f"File '{file_name}.csv' loaded with {len(clean)} rows.")
 
-      #drop rows with NAN
-      clean.dropna(inplace=True)
+      # Create a dictionary of replacement values
+      # For numeric columns, use 0. For all other (object/text) columns, use ""
+      fill_values = {}
+      for column in clean.columns:
+        if pd.api.types.is_numeric_dtype(clean[column]):
+          fill_values[column] = 0
+        else:
+          fill_values[column] = ""
 
-      #keep track of new row count
-      cleaned_rows = len(clean)
-
-      #Save the file and overwrite it (index=False won't create a new column)
+      # Apply the replacements using the fillna() method
+      clean.fillna(value=fill_values, inplace=True)
+      
+      # Save the file and overwrite it
       clean.to_csv(download_path, index=False, encoding='utf-8')
-      print(f"Cleaning complete. Removed {og_rows - cleaned_rows} rows.")
+      print(f"Cleaning complete. Replaced NaN values in '{download_path}'")
+
     except pd.errors.EmptyDataError:
-      print(f"Warning: {donwload_path} is empty. Skipping cleaning")
+      print(f"Warning: {download_path} is empty. Skipping cleaning.")
     except Exception as e:
-      print(f"An error occured while cleaning {file_name}.csv: {e}")
+      print(f"An error occurred while cleaning {file_name}.csv: {e}")
   
   except requests.exceptions.RequestException as e:
     print(f"Error downloading {url}: {e}")
