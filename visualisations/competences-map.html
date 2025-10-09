@@ -126,11 +126,12 @@
       let excelDataset = "../data/download/Competences-Map-Dataset.xlsx";
       let skillData = "../data/competences-map-skill.csv";
       let techData = "../data/competences-map-tech.csv";
+      let projData = "../data/projects-description.csv";
 
       //let the dataset be downloaded
       downloadData(excelDataset, "TRAMA-competences-map-dataset.csv");
 
-      createCompetencesMap(container, skillData, techData);
+      createCompetencesMap(container, skillData, techData, projData);
     </script>
   </body>
 </html>

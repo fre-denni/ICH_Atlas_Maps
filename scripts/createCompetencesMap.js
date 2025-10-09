@@ -1,4 +1,4 @@
-/********************************************
+/*** *****************************************
  * 
  *
  * 
@@ -17,18 +17,23 @@
  *                                                                               
  *                                                                               
  *                                                                               
- **********************************************/
+ ********************************************* ***/
 
 // Thanks to Visual Cinnamon, Observable and Shirley Wu for inspiration
 // This tool is built upon d3.js and bboxCollide libraries, and visualises
 // the mapping of competences and technologies required to different fruitions output of projects
 
-const createCompetencesMap = (container, skillData, techData) => {
+const createCompetencesMap = (container, dataset1, dataset2, dataset3) => {
+  /**
+   *
+   *
+   *
+   */
   //////////////////////////////////////
   ////// Constants & Variables ////////
   /////////////////////////////////////
 
-  //define math variables
+  /////////define math variables
   const PI = Math.PI;
   const TAU = PI * 2;
 
@@ -40,22 +45,39 @@ const createCompetencesMap = (container, skillData, techData) => {
   let max = Math.max;
   let abs = Math.abs;
 
-  //define data variables
-  let skillDonut,
-    techDonut = [];
-  let nodes_skToProj,
-    nodes_projToTech = [];
-  let edges_skToProj, edges_projToTech;
-  let projects;
-  let techByGroups;
+  /////////////////////DATASETS///////////////////////
 
-  let labels;
-  //project label, data associated with (modal)
+  //populate datasets
+  let skillData = dataset1;
+  let techData = dataset2;
+  let projData = dataset3;
 
-  //add defaults
+  //unique lists
+  let skills, //skill, frequency
+    capTech, //uniqueId, frequency, type
+    repTech, //same
+    dissTech, //same
+    projects, //uniqueId
+    skillType; //uniqueId, angle
 
-  //simulations
-  let skills_sim, tech_sim;
+  //calc list
+  let skills_in_skillType, //for type angle
+    skills_in_Projects; //for skill radius
+
+  //for simulations
+  let nodes_skillToproj, nodes_projTotech;
+  let edges_skillToproj, edges_projTotech;
+
+  ////////////hover/clicked variables
+  let vizProj;
+  let clicked; //collect clicked nodes -- need to collect related?
+
+  //modals + html variables
+  let nodeModal, projModal;
+  let header, label;
+  let title, date, description, fruition_label, domain_label, hyperlink;
+
+  /////////////////////GEOMETRY & VISUALS///////////////////////
 
   //colors
   const COLORS = {
@@ -63,10 +85,34 @@ const createCompetencesMap = (container, skillData, techData) => {
     //add others
   };
 
-  //set sizes
+  /***
+   * GEOM
+   * raggio proj -> (spessore + buco interno = derivati)
+   * padding proj
+   *    raggio tech (derivato= raggio proj - padding proj)
+   *        settori triangolari
+   * raggio minimo vuoto centrale (da togliere a raggio tech)
+   * raggio skilltype -> (spessore + buco interno = derivati)
+   * angolo
+   *    raggio padding esterno + raggio padding interno (o offset da capire) <-
+   *        mid point interno, midpoint esterno
+   *        centro Cerchi simulation
+   *      -> (buco interno determinato da padding)
+   ***/
+
+  /////////set sizes
   const MIN_WIDTH = 660;
   let width = max(MIN_WIDTH, container.clientWidth);
   let height = container.clientHeight;
+
+  let BOUNDARY_RADIUS = width / 2; //facendo così si riesce ad ottenere una versione "responsive"
+  let PROJECTS_RADIUS;
+  let TECHNOLOGY_RADIUS;
+  let DONUT_RADIUS;
+
+  let angle;
+
+  /////////////////////FOR VISUALISATION///////////////////////
 
   //create svg container
   const svg = d3
@@ -87,32 +133,6 @@ const createCompetencesMap = (container, skillData, techData) => {
     .append("g")
     .attr("transform", `translate(${width / 2}, ${height / 2})`);
 
-  /******
-   *
-   * Step visualisation
-   *
-   * - get the data from dataset
-   *  - skill, skill group, frequency (number of project with skill)
-   *  - skill, project node and edges
-   *  - tech, techGroup, frequency
-   *  - tech, project node and edges
-   *  - number of tech, angle donut
-   *
-   * - skill to node -> raggruppa le skill per skill group (frequency dal numero di projects)
-   * - frequcny determina angle slice donut
-   * - dispose skill and skill groups by angle and donut padding
-   *
-   * - Dispose projects in angle (hardcode positions for better edges)
-   * - Edges skill group (by skill) to projects (curved angles and directions)
-   * - hovering logic
-   *
-   * - Tech simulation by custom shape (determined by angle -- frequency of total tech group)
-   * - color per groups
-   * - frequency by tech skill (presence in projects)
-   * - edges, and hovering edges (moving space around nodes?)
-   *
-   * - display and position labels
-   * - modals
-   *
-   */
+  //simulations
+  let skill_sim, tech_sim;
 };
