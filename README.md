@@ -3,7 +3,6 @@
 A github repo containing all the resources and scripts for the visualisations visible at: [ich-atlas.com](https://tramadev.nextatlas.com/)
 
 ```
-.
 ├── 404.html
 ├── about.html
 ├── assets
