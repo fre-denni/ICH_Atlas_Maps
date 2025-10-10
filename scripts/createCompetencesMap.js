@@ -79,6 +79,7 @@ const createCompetencesMap = (container) => {
   //////set scales
   //quali?
   //-> skill nodes, tech nodes, angles (?)
+  //-> scale colore
 
   //open point -> serve da capire la questione dell'offset del donut ring
 
@@ -116,6 +117,16 @@ const createCompetencesMap = (container) => {
   //colors
   const COLORS = {
     background: "#f5f5f0",
+    ui: "#440EB3",
+    proj: "#8F8AEB",
+    /**
+    skills:,
+    disstech:,
+    reptech:,
+    captech:, 
+    */
+    label: "#A3A3A3",
+    text: "#121212",
   };
 
   /////////////////////FOR VISUALISATION///////////////////////
@@ -133,17 +144,22 @@ const createCompetencesMap = (container) => {
     .style("background-color", COLORS.background)
     .style("margin", "0");
 
-  let g = svg.append("g");
+  let g = svg.append("g"); //define widht & height?
 
   //////////////////////////////////
   ////// Manage Datasets //////////
   /////////////////////////////////
 
+  /***
+   *
+   * Function to divide the various datasets in useful lists of skills and arrays
+   * @param {Array} s - skills, skill type, related projects
+   * @param {Array} t - projects, dissemination, representation and capturing technologies
+   * @param {Array} p - cleaned titles for projects, projects, links, description, credits, domain, fruition (ignore external links)
+   * @returns {Array} various list
+   ***/
   function prepareData(s, t, p) {
-    //dataset logic
-    /**
-     *
-     */
+    //call handle functions
   } //prepareData()
 
   //////////////////////////////////
