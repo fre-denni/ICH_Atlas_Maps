@@ -119,20 +119,52 @@
     <script src="../scripts/menu.js"></script>
     <script src="../scripts/modal.js"></script>
     <script type="text/javascript">
+      // Get the container element that will hold the chart
       let container = document.getElementById("chart-container");
       let width = container.offsetWidth;
       let height = width;
 
-      //datasets management
+      //Get the datasets file paths
       let excelDataset = "../data/download/Competences-Map-Dataset.xlsx";
-      let skillData = "../data/competences-map-skill.csv";
-      let techData = "../data/competences-map-tech.csv";
-      let projData = "../data/projects-description.csv";
+      let skillDataset = "../data/competences-map-skill.csv";
+      let techDataset = "../data/competences-map-tech.csv";
+      let projDataset = "../data/projects-description.csv";
 
-      //let the dataset be downloaded
+      //let the .xlsx dataset be downloaded
       downloadData(excelDataset, "TRAMA-competences-map-dataset.csv");
 
-      createCompetencesMap(container, skillData, techData, projData);
+      //Set up the visual
+      //the viz won't be drawed at this stage
+      let drawMap = createCompetencesMap(container).width(width).height(height);
+
+      //load data asynchronously
+      Promise.all([
+        d3.csv(skillDataset),
+        d3.csv(techDataset),
+        d3.csv(projDataset),
+      ]).then(function (data) {
+        //after the data is loaded assing variables and...
+        let skillData = data[0];
+        let techData = data[1];
+        let projData = data[2];
+
+        //...call the chart object with the data to draw
+        drawMap(skillData, techData, projData);
+      });
+
+      //handle responsiviness
+      let resizeTimer;
+      window.addEventListener("resize", function () {
+        clearTimeout(resizeTimer); //set a timer if changes had not be useful
+        resizeTimer = setTimeout(() => {
+          //get new sizes
+          width = container.offsetWidth;
+          height = width;
+
+          //update the visual
+          drawMap.width(width).height(height).resize();
+        }, 250);
+      });
     </script>
   </body>
 </html>
