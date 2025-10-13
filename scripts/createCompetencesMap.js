@@ -77,9 +77,11 @@ const createCompetencesMap = (container) => {
   );
 
   //////set scales
-  //quali?
-  //-> skill nodes, tech nodes, angles (?)
-  //-> scale colore
+  const opacity_scale = d3.scaleLinear().range([0.4, 1.0]);
+  const skill_radius_scale = d3.scaleSqrt().range([5, MAX_SKILL_NODE]);
+  const skill_tech_scale = d3.scaleSqrt().range([4, MAX_TECH_NODE]);
+  const scale_link_distance = d3.scaleLinear().domain([1, 50]).range([10, 60]);
+  const scale_link_width = d3.scalePow().exponent(0.75).range([1, 2, 40]);
 
   //open point -> serve da capire la questione dell'offset del donut ring
 
