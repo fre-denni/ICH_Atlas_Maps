@@ -59,22 +59,22 @@ const createCompetencesMap = (container) => {
   const MAX_TECH_NODE = 16;
   const MAX_SKILL_NODE = 24;
 
-  //proportional scaling
-  let DONUT_WIDTH = max(width, height) - min(width, height);
-  let DONUT_RADIUS = round(DONUT_WIDTH / 2); //max dimension of the skill donut
-  let BOUNDARY_RADIUS = round(
-    (height / 2 - DONUT_RADIUS - PADDING) / 2 + DONUT_RADIUS
-  ); //max dimension of the chart
-  let PROJECTS_RADIUS = round(DONUT_RADIUS - (DONUT_RADIUS / 4 + 2 * PADDING)); //Project ring dimension
-  let TECHNOLOGY_RADIUS = round(
-    (PROJECTS_RADIUS - PADDING) / 2 + PROJECTS_RADIUS / 4
-  ); //Tech Circles domains
+  //variables for scaling
+  const DEFAULT_SIZE = 1000;
+  let SF;
 
-  //constructor circles
-  let CENTRAL_HOLE_RADIUS = round(BOUNDARY_RADIUS / 10); //empty central space
-  let SKILL_BOUNDARY_RADIUS = round(
-    (BOUNDARY_RADIUS - DONUT_RADIUS - PADDING) / 2
-  );
+  //proportional scaling
+  let DONUT_WIDTH,
+    DONUT_RADIUS,
+    BOUNDARY_RADIUS,
+    PROJECTS_RADIUS,
+    TECHNOLOGY_RADIUS,
+    CENTRAL_HOLE_RADIUS,
+    SKILL_BOUNDARY_RADIUS;
+
+  //open point -> serve da capire la questione dell'offset del donut ring
+  //-> nel senso: può servire creare altri radius che abbiano determinate dimensioni rispetto al donut ring
+  //--> oppure possiamo partire da un'offset?
 
   //////set scales
   const opacity_scale = d3.scaleLinear().range([0.4, 1.0]);
@@ -82,8 +82,6 @@ const createCompetencesMap = (container) => {
   const skill_tech_scale = d3.scaleSqrt().range([4, MAX_TECH_NODE]);
   const scale_link_distance = d3.scaleLinear().domain([1, 50]).range([10, 60]);
   const scale_link_width = d3.scalePow().exponent(0.75).range([1, 2, 40]);
-
-  //open point -> serve da capire la questione dell'offset del donut ring
 
   /////////////////////DATASETS///////////////////////
 
@@ -119,7 +117,7 @@ const createCompetencesMap = (container) => {
     fruition_label,
     domain_label,
     hyperlink = [];
-  const DESCRIPTION_WORDS = 25;
+  const DESCRIPTION_WORDS = 25; //to change if needed
 
   /////////////////////GEOMETRY & VISUALS///////////////////////
 
@@ -369,8 +367,8 @@ const createCompetencesMap = (container) => {
 
   function draw() {
     g.selectAll("*").remove(); //clean the visualisation
-
     //call specific drawing and simulation functions;
+    drawProjects(PROJECTS_RADIUS);
 
     //call simulations
     //call hover logic
@@ -383,6 +381,70 @@ const createCompetencesMap = (container) => {
     prepareData(skillData, techData, projData);
     chart.resize();
   } //chart())
+
+  function drawProjects(radius) {
+    //define rhombus width and height (responsive)
+    const node_height = round(8 * SF);
+    const node_width = round(6 * SF);
+    //draw svg rhombus
+    const rhombus = `M 0 ${-node_height / 2} L ${node_width / 2} 0 L 0 ${
+      node_height / 2
+    } L ${-node_width / 2} 0 Z`;
+
+    //calculate positions
+    const positions = projects.map((p, i) => {
+      angle = (i / projects.length) * 2 * PI; //distribute evenly
+      return {
+        id: p,
+        x: round(radius * SF * cos(angle)),
+        y: round(radius * SF * sin(angle)),
+      };
+    });
+
+    //draw functions
+    let project_ring = g
+      .append("g")
+      .attr("class", "project-ring")
+      .selectAll("path")
+      .data(positions)
+      .join("path");
+
+    let project_node = project_ring
+      .attr("class", "project-node")
+      .attr("d", rhombus)
+      .attr("fill", "green")
+      .attr("transform", (d) => `translate(${d.x}, ${d.y})`);
+  } //drawProjects()
+
+  //Calculate sizes
+  function handleSizes(w, h) {
+    //Calculate main scale factor
+    SF = min(w, h) / DEFAULT_SIZE;
+
+    DONUT_WIDTH = max(w, h) * SF; //<- too large
+    DONUT_RADIUS = round(DONUT_WIDTH / 2); //max dimension of the skill donut
+    BOUNDARY_RADIUS = round((h / 2 - DONUT_RADIUS - PADDING) / 2 + DONUT_WIDTH); //max dimension of the chart
+    PROJECTS_RADIUS = round(DONUT_RADIUS - (DONUT_RADIUS / 4 + 2 * PADDING)); //Project ring dimension
+    TECHNOLOGY_RADIUS = round(
+      (PROJECTS_RADIUS - PADDING) / 2 + PROJECTS_RADIUS / 4
+    ); //Tech Circles domains
+
+    //constructor circles
+    let CENTRAL_HOLE_RADIUS = round(BOUNDARY_RADIUS / 10); //empty central space
+    let SKILL_BOUNDARY_RADIUS = round(
+      (BOUNDARY_RADIUS - DONUT_RADIUS - PADDING) / 2
+    );
+
+    //check if everythins is correct
+    console.log("SF:" + SF);
+    console.log("Donut widht:" + DONUT_WIDTH);
+    console.log("Donut radius:" + DONUT_RADIUS);
+    console.log("Boundary radius:" + BOUNDARY_RADIUS);
+    console.log("Projects radius:" + PROJECTS_RADIUS);
+    console.log("Technology radius:" + TECHNOLOGY_RADIUS);
+    console.log("central hole radius:" + CENTRAL_HOLE_RADIUS);
+    console.log("Boundary circle for skill radius:" + SKILL_BOUNDARY_RADIUS);
+  } //handleSizes()
 
   chart.width = function (value) {
     if (!arguments.length) return width;
@@ -399,7 +461,7 @@ const createCompetencesMap = (container) => {
   chart.resize = function () {
     svg.attr("width", width).attr("height", height);
     g.attr("transform", `translate(${width / 2}, ${height / 2})`);
-
+    handleSizes(width, height);
     draw();
   }; //handle resizes
 
