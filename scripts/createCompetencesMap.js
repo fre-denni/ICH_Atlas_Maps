@@ -369,6 +369,7 @@ const createCompetencesMap = (container) => {
     g.selectAll("*").remove(); //clean the visualisation
     //call specific drawing and simulation functions;
     drawProjects(PROJECTS_RADIUS);
+    drawDonut(DONUT_RADIUS);
 
     //call simulations
     //call hover logic
@@ -415,6 +416,32 @@ const createCompetencesMap = (container) => {
       .attr("fill", "green")
       .attr("transform", (d) => `translate(${d.x}, ${d.y})`);
   } //drawProjects()
+
+  function drawDonut(radius) {
+    //define thickness of the donut ring
+    const thickness = PADDING * SF;
+
+    //define arc
+    const arc = d3
+      .arc()
+      .innerRadius(radius - thickness / 2)
+      .outerRadius(radius + thickness / 2);
+
+    const pie = d3
+      .pie()
+      .value((d) => d.frequency)
+      .sort(null)
+      .padAngle(0.01);
+
+    g.append("g")
+      .attr("class", "donut-skill")
+      .selectAll("path")
+      .data(pie(skillType))
+      .join("path")
+      .attr("class", "slice-type")
+      .attr("d", arc)
+      .attr("fill", COLORS.ui);
+  } //drawDonut()
 
   //Calculate sizes
   function handleSizes(w, h) {
