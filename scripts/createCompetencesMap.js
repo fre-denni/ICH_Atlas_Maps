@@ -93,11 +93,11 @@ const createCompetencesMap = (container) => {
     projects, //uniqueId
     skillType = []; //uniqueId, angle
 
-  //calc list
-  let skills_in_skillType, //for type angle
-    skills_in_Projects = []; //for skill radius
-
-  //for simulations
+  //for simulations (una lista da e per progetti?) (distinta da tipo?)
+  let skills_in_skillType,
+    edges_types = [];
+  let tech_in_techType,
+    edges_tech = [];
   let nodes_skillToproj,
     nodes_projTotech = [];
   let edges_skillToproj,
@@ -110,7 +110,14 @@ const createCompetencesMap = (container) => {
   //modals + html variables
   let nodeModal, projModal;
   let header, label;
-  let title, date, description, fruition_label, domain_label, hyperlink;
+  let title,
+    date,
+    description,
+    credits,
+    fruition_label,
+    domain_label,
+    hyperlink = [];
+  const DESCRIPTION_WORDS = 25;
 
   /////////////////////GEOMETRY & VISUALS///////////////////////
 
@@ -160,7 +167,199 @@ const createCompetencesMap = (container) => {
    ***/
   function prepareData(s, t, p) {
     //call handle functions
+    handleSkillsdata(s);
+    handleTechdata(t);
+    handleProjdata(p);
   } //prepareData()
+
+  //parse and clean projects string format
+  function parseProjectsString(projects) {
+    if (!projects || projects.length <= 6) {
+      return [];
+    }
+    const cleaned = projects.slice(3, -3);
+    return cleaned.split('"", ""');
+  } //parseProjectsString()
+
+  function handleSkillsdata(data) {
+    //Clean receveing data
+    const cleaned = data.map((d) => ({
+      skill: d.Skills,
+      type: d["Skill Type"],
+      projects: parseProjectsString(d.Projects),
+    }));
+
+    //Create a unique list of projects
+    const allProjectsNames = new Set(cleaned.flatMap((d) => d.projects));
+    projects = [...allProjectsNames];
+
+    //Populate the skills list with frequency
+    skills = cleaned.map((d) => ({
+      skill: d.skill,
+      frequency: d.projects.length,
+    }));
+
+    //Populate the skill type list wuith frequencies
+    const typeFreq = d3.rollup(
+      cleaned,
+      (v) => v.length,
+      (d) => d.type
+    );
+    skillType = Array.from(typeFreq, ([name, count]) => ({
+      type: name,
+      frequency: count,
+    }));
+
+    //Populate type and skill connection
+    skills_in_skillType = d3.group(cleaned, (d) => d.type);
+    edges_types = cleaned.map((d) => ({
+      source: d.type,
+      target: d.skill,
+    }));
+
+    //Populate projects connection
+    const skillNodes = cleaned.map((d) => ({ id: d.skill, type: "skill" }));
+    const typesNodes = cleaned.map((d) => ({ id: d.type, type: "Type" }));
+    const projectNodes = projects.map((name) => ({
+      id: name,
+      type: "project",
+    }));
+    nodes_skillToproj = [...skillNodes, ...projectNodes, ...typesNodes];
+
+    edges_skillToproj = cleaned.flatMap((d) =>
+      d.projects.map((p) => ({
+        source: d.skill,
+        target: p,
+      }))
+    );
+  } //handleSkillsdata()
+
+  function handleTechdata(data) {
+    const tech = data.flatMap((d) => {
+      const l = [];
+      if (d["capturing technologies"]) {
+        l.push({
+          project: d.projects,
+          tech: d["capturing technologies"],
+          type: "capt_tech",
+        });
+      }
+      if (d["representation technologies"]) {
+        l.push({
+          project: d.projects,
+          tech: d["representation technologies"],
+          type: "rep_tech",
+        });
+      }
+      if (d["Dissemination Technologies"]) {
+        l.push({
+          project: d.projects,
+          tech: d["Dissemination Technologies"],
+          type: "diss_tech",
+        });
+      }
+      return l;
+    });
+
+    //Calculate frequency of tech
+    const techFreq = d3.rollup(
+      tech,
+      (v) => v.length,
+      (d) => d.tech
+    );
+
+    //create a set of unique id for each tech
+    const uniqueTech = new Set(tech.map((d) => d.tech));
+    capTech = [];
+    repTech = [];
+    dissTech = [];
+
+    //populate the lists
+    uniqueTech.forEach((t) => {
+      const info = tech.find((d) => d.tech === t);
+      const entry = {
+        name: t,
+        type: info.type,
+        frequency: techFreq.get(t) || 0,
+      };
+
+      if (entry.type === "capt_tech") capTech.push(entry);
+      if (entry.type === "rep_tech") repTech.push(entry);
+      if (entry.type === "diss_tech") dissTech.push(entry);
+    });
+
+    //create a local list of unique projects
+    const prj = new Set(tech.map((d) => d.projects));
+    const prj_node = Array.from(prj).map((id) => ({ id, type: "project" }));
+
+    //prepare nodes for simulation
+    const nodes = Array.from(uniqueTech).map((t) => {
+      const info = tech.find((d) => d.tech === t);
+      return {
+        id: t,
+        type: info.type,
+      };
+    });
+
+    //populate nodes to projects
+    nodes_projTotech = [...prj_node, ...nodes];
+
+    const edges = tech.map((d) => ({
+      source: d.projects,
+      target: d.tech,
+    }));
+
+    edges_projTotech = [...edges];
+
+    //make types node
+    const techTypeNodes = [
+      { id: "cap_tech", type: "tech_type" },
+      { id: "rep_tech", type: "tech_type" },
+      { id: "diss_tech", type: "tech_type" },
+    ];
+
+    //populate tech types
+    tech_in_techType = [...nodes, ...techTypeNodes];
+
+    const type_edges = Array.from(uniqueTech).map((t) => {
+      const info = tech.find((d) => d.tech === t);
+      return {
+        source: t,
+        target: info.type,
+      };
+    });
+
+    edges_tech = [...type_edges];
+  } //handleTechdata()
+
+  //to handle project description
+  function truncate(text, limit) {
+    if (!text) return "";
+    const words = text.split(" ");
+    if (words.length > limit) {
+      return words.slice(0, limit).join(" ") + "...";
+    }
+    return text;
+  } //truncate()
+
+  function handleProjdata(data) {
+    //create the comparison list for showing prettier titles
+    vizProj = data.map((d) => ({
+      title: d.title,
+      display: d.viz_title,
+    }));
+
+    //Populate the individual list from their respectives columns
+    title = data.map((d) => d.title);
+    date = data.map((d) => d.date);
+    credits = data.map((d) => d.credits);
+    fruition_label = data.map((d) => d.fruitionOutputs);
+    domain_label = data.map((d) => d.ichDomains);
+    hyperlink = data.map((d) => d.links_slug);
+
+    //truncate the text
+    description = data.map((d) => truncate(d.description, DESCRIPTION_WORDS));
+  } //handleProjdata()
 
   //////////////////////////////////
   ////// Drawing functions ////////
