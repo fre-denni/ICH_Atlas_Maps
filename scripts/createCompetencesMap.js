@@ -418,19 +418,23 @@ const createCompetencesMap = (container) => {
 
   //Calculate sizes
   function handleSizes(w, h) {
-    //Calculate main scale factor
-    SF = min(w, h) / DEFAULT_SIZE;
+    //set ideals
+    const diameter = min(w, h) - PADDING * 2;
+    BOUNDARY_RADIUS = diameter / 2;
 
-    DONUT_WIDTH = max(w, h) * SF; //<- too large
-    DONUT_RADIUS = round(DONUT_WIDTH / 2); //max dimension of the skill donut
-    BOUNDARY_RADIUS = round((h / 2 - DONUT_RADIUS - PADDING) / 2 + DONUT_WIDTH); //max dimension of the chart
-    PROJECTS_RADIUS = round(DONUT_RADIUS - (DONUT_RADIUS / 4 + 2 * PADDING)); //Project ring dimension
-    TECHNOLOGY_RADIUS = round(
-      (PROJECTS_RADIUS - PADDING) / 2 + PROJECTS_RADIUS / 4
-    ); //Tech Circles domains
+    //define donut sizes
+    DONUT_RADIUS = round(BOUNDARY_RADIUS / 1.24); //max dimension of the skill donut
+    DONUT_WIDTH = DONUT_RADIUS * 2;
+
+    //Calculate main scale factor
+    SF = DONUT_WIDTH / (DEFAULT_SIZE * 0.56);
+
+    BOUNDARY_RADIUS = round(DONUT_RADIUS * 1.24); //max dimension of the chart
+    PROJECTS_RADIUS = round(DONUT_RADIUS * 0.67); //round(DONUT_RADIUS - (DONUT_RADIUS / 4 + 2 * PADDING)); //Project ring dimension
+    TECHNOLOGY_RADIUS = round(PROJECTS_RADIUS * 0.65); //Tech circles domains
 
     //constructor circles
-    let CENTRAL_HOLE_RADIUS = round(BOUNDARY_RADIUS / 10); //empty central space
+    let CENTRAL_HOLE_RADIUS = round(TECHNOLOGY_RADIUS * 0.7); //empty central space
     let SKILL_BOUNDARY_RADIUS = round(
       (BOUNDARY_RADIUS - DONUT_RADIUS - PADDING) / 2
     );
