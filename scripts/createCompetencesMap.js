@@ -64,6 +64,9 @@ const createCompetencesMap = (container) => {
   const DEFAULT_SIZE = 1000;
   let SF;
 
+  //working variables
+  const DEBUG = "visible"; //"hidden";
+
   //proportional scaling
   let DONUT_WIDTH,
     DONUT_RADIUS,
@@ -366,10 +369,10 @@ const createCompetencesMap = (container) => {
     g.selectAll("*").remove(); //clean the visualisation
     //call specific drawing and simulation functions;
     drawProjects(PROJECTS_RADIUS);
-    drawDonut(DONUT_RADIUS);
+    const donut = drawDonut(DONUT_RADIUS);
 
-    //calculate mid-points
-    definePoints();
+    //calculate mid-points and boundaries
+    defineBoundaries(donut);
 
     //call simulations
     //call hover logic
@@ -434,76 +437,78 @@ const createCompetencesMap = (container) => {
       .sort(null)
       .padAngle(0.01);
 
+    //get the data for the angles
+    const data = pie(skillType);
+
     g.append("g")
       .attr("class", "donut-skill")
       .selectAll("path")
-      .data(pie(skillType))
+      .data(data)
       .join("path")
       .attr("class", "slice-type")
       .attr("d", arc)
       .attr("fill", COLORS.ui);
+
+    return { thickness, data, arc };
   } //drawDonut()
 
-  //get middle points for simulations
-  function definePoints() {
-    //define padding of innerdonut
-    const thick = PADDING * SF;
+  //define boundaries
+  function defineBoundaries({ thickness, data, arc }) {
+    const inner = DONUT_RADIUS - (thickness - thickness / 4);
+    const outer = DONUT_RADIUS + thickness + SKILL_BOUNDARY_RADIUS;
 
-    //calculate internal point
-    const inner = DONUT_RADIUS - (thick + thick / 4);
-    //calculate external
-    const outer = DONUT_RADIUS + thick / 2 + SKILL_BOUNDARY_RADIUS;
+    //assing coordinates
+    data.forEach((d) => {
+      const centroid = arc.centroid(d);
+      angle = atan2(centroid[1], centroid[0]);
 
-    //get angles
-    const pie = d3
-      .pie()
-      .value((d) => d.frequency)
-      .sort(null)
-      .padAngle(0.01);
+      d.innerX = inner * cos(angle);
+      d.innerY = inner * sin(angle);
+      d.outerX = outer * cos(angle);
+      d.outerY = outer * sin(angle);
+    });
 
-    const data = pie(skillType);
-
-    const arc = d3
-      .arc()
-      .innerRadius(DONUT_RADIUS - thick / 2)
-      .outerRadius(DONUT_RADIUS + thick / 2);
-
-    //create points
+    //draw points
     const points = g.append("g").attr("class", "anchors");
 
-    //make inners
     points
       .selectAll("circle.inner-point")
       .data(data)
       .join("circle")
       .attr("class", "inner-point")
-      .each(function (d) {
-        const centroid = arc.centroid(d);
-        angle = atan2(centroid[1], centroid[0]);
-
-        d3.select(this)
-          .attr("cx", inner * cos(angle))
-          .attr("cy", inner * sin(angle));
-      })
+      .attr("cx", (d) => d.innerX)
+      .attr("cy", (d) => d.innerY)
       .attr("r", 3 * SF)
-      .attr("fill", "gray"); //da nascondere in futuro
+      .attr("fill", "gray")
+      .attr("visibility", DEBUG);
 
-    //make outers
     points
       .selectAll("circle.outer-point")
       .data(data)
       .join("circle")
       .attr("class", "outer-point")
-      .each(function (d) {
-        const centroid = arc.centroid(d);
-        angle = atan2(centroid[1], centroid[0]);
-        d3.select(this)
-          .attr("cx", outer * cos(angle))
-          .attr("cy", outer * sin(angle));
-      })
+      .attr("cx", (d) => d.outerX)
+      .attr("cy", (d) => d.outerY)
       .attr("r", 3 * SF)
-      .attr("fill", "gray"); //da nascondere in futuro
-  } //definePoints
+      .attr("fill", "gray")
+      .attr("visibility", DEBUG);
+
+    const boundaries = g.append("g").attr("class", "skill-boundaries");
+
+    boundaries
+      .selectAll("circle.boundary")
+      .data(data)
+      .join("circle")
+      .attr("class", "boundary")
+      .attr("cx", (d) => d.outerX)
+      .attr("cy", (d) => d.outerY)
+      .attr("r", SKILL_BOUNDARY_RADIUS)
+      .attr("fill", "none")
+      .attr("stroke", "gray")
+      .attr("stroke-width", 1)
+      .attr("stroke-dasharray", "4,4")
+      .attr("visibility", DEBUG);
+  }
 
   //Calculate sizes
   function handleSizes(w, h) {
