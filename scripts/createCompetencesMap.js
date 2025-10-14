@@ -65,7 +65,7 @@ const createCompetencesMap = (container) => {
   let SF;
 
   //working variables
-  const DEBUG = "visible"; //"hidden";
+  const DEBUG = "hidden"; //"visible";
 
   //proportional scaling
   let DONUT_WIDTH,
@@ -177,11 +177,14 @@ const createCompetencesMap = (container) => {
 
   //parse and clean projects string format
   function parseProjectsString(projects) {
-    if (!projects || projects.length <= 6) {
+    if (!projects) {
       return [];
     }
-    const cleaned = projects.slice(3, -3);
-    return cleaned.split('"", ""');
+
+    return projects
+      .split(",")
+      .map((p) => p.trim())
+      .filter((p) => p.length > 0);
   } //parseProjectsString()
 
   function handleSkillsdata(data) {
@@ -192,6 +195,8 @@ const createCompetencesMap = (container) => {
       projects: parseProjectsString(d.Projects),
     }));
 
+    console.log(cleaned[5]);
+
     //Create a unique list of projects
     const allProjectsNames = new Set(cleaned.flatMap((d) => d.projects));
     projects = [...allProjectsNames];
@@ -201,6 +206,12 @@ const createCompetencesMap = (container) => {
       skill: d.skill,
       frequency: d.projects.length,
     }));
+
+    console.log(skills[5]);
+
+    //add domain to scale
+    const domain = d3.extent(skills, (d) => d.frequency);
+    skill_radius_scale.domain(domain);
 
     //Populate the skill type list wuith frequencies
     const typeFreq = d3.rollup(
