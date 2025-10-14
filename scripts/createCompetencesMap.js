@@ -363,7 +363,7 @@ const createCompetencesMap = (container) => {
   } //handleProjdata()
 
   //////////////////////////////////
-  ////// Drawing functions ////////
+  //////////// Mains //////////////
   /////////////////////////////////
 
   function draw() {
@@ -371,7 +371,7 @@ const createCompetencesMap = (container) => {
     //call specific drawing and simulation functions;
     drawProjects(PROJECTS_RADIUS);
     const donut = drawDonut(DONUT_RADIUS);
-
+    drawTech(CENTRAL_HOLE_RADIUS, TECHNOLOGY_RADIUS);
     //calculate mid-points and boundaries
     defineBoundaries(donut);
 
@@ -385,6 +385,10 @@ const createCompetencesMap = (container) => {
     //call resizing (first draw)
     chart.resize();
   } //chart())
+
+  //////////////////////////////////
+  ////// Drawing functions ////////
+  /////////////////////////////////
 
   function drawProjects(radius) {
     //define rhombus width and height (responsive)
@@ -406,7 +410,6 @@ const createCompetencesMap = (container) => {
     });
 
     //how to rotate them so that the points are pointed to the center?
-
     //draw functions
     let project_ring = g
       .append("g")
@@ -452,6 +455,26 @@ const createCompetencesMap = (container) => {
 
     return { thickness, data, arc };
   } //drawDonut()
+
+  function drawTech(radius, hole) {
+    //define the arc for the technology area
+    const arc = d3.arc().innerRadius(hole).outerRadius(radius);
+
+    //define pie
+    const pie = d3.pie().sort(null).padAngle(0.02);
+    const slices = pie([1, 1, 1]);
+
+    //draw
+    g.append("g")
+      .attr("class", "technology-areas")
+      .selectAll("path")
+      .data(slices)
+      .join("path")
+      .attr("class", "tech-area")
+      .attr("d", arc)
+      .attr("fill", "gray");
+    //to change later
+  } //drawTech()
 
   //define boundaries
   function defineBoundaries({ thickness, data, arc }) {
@@ -518,6 +541,10 @@ const createCompetencesMap = (container) => {
       .attr("visibility", DEBUG);
   } //defineBoundaries()
 
+  //////////////////////////////////
+  ////// Sizing functions /////////
+  /////////////////////////////////
+
   //Calculate sizes
   function handleSizes(w, h) {
     //set ideal
@@ -532,10 +559,10 @@ const createCompetencesMap = (container) => {
     SF = DONUT_WIDTH / (DEFAULT_SIZE * 0.56);
 
     PROJECTS_RADIUS = round(DONUT_RADIUS * 0.67); //round(DONUT_RADIUS - (DONUT_RADIUS / 4 + 2 * PADDING)); //Project ring dimension
-    TECHNOLOGY_RADIUS = round(PROJECTS_RADIUS * 0.65); //Tech circles domains
+    TECHNOLOGY_RADIUS = round(PROJECTS_RADIUS * 0.7); //Tech circles domains
 
     //constructor circles
-    CENTRAL_HOLE_RADIUS = round(TECHNOLOGY_RADIUS * 0.7); //empty central space
+    CENTRAL_HOLE_RADIUS = round(BOUNDARY_RADIUS * 0.1); //empty central space
     SKILL_BOUNDARY_RADIUS = round(
       (BOUNDARY_RADIUS - DONUT_RADIUS - PADDING) / 2
     );
