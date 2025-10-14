@@ -48,6 +48,7 @@ const createCompetencesMap = (container) => {
   let min = Math.min;
   let max = Math.max;
   let abs = Math.abs;
+  let atan2 = Math.atan2;
 
   /////////set sizes
   let width, height;
@@ -71,10 +72,6 @@ const createCompetencesMap = (container) => {
     TECHNOLOGY_RADIUS,
     CENTRAL_HOLE_RADIUS,
     SKILL_BOUNDARY_RADIUS;
-
-  //open point -> serve da capire la questione dell'offset del donut ring
-  //-> nel senso: può servire creare altri radius che abbiano determinate dimensioni rispetto al donut ring
-  //--> oppure possiamo partire da un'offset?
 
   //////set scales
   const opacity_scale = d3.scaleLinear().range([0.4, 1.0]);
@@ -371,6 +368,9 @@ const createCompetencesMap = (container) => {
     drawProjects(PROJECTS_RADIUS);
     drawDonut(DONUT_RADIUS);
 
+    //calculate mid-points
+    definePoints();
+
     //call simulations
     //call hover logic
   } //draw()
@@ -444,11 +444,71 @@ const createCompetencesMap = (container) => {
       .attr("fill", COLORS.ui);
   } //drawDonut()
 
+  //get middle points for simulations
+  function definePoints() {
+    //define padding of innerdonut
+    const thick = PADDING * SF;
+
+    //calculate internal point
+    const inner = DONUT_RADIUS - (thick + thick / 4);
+    //calculate external
+    const outer = DONUT_RADIUS + thick / 2 + SKILL_BOUNDARY_RADIUS;
+
+    //get angles
+    const pie = d3
+      .pie()
+      .value((d) => d.frequency)
+      .sort(null)
+      .padAngle(0.01);
+
+    const data = pie(skillType);
+
+    const arc = d3
+      .arc()
+      .innerRadius(DONUT_RADIUS - thick / 2)
+      .outerRadius(DONUT_RADIUS + thick / 2);
+
+    //create points
+    const points = g.append("g").attr("class", "anchors");
+
+    //make inners
+    points
+      .selectAll("circle.inner-point")
+      .data(data)
+      .join("circle")
+      .attr("class", "inner-point")
+      .each(function (d) {
+        const centroid = arc.centroid(d);
+        angle = atan2(centroid[1], centroid[0]);
+
+        d3.select(this)
+          .attr("cx", inner * cos(angle))
+          .attr("cy", inner * sin(angle));
+      })
+      .attr("r", 3 * SF)
+      .attr("fill", "gray"); //da nascondere in futuro
+
+    //make outers
+    points
+      .selectAll("circle.outer-point")
+      .data(data)
+      .join("circle")
+      .attr("class", "outer-point")
+      .each(function (d) {
+        const centroid = arc.centroid(d);
+        angle = atan2(centroid[1], centroid[0]);
+        d3.select(this)
+          .attr("cx", outer * cos(angle))
+          .attr("cy", outer * sin(angle));
+      })
+      .attr("r", 3 * SF)
+      .attr("fill", "gray"); //da nascondere in futuro
+  } //definePoints
+
   //Calculate sizes
   function handleSizes(w, h) {
-    //set ideals
+    //set ideal
     const diameter = min(w, h) - PADDING * 2;
-
     BOUNDARY_RADIUS = diameter / 2; //building block variable
 
     //define donut sizes
@@ -462,8 +522,8 @@ const createCompetencesMap = (container) => {
     TECHNOLOGY_RADIUS = round(PROJECTS_RADIUS * 0.65); //Tech circles domains
 
     //constructor circles
-    let CENTRAL_HOLE_RADIUS = round(TECHNOLOGY_RADIUS * 0.7); //empty central space
-    let SKILL_BOUNDARY_RADIUS = round(
+    CENTRAL_HOLE_RADIUS = round(TECHNOLOGY_RADIUS * 0.7); //empty central space
+    SKILL_BOUNDARY_RADIUS = round(
       (BOUNDARY_RADIUS - DONUT_RADIUS - PADDING) / 2
     );
 
