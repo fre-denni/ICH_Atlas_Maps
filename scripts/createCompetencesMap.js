@@ -83,7 +83,6 @@ const createCompetencesMap = (container) => {
     .range([MAX_SKILL_NODE / 2, MAX_SKILL_NODE]);
   const skill_tech_scale = d3.scaleSqrt().range([MAX_TECH_NODE, MAX_TECH_NODE]);
   const boundary_scale = d3.scaleSqrt();
-  const scale_link_distance = d3.scaleLinear().domain([1, 50]).range([10, 60]);
   const scale_link_width = d3.scalePow().exponent(0.75).range([1, 2, 40]);
 
   /////////////////////DATASETS///////////////////////
@@ -305,9 +304,9 @@ const createCompetencesMap = (container) => {
       if (entry.type === "diss_tech") dissTech.push(entry);
     });
 
-    console.log(capTech[0]);
+    /*console.log(capTech[0]);
     console.log(repTech[0]);
-    console.log(dissTech[0]);
+    console.log(dissTech[0]);*/
 
     //create a local list of unique projects and tech
     const prj = new Set(tech.map((d) => d.projects));
@@ -663,6 +662,18 @@ const createCompetencesMap = (container) => {
     console.log("Boundary circle for skill radius:" + SKILL_BOUNDARY_RADIUS);*/
   } //handleSizes()
 
+  //to update all the scales following the handlesize()
+  function handleScales() {
+    //update the range for the skill node radius
+    skill_radius_scale.range([(MAX_SKILL_NODE / 2) * SF, MAX_SKILL_NODE * SF]);
+
+    //update the range for the technology radius
+    skill_tech_scale.range([(MAX_TECH_NODE / 2) * SF, MAX_TECH_NODE * SF]);
+
+    //update the range for link stroke widths
+    scale_link_width.range([1 * SF, 2 * SF, 40 * SF]);
+  }
+
   chart.width = function (value) {
     if (!arguments.length) return width;
     width = max(MIN_WIDTH, value);
@@ -679,6 +690,7 @@ const createCompetencesMap = (container) => {
     svg.attr("width", width).attr("height", height);
     g.attr("transform", `translate(${width / 2}, ${height / 2})`);
     handleSizes(width, height);
+    handleScales();
     draw();
   }; //handle resizes
 
