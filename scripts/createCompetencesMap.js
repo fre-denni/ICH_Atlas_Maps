@@ -80,6 +80,7 @@ const createCompetencesMap = (container) => {
   const opacity_scale = d3.scaleLinear().range([0.4, 1.0]);
   const skill_radius_scale = d3.scaleSqrt().range([5, MAX_SKILL_NODE]);
   const skill_tech_scale = d3.scaleSqrt().range([4, MAX_TECH_NODE]);
+  const boundary_scale = d3.scaleSqrt();
   const scale_link_distance = d3.scaleLinear().domain([1, 50]).range([10, 60]);
   const scale_link_width = d3.scalePow().exponent(0.75).range([1, 2, 40]);
 
@@ -435,7 +436,7 @@ const createCompetencesMap = (container) => {
       .pie()
       .value((d) => d.frequency)
       .sort(null)
-      .padAngle(0.01);
+      .padAngle(0.015);
 
     //get the data for the angles
     const data = pie(skillType);
@@ -454,10 +455,17 @@ const createCompetencesMap = (container) => {
 
   //define boundaries
   function defineBoundaries({ thickness, data, arc }) {
+    // define parameters
     const inner = DONUT_RADIUS - (thickness - thickness / 4);
-    const outer = DONUT_RADIUS + thickness + SKILL_BOUNDARY_RADIUS;
+    const outer = DONUT_RADIUS + thickness * 1.5 + SKILL_BOUNDARY_RADIUS;
+    const frequency = d3.extent(data, (d) => d.data.frequency);
 
-    //assing coordinates
+    //create scale
+    boundary_scale
+      .domain(frequency)
+      .range([SKILL_BOUNDARY_RADIUS / 2, SKILL_BOUNDARY_RADIUS * 2]);
+
+    //assign coordinates
     data.forEach((d) => {
       const centroid = arc.centroid(d);
       angle = atan2(centroid[1], centroid[0]);
@@ -502,18 +510,18 @@ const createCompetencesMap = (container) => {
       .attr("class", "boundary")
       .attr("cx", (d) => d.outerX)
       .attr("cy", (d) => d.outerY)
-      .attr("r", SKILL_BOUNDARY_RADIUS)
+      .attr("r", (d) => boundary_scale(d.data.frequency))
       .attr("fill", "none")
       .attr("stroke", "gray")
       .attr("stroke-width", 1)
       .attr("stroke-dasharray", "4,4")
       .attr("visibility", DEBUG);
-  }
+  } //defineBoundaries()
 
   //Calculate sizes
   function handleSizes(w, h) {
     //set ideal
-    const diameter = min(w, h) - PADDING * 2;
+    const diameter = min(w, h) - PADDING * 4; //sweet spot
     BOUNDARY_RADIUS = diameter / 2; //building block variable
 
     //define donut sizes
