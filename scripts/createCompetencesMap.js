@@ -195,7 +195,7 @@ const createCompetencesMap = (container) => {
       projects: parseProjectsString(d.Projects),
     }));
 
-    console.log(cleaned[5]);
+    //console.log(cleaned[5]);
 
     //Create a unique list of projects
     const allProjectsNames = new Set(cleaned.flatMap((d) => d.projects));
@@ -207,7 +207,7 @@ const createCompetencesMap = (container) => {
       frequency: d.projects.length,
     }));
 
-    console.log(skills[5]);
+    //console.log(skills[5]);
 
     //add domain to scale
     const domain = d3.extent(skills, (d) => d.frequency);
@@ -248,31 +248,33 @@ const createCompetencesMap = (container) => {
     );
   } //handleSkillsdata()
 
+  function parseTechString(t) {
+    //clean tech data
+    if (!t) return [];
+    let list = [];
+    try {
+      list = JSON.parse(t);
+    } catch (e) {
+      list = t.split(",");
+    }
+    //consistent data cleaning
+    return list.map((d) => d.trim());
+  }
+
   function handleTechdata(data) {
     const tech = data.flatMap((d) => {
-      const l = [];
-      if (d["capturing technologies"]) {
-        l.push({
-          project: d.projects,
-          tech: d["capturing technologies"],
-          type: "capt_tech",
-        });
-      }
-      if (d["representation technologies"]) {
-        l.push({
-          project: d.projects,
-          tech: d["representation technologies"],
-          type: "rep_tech",
-        });
-      }
-      if (d["Dissemination Technologies"]) {
-        l.push({
-          project: d.projects,
-          tech: d["Dissemination Technologies"],
-          type: "diss_tech",
-        });
-      }
-      return l;
+      const prj = d.projects;
+      const entries = [];
+
+      const capt = parseTechString(d["capturing technologies"]);
+      const rep = parseTechString(d["representation technologies"]);
+      const dis = parseTechString(d["Dissemination Technologies"]);
+
+      capt.forEach((t) => entries.push({ prj, tech: t, type: "capt_tech" }));
+      rep.forEach((t) => entries.push({ prj, tech: t, type: "rep_tech" }));
+      dis.forEach((t) => entries.push({ prj, tech: t, type: "diss_tech" }));
+
+      return entries;
     });
 
     //Calculate frequency of tech
@@ -282,19 +284,20 @@ const createCompetencesMap = (container) => {
       (d) => d.tech
     );
 
-    //create a set of unique id for each tech
-    const uniqueTech = new Set(tech.map((d) => d.tech));
+    //populate the array with all techs
+    const allTech = Array.from(techFreq.keys());
+
     capTech = [];
     repTech = [];
     dissTech = [];
 
     //populate the lists
-    uniqueTech.forEach((t) => {
+    allTech.forEach((t) => {
       const info = tech.find((d) => d.tech === t);
       const entry = {
         name: t,
         type: info.type,
-        frequency: techFreq.get(t) || 0,
+        frequency: techFreq.get(t),
       };
 
       if (entry.type === "capt_tech") capTech.push(entry);
@@ -302,12 +305,16 @@ const createCompetencesMap = (container) => {
       if (entry.type === "diss_tech") dissTech.push(entry);
     });
 
-    //create a local list of unique projects
+    console.log(capTech[0]);
+    console.log(repTech[0]);
+    console.log(dissTech[0]);
+
+    //create a local list of unique projects and tech
     const prj = new Set(tech.map((d) => d.projects));
     const prj_node = Array.from(prj).map((id) => ({ id, type: "project" }));
 
     //prepare nodes for simulation
-    const nodes = Array.from(uniqueTech).map((t) => {
+    const nodes = allTech.map((t) => {
       const info = tech.find((d) => d.tech === t);
       return {
         id: t,
@@ -335,7 +342,7 @@ const createCompetencesMap = (container) => {
     //populate tech types
     tech_in_techType = [...nodes, ...techTypeNodes];
 
-    const type_edges = Array.from(uniqueTech).map((t) => {
+    const type_edges = allTech.map((t) => {
       const info = tech.find((d) => d.tech === t);
       return {
         source: t,
