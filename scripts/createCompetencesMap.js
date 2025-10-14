@@ -57,8 +57,8 @@ const createCompetencesMap = (container) => {
   const MIN_WIDTH = 660;
   const MAX_HEIGHT = 1250; //increase if you want really large viz on screens
   const PADDING = 24; //in scale of 8th
-  const MAX_TECH_NODE = 16;
-  const MAX_SKILL_NODE = 24;
+  const MAX_TECH_NODE = 8;
+  const MAX_SKILL_NODE = 10;
 
   //variables for scaling
   const DEFAULT_SIZE = 1000;
@@ -78,8 +78,10 @@ const createCompetencesMap = (container) => {
 
   //////set scales
   const opacity_scale = d3.scaleLinear().range([0.4, 1.0]);
-  const skill_radius_scale = d3.scaleSqrt().range([5, MAX_SKILL_NODE]);
-  const skill_tech_scale = d3.scaleSqrt().range([4, MAX_TECH_NODE]);
+  const skill_radius_scale = d3
+    .scaleSqrt()
+    .range([MAX_SKILL_NODE / 2, MAX_SKILL_NODE]);
+  const skill_tech_scale = d3.scaleSqrt().range([MAX_TECH_NODE, MAX_TECH_NODE]);
   const boundary_scale = d3.scaleSqrt();
   const scale_link_distance = d3.scaleLinear().domain([1, 50]).range([10, 60]);
   const scale_link_width = d3.scalePow().exponent(0.75).range([1, 2, 40]);
@@ -376,6 +378,7 @@ const createCompetencesMap = (container) => {
     defineBoundaries(donut);
 
     //call simulations
+    simSkills(donut.data);
     //call hover logic
   } //draw()
 
@@ -461,7 +464,7 @@ const createCompetencesMap = (container) => {
     const arc = d3.arc().innerRadius(hole).outerRadius(radius);
 
     //define pie
-    const pie = d3.pie().sort(null).padAngle(0.02);
+    const pie = d3.pie().sort(null).padAngle(0.02); //increase for more space
     const slices = pie([1, 1, 1]);
 
     //draw
@@ -497,6 +500,23 @@ const createCompetencesMap = (container) => {
       d.innerY = inner * sin(angle);
       d.outerX = outer * cos(angle);
       d.outerY = outer * sin(angle);
+
+      /*//data for force simulations
+      const type = d.data.type;
+      //all skill for type
+      const skill_type = skills_in_skillType.get(type);
+
+      //create a node object for each skill
+      skill_type.forEach((s) => {
+        nodes.push({
+          id: s.skill,
+          type: type,
+          frequency: s.projects.length,
+          //give coordinates
+          anchorX: d.outerX,
+          anchorY: d.outerY,
+        });
+      });*/
     });
 
     //draw points
@@ -539,7 +559,54 @@ const createCompetencesMap = (container) => {
       .attr("stroke-width", 1)
       .attr("stroke-dasharray", "4,4")
       .attr("visibility", DEBUG);
+
+    //return nodes;
   } //defineBoundaries()
+
+  //////////////////////////////////
+  ////// Force-layouts sims ////////
+  /////////////////////////////////
+
+  //skill simulation
+  function simSkills(s) {
+    //create flat node array
+    const nodes = s.flatMap((t) => {
+      const type = t.data.type;
+      const skill = skills_in_skillType.get(type);
+
+      return skill.map((sk) => ({
+        id: sk.skill,
+        type: type,
+        frequency: sk.projects.length,
+        anchorX: t.outerX,
+        anchorY: t.outerY,
+      }));
+    });
+
+    //draw skill nodes
+    const node = g
+      .append("g")
+      .attr("class", "skill-nodes")
+      .selectAll("circle")
+      .data(nodes)
+      .join("circle")
+      .attr("r", (d) => skill_radius_scale(d.frequency))
+      .attr("fill", COLORS.proj);
+
+    //create and run simulation
+    skill_sim = d3
+      .forceSimulation(nodes)
+      .force("x", d3.forceX((d) => d.anchorX).strength(0.1))
+      .force("y", d3.forceY((d) => d.anchorY).strength(0.1))
+      .force(
+        "collide",
+        d3.forceCollide((d) => skill_radius_scale(d.frequency) + 1)
+      );
+
+    skill_sim.on("tick", () => {
+      node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
+    });
+  } //runSimSkills()
 
   //////////////////////////////////
   ////// Sizing functions /////////
