@@ -376,17 +376,16 @@ const createCompetencesMap = (container) => {
   } //draw()
 
   function chart(skillData, techData, projData) {
-    //create svg container
     //data logic
-    //draw logic
     prepareData(skillData, techData, projData);
+    //call resizing (first draw)
     chart.resize();
   } //chart())
 
   function drawProjects(radius) {
     //define rhombus width and height (responsive)
     const node_height = round(8 * SF);
-    const node_width = round(6 * SF);
+    const node_width = round(8 * SF);
     //draw svg rhombus
     const rhombus = `M 0 ${-node_height / 2} L ${node_width / 2} 0 L 0 ${
       node_height / 2
@@ -397,10 +396,12 @@ const createCompetencesMap = (container) => {
       angle = (i / projects.length) * 2 * PI; //distribute evenly
       return {
         id: p,
-        x: round(radius * SF * cos(angle)),
-        y: round(radius * SF * sin(angle)),
+        x: radius * SF * cos(angle),
+        y: radius * SF * sin(angle),
       };
     });
+
+    //how to rotate them so that the points are pointed to the center?
 
     //draw functions
     let project_ring = g
@@ -447,7 +448,8 @@ const createCompetencesMap = (container) => {
   function handleSizes(w, h) {
     //set ideals
     const diameter = min(w, h) - PADDING * 2;
-    BOUNDARY_RADIUS = diameter / 2;
+
+    BOUNDARY_RADIUS = diameter / 2; //building block variable
 
     //define donut sizes
     DONUT_RADIUS = round(BOUNDARY_RADIUS / 1.24); //max dimension of the skill donut
@@ -456,7 +458,6 @@ const createCompetencesMap = (container) => {
     //Calculate main scale factor
     SF = DONUT_WIDTH / (DEFAULT_SIZE * 0.56);
 
-    BOUNDARY_RADIUS = round(DONUT_RADIUS * 1.24); //max dimension of the chart
     PROJECTS_RADIUS = round(DONUT_RADIUS * 0.67); //round(DONUT_RADIUS - (DONUT_RADIUS / 4 + 2 * PADDING)); //Project ring dimension
     TECHNOLOGY_RADIUS = round(PROJECTS_RADIUS * 0.65); //Tech circles domains
 
@@ -467,14 +468,14 @@ const createCompetencesMap = (container) => {
     );
 
     //check if everythins is correct
-    console.log("SF:" + SF);
+    /*console.log("SF:" + SF);
     console.log("Donut widht:" + DONUT_WIDTH);
     console.log("Donut radius:" + DONUT_RADIUS);
     console.log("Boundary radius:" + BOUNDARY_RADIUS);
     console.log("Projects radius:" + PROJECTS_RADIUS);
     console.log("Technology radius:" + TECHNOLOGY_RADIUS);
     console.log("central hole radius:" + CENTRAL_HOLE_RADIUS);
-    console.log("Boundary circle for skill radius:" + SKILL_BOUNDARY_RADIUS);
+    console.log("Boundary circle for skill radius:" + SKILL_BOUNDARY_RADIUS);*/
   } //handleSizes()
 
   chart.width = function (value) {
