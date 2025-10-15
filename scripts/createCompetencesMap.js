@@ -48,6 +48,7 @@ const createCompetencesMap = (container) => {
   let min = Math.min;
   let max = Math.max;
   let abs = Math.abs;
+  let pow = Math.pow;
   let atan2 = Math.atan2;
 
   /////////set sizes
@@ -57,15 +58,15 @@ const createCompetencesMap = (container) => {
   const MIN_WIDTH = 660;
   const MAX_HEIGHT = 1250; //increase if you want really large viz on screens
   const PADDING = 24; //in scale of 8th
-  const MAX_TECH_NODE = 8;
-  const MAX_SKILL_NODE = 10;
+  const MAX_TECH_NODE = 12;
+  const MAX_SKILL_NODE = 8;
 
   //variables for scaling
   const DEFAULT_SIZE = 1000;
   let SF;
 
   //working variables
-  const DEBUG = "hidden"; //"visible";
+  const DEBUG = "visible"; //hidden;
 
   //proportional scaling
   let DONUT_WIDTH,
@@ -81,9 +82,9 @@ const createCompetencesMap = (container) => {
   const skill_radius_scale = d3
     .scaleSqrt()
     .range([MAX_SKILL_NODE / 2, MAX_SKILL_NODE]);
-  const skill_tech_scale = d3.scaleSqrt().range([MAX_TECH_NODE, MAX_TECH_NODE]);
+  const skill_tech_scale = d3.scaleSqrt();
   const boundary_scale = d3.scaleSqrt();
-  const scale_link_width = d3.scalePow().exponent(0.75).range([1, 2, 40]);
+  const scale_link_width = d3.scalePow();
 
   /////////////////////DATASETS///////////////////////
 
@@ -200,6 +201,8 @@ const createCompetencesMap = (container) => {
     const allProjectsNames = new Set(cleaned.flatMap((d) => d.projects));
     projects = [...allProjectsNames];
 
+    //console.log(projects);
+
     //Populate the skills list with frequency
     skills = cleaned.map((d) => ({
       skill: d.skill,
@@ -283,6 +286,10 @@ const createCompetencesMap = (container) => {
       (d) => d.tech
     );
 
+    //set domain
+    const domain = d3.extent(techFreq.values());
+    skill_tech_scale.domain(domain);
+
     //populate the array with all techs
     const allTech = Array.from(techFreq.keys());
 
@@ -318,6 +325,7 @@ const createCompetencesMap = (container) => {
       return {
         id: t,
         type: info.type,
+        frequency: techFreq.get(t),
       };
     });
 
@@ -390,12 +398,13 @@ const createCompetencesMap = (container) => {
     //call specific drawing and simulation functions;
     drawProjects(PROJECTS_RADIUS);
     const donut = drawDonut(DONUT_RADIUS);
-    drawTech(CENTRAL_HOLE_RADIUS, TECHNOLOGY_RADIUS);
+    const triad = drawTech(CENTRAL_HOLE_RADIUS, TECHNOLOGY_RADIUS);
     //calculate mid-points and boundaries
     defineBoundaries(donut);
 
     //call simulations
-    simSkills(donut.data);
+    runSimSkills(donut.data);
+    positionTechNodes(triad);
     //call hover logic
   } //draw()
 
@@ -438,7 +447,7 @@ const createCompetencesMap = (container) => {
       .data(positions)
       .join("path");
 
-    let project_node = project_ring
+    project_ring
       .attr("class", "project-node")
       .attr("d", rhombus)
       .attr("fill", "green")
@@ -492,7 +501,10 @@ const createCompetencesMap = (container) => {
       .join("path")
       .attr("class", "tech-area")
       .attr("d", arc)
-      .attr("fill", "gray");
+      .attr("fill", "gray")
+      .attr("visibility", DEBUG);
+
+    return { slices, arc };
     //to change later
   } //drawTech()
 
@@ -517,23 +529,6 @@ const createCompetencesMap = (container) => {
       d.innerY = inner * sin(angle);
       d.outerX = outer * cos(angle);
       d.outerY = outer * sin(angle);
-
-      /*//data for force simulations
-      const type = d.data.type;
-      //all skill for type
-      const skill_type = skills_in_skillType.get(type);
-
-      //create a node object for each skill
-      skill_type.forEach((s) => {
-        nodes.push({
-          id: s.skill,
-          type: type,
-          frequency: s.projects.length,
-          //give coordinates
-          anchorX: d.outerX,
-          anchorY: d.outerY,
-        });
-      });*/
     });
 
     //draw points
@@ -576,8 +571,6 @@ const createCompetencesMap = (container) => {
       .attr("stroke-width", 1)
       .attr("stroke-dasharray", "4,4")
       .attr("visibility", DEBUG);
-
-    //return nodes;
   } //defineBoundaries()
 
   //////////////////////////////////
@@ -585,18 +578,21 @@ const createCompetencesMap = (container) => {
   /////////////////////////////////
 
   //skill simulation
-  function simSkills(s) {
+  function runSimSkills(s) {
     //create flat node array
     const nodes = s.flatMap((t) => {
       const type = t.data.type;
+      const freq = t.data.frequency;
       const skill = skills_in_skillType.get(type);
 
       return skill.map((sk) => ({
         id: sk.skill,
         type: type,
-        frequency: sk.projects.length,
-        anchorX: t.outerX,
+        frequency: sk.projects.length, //frequency of skill
+        anchorX: t.outerX, //assign anchors
         anchorY: t.outerY,
+        radius: skill_radius_scale(sk.projects.length),
+        boundary: boundary_scale(freq),
       }));
     });
 
@@ -607,8 +603,24 @@ const createCompetencesMap = (container) => {
       .selectAll("circle")
       .data(nodes)
       .join("circle")
-      .attr("r", (d) => skill_radius_scale(d.frequency))
+      .attr("r", (d) => d.radius)
       .attr("fill", COLORS.proj);
+
+    //define behavior of nodes when in boundaries
+    function boundForce() {
+      for (const node of nodes) {
+        const dx = node.x - node.anchorX;
+        const dy = node.y - node.anchorY;
+        const distance = sqrt(dx * dx + dy * dy);
+        const maxDistance = node.boundary - node.radius;
+
+        if (distance > maxDistance) {
+          angle = atan2(dy, dx);
+          node.x = node.anchorX + maxDistance * cos(angle);
+          node.y = node.anchorY + maxDistance * sin(angle);
+        }
+      }
+    }
 
     //create and run simulation
     skill_sim = d3
@@ -617,13 +629,251 @@ const createCompetencesMap = (container) => {
       .force("y", d3.forceY((d) => d.anchorY).strength(0.1))
       .force(
         "collide",
-        d3.forceCollide((d) => skill_radius_scale(d.frequency) + 1)
-      );
+        d3.forceCollide((d) => d.radius + 1)
+      )
+      .force("bound", boundForce);
 
     skill_sim.on("tick", () => {
       node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
     });
   } //runSimSkills()
+
+  //define the phyllotaxis grid
+  function createPhyllotaxisGrid(points, rmax, rmin) {
+    //collect points
+    const grid = [];
+    const theta = PI * (3 - sqrt(5)); //golden angle
+
+    for (let i = 0; i < points; i++) {
+      const r = sqrt(i / points) * (rmax - rmin) + rmin;
+      const a = theta * i;
+
+      grid.push({
+        x: r * cos(a),
+        y: r * sin(a),
+        occupied: false,
+      });
+    }
+    return grid;
+  }
+
+  function occupyNearestGridPoints(nodes, points) {
+    //larger nodes first
+    const sorted = nodes.sort((a, b) => b.frequency - a.frequency);
+
+    sorted.forEach((node) => {
+      let closest = null;
+      let minDistance = Infinity;
+
+      //find the nearest unoccupied grid point
+      points.forEach((point) => {
+        if (!point.occupied) {
+          const dx = node.anchorX - point.x;
+          const dy = node.anchorY - point.y;
+          const distance = dx * dx + dy * dy;
+          if (distance < minDistance) {
+            minDistance = distance;
+            closest = point;
+          }
+        }
+      });
+
+      //Assign the node to the closest point
+      if (closest) {
+        node.x = closest.x;
+        node.y = closest.y;
+        closest.occupied = true;
+      }
+    });
+  }
+
+  /*function runSimTech({ slices, arc }) {
+    //get the technology nodes
+    const nodes = tech_in_techType.filter((d) => d.type !== "tech_type");
+
+    //map center of the tech slices
+    const anchors = new Map();
+    const types = ["capt_tech", "rep_tech", "diss_tech"];
+    slices.forEach((d, i) => {
+      const centroid = arc.centroid(d);
+      anchors.set(types[i], { x: centroid[0], y: centroid[1] });
+    });
+
+    //add anchor info and radius to technology nodes
+    nodes.forEach((node) => {
+      const anchor = anchors.get(node.type);
+      node.anchorX = anchor.x;
+      node.anchorY = anchor.y;
+      node.radius = skill_tech_scale(node.frequency);
+    });
+
+    // draw the technology nodes
+    const tech_node = g
+      .append("g")
+      .attr("class", "tech-nodes")
+      .selectAll("circle")
+      .data(nodes)
+      .join("circle")
+      .attr("r", (d) => d.radius)
+      .attr("fill", "blue");
+
+    //create a custom force to keep nodes within the boundaries
+    function boundForce() {
+      for (const node of nodes) {
+        const distance = sqrt(node.x * node.x + node.y * node.y);
+        const maxR = TECHNOLOGY_RADIUS - node.radius;
+        const minR = CENTRAL_HOLE_RADIUS + node.radius;
+
+        //if node is outside pull it back in
+        if (distance > maxR) {
+          angle = atan2(node.y, node.x);
+          node.x = maxR * cos(angle);
+          node.y = maxR * sin(angle);
+        }
+
+        //if node is inside pull it back in
+        if (distance < minR) {
+          angle = atan2(node.y, node.x);
+          node.x = minR * cos(angle);
+          node.y = minR * sin(angle);
+        }
+      }
+    }
+
+    //create and run simulation
+    tech_sim = d3
+      .forceSimulation(nodes)
+      .force("x", d3.forceX((d) => d.anchorX).strength(0.05))
+      .force("y", d3.forceY((d) => d.anchorY).strength(0.05))
+      .force(
+        "collide",
+        d3.forceCollide((d) => d.radius + 1)
+      )
+      .force("bound", boundForce);
+
+    tech_sim.on("tick", () => {
+      tech_node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
+    });
+  } */
+
+  function positionTechNodes({ slices, arc }) {
+    //define the nodes and divide by type
+    const all = tech_in_techType.filter((d) => d.type !== "tech_type");
+    const captNodes = all.filter((d) => d.type === "capt_tech");
+    const repNodes = all.filter((d) => d.type === "rep_tech");
+    const disNodes = all.filter((d) => d.type === "diss_tech");
+
+    //generate the grid
+    const total = all.length;
+    const points = createPhyllotaxisGrid(
+      total * 1.5,
+      TECHNOLOGY_RADIUS,
+      CENTRAL_HOLE_RADIUS
+    );
+
+    //define sectors of the arcs
+    const sectors = {
+      capturing: {
+        startAngle: slices[0].startAngle,
+        endAngle: slices[0].endAngle,
+      },
+      represent: {
+        startAngle: slices[1].startAngle,
+        endAngle: slices[1].endAngle,
+      },
+      disseminate: {
+        startAngle: slices[2].startAngle,
+        endAngle: slices[2].endAngle,
+      },
+    };
+
+    //filter the grid point in three sub-grids
+    const captGrid = points.filter((p) => {
+      angle = (atan2(p.y, p.x) + TAU) % TAU;
+      return (
+        angle >= sectors.capturing.startAngle &&
+        angle < sectors.capturing.endAngle
+      );
+    });
+    const repGrid = points.filter((p) => {
+      angle = (atan2(p.y, p.x) + TAU) % TAU;
+      return (
+        angle >= sectors.represent.startAngle &&
+        angle < sectors.represent.endAngle
+      );
+    });
+    const disGrid = points.filter((p) => {
+      angle = (atan2(p.y, p.x) + TAU) % TAU;
+      return (
+        angle >= sectors.disseminate.startAngle &&
+        angle < sectors.disseminate.endAngle
+      );
+    });
+
+    //assing anchor points and then position the nodes
+    [captNodes, repNodes, disNodes].forEach((n, i) => {
+      const centroid = arc.centroid(slices[i]);
+      n.forEach((node) => {
+        node.anchorX = centroid[0];
+        node.anchorY = centroid[1];
+      });
+    });
+
+    occupyNearestGridPoints(captNodes, captGrid);
+    occupyNearestGridPoints(repNodes, repGrid);
+    occupyNearestGridPoints(disNodes, disGrid);
+
+    //append the node at their final calculated positions
+    g.append("g")
+      .attr("class", "tech-nodes")
+      .selectAll("circle")
+      .data(all)
+      .join("circle")
+      .attr("r", (d) => skill_tech_scale(d.frequency))
+      .attr("fill", COLORS.ui)
+      .attr("cx", (d) => d.x)
+      .attr("cy", (d) => d.y);
+  }
+
+  /* function positionTechNodes({ slices, arc }) {
+    //define technology nodes
+    const all = tech_in_techType.filter((d) => d.type !== "tech_type");
+    const captNodes = all.filter((d) => d.type === "capt_tech");
+    const repNodes = all.filter((d) => d.type === "rep_tech");
+    const disNodes = all.filter((d) => d.type === "diss_tech");
+
+    //generate the dynamic layout
+    generatePhyllotaxis(captNodes, TECHNOLOGY_RADIUS, CENTRAL_HOLE_RADIUS);
+    generatePhyllotaxis(repNodes, TECHNOLOGY_RADIUS, CENTRAL_HOLE_RADIUS);
+    generatePhyllotaxis(disNodes, TECHNOLOGY_RADIUS, CENTRAL_HOLE_RADIUS);
+
+    //find the center of each arc sector
+    const sectorCenters = {
+      capt_tech: arc.centroid(slices[0]),
+      rep_tech: arc.centroid(slices[1]),
+      diss_tech: arc.centroid(slices[2]),
+    };
+
+    //position the nodes by offsetting
+    all.forEach((node) => {
+      const [cx, cy] = sectorCenters[node.type];
+
+      //position at the center, then rotate
+      node.x += cx;
+      node.y += cy;
+    });
+
+    //append the nodes to their final calculated position
+    g.append("g")
+      .attr("class", "tech-nodes")
+      .selectAll("circle")
+      .data(all)
+      .join("circle")
+      .attr("r", (d) => skill_tech_scale(d.frequency))
+      .attr("fill", COLORS.ui)
+      .attr("cx", (d) => d.x)
+      .attr("cy", (d) => d.y);
+  }*/
 
   //////////////////////////////////
   ////// Sizing functions /////////
@@ -666,12 +916,10 @@ const createCompetencesMap = (container) => {
   function handleScales() {
     //update the range for the skill node radius
     skill_radius_scale.range([(MAX_SKILL_NODE / 2) * SF, MAX_SKILL_NODE * SF]);
-
     //update the range for the technology radius
     skill_tech_scale.range([(MAX_TECH_NODE / 2) * SF, MAX_TECH_NODE * SF]);
-
     //update the range for link stroke widths
-    scale_link_width.range([1 * SF, 2 * SF, 40 * SF]);
+    scale_link_width.exponent(0.75 * SF).range([1 * SF, 2 * SF, 40 * SF]); //maybe need to change exponent
   }
 
   chart.width = function (value) {
