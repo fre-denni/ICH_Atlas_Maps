@@ -27,6 +27,9 @@
 //https://stackoverflow.com/questions/16265123/resize-svg-when-window-is-resized-in-d3-js
 // to see later
 
+//working variables
+const DEBUG = "hidden"; //"visible";
+
 const createCompetencesMap = (container) => {
   /***
    *
@@ -59,15 +62,12 @@ const createCompetencesMap = (container) => {
   const MIN_WIDTH = 660;
   const MAX_HEIGHT = 1250; //increase if you want really large viz on screens
   const PADDING = 24; //in scale of 8th
-  const MAX_TECH_NODE = 12;
+  const MAX_TECH_NODE = 10;
   const MAX_SKILL_NODE = 8;
 
   //variables for scaling
   const DEFAULT_SIZE = 1000;
   let SF;
-
-  //working variables
-  const DEBUG = "visible"; //"hidden";
 
   //proportional scaling
   let DONUT_WIDTH,
@@ -434,8 +434,8 @@ const createCompetencesMap = (container) => {
       angle = (i / projects.length) * 2 * PI; //distribute evenly
       return {
         id: p,
-        x: radius * SF * cos(angle),
-        y: radius * SF * sin(angle),
+        x: radius * cos(angle),
+        y: radius * sin(angle),
       };
     });
 
@@ -502,8 +502,7 @@ const createCompetencesMap = (container) => {
       .join("path")
       .attr("class", "tech-area")
       .attr("d", arc)
-      .attr("fill", "gray")
-      .attr("visibility", DEBUG);
+      .attr("fill", "gray");
 
     return { slices, arc };
     //to change later
@@ -649,19 +648,6 @@ const createCompetencesMap = (container) => {
     return [r * cos(a), r * sin(a)];
   } //phyllotaxis();
 
-  //make grid
-  function createPhyllotaxisGrid(nodes, rMax, rMin) {
-    //create ~30% more grid to have sufficient open spaces
-    const points = ceil(nodes * 1.4);
-    const grid = [];
-
-    for (let i = 0; i < points; i++) {
-      const [x, y] = phyllotaxis(i, rMax, rMin, points);
-      grid.push({ x, y, occupied: false });
-    }
-    return grid;
-  } //createPhyllotaxisGrid()
-
   function positionTechNodes({ slices, arc }) {
     //define the nodes and divide by type
     const all = tech_in_techType.filter((d) => d.type !== "tech_type");
@@ -676,8 +662,8 @@ const createCompetencesMap = (container) => {
       const [x, y] = phyllotaxis(
         i,
         TECHNOLOGY_RADIUS - PADDING / 4,
-        CENTRAL_HOLE_RADIUS,
-        generated * 1.5
+        CENTRAL_HOLE_RADIUS - PADDING / 3,
+        generated * 1.2 //more is generated to cover empty spaces
       );
       const point = { x, y };
 
@@ -716,6 +702,39 @@ const createCompetencesMap = (container) => {
       .attr("r", 1.5)
       .attr("fill", "black")
       .attr("visibility", DEBUG);
+
+    const techNodes = tech_in_techType.filter((d) => d.type !== "tech_type");
+    //get tech nodes and calculate their visual radius
+    techNodes.forEach((node) => {
+      node.radius = skill_tech_scale(node.frequency);
+    });
+    //sort nodes by frequency
+    techNodes.sort((a, b) => b.frequency - a.frequency);
+
+    //sort grid point
+    filtered_grid.sort((a, b) => {
+      const dA = sqrt(pow(a.x, 2) + pow(a.y, 2));
+      const dB = sqrt(pow(b.x, 2) + pow(b.y, 2));
+      return dA - dB;
+    });
+
+    techNodes.forEach((node, index) => {
+      if (filtered_grid[index]) {
+        node.x = filtered_grid[index].x;
+        node.y = filtered_grid[index].y;
+      }
+    });
+
+    //draw the technology nodes
+    g.append("g")
+      .attr("class", "tech-nodes")
+      .selectAll("circle")
+      .data(techNodes)
+      .join("circle")
+      .attr("r", (d) => d.radius)
+      .attr("fill", COLORS.ui)
+      .attr("cx", (d) => d.x)
+      .attr("cy", (d) => d.y);
   }
 
   /* function positionTechNodes({ slices, arc }) {
@@ -776,7 +795,7 @@ const createCompetencesMap = (container) => {
     SF = DONUT_WIDTH / (DEFAULT_SIZE * 0.56);
 
     PROJECTS_RADIUS = round(DONUT_RADIUS * 0.67); //round(DONUT_RADIUS - (DONUT_RADIUS / 4 + 2 * PADDING)); //Project ring dimension
-    TECHNOLOGY_RADIUS = round(PROJECTS_RADIUS * 0.7); //Tech circles domains
+    TECHNOLOGY_RADIUS = round(PROJECTS_RADIUS * 0.67); //Tech circles domains
 
     //constructor circles
     CENTRAL_HOLE_RADIUS = round(BOUNDARY_RADIUS * 0.1); //empty central space
@@ -785,14 +804,15 @@ const createCompetencesMap = (container) => {
     );
 
     //check if everythins is correct
-    /*console.log("SF:" + SF);
+    console.log("Widht:" + w + ", Height:" + h);
+    console.log("SF:" + SF);
     console.log("Donut widht:" + DONUT_WIDTH);
     console.log("Donut radius:" + DONUT_RADIUS);
     console.log("Boundary radius:" + BOUNDARY_RADIUS);
     console.log("Projects radius:" + PROJECTS_RADIUS);
     console.log("Technology radius:" + TECHNOLOGY_RADIUS);
     console.log("central hole radius:" + CENTRAL_HOLE_RADIUS);
-    console.log("Boundary circle for skill radius:" + SKILL_BOUNDARY_RADIUS);*/
+    console.log("Boundary circle for skill radius:" + SKILL_BOUNDARY_RADIUS);
   } //handleSizes()
 
   //to update all the scales following the handlesize()
