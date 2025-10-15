@@ -62,7 +62,7 @@ const createCompetencesMap = (container) => {
   const MIN_WIDTH = 660;
   const MAX_HEIGHT = 1250; //increase if you want really large viz on screens
   const PADDING = 24; //in scale of 8th
-  const MAX_TECH_NODE = 10;
+  const MAX_TECH_NODE = 8;
   const MAX_SKILL_NODE = 8;
 
   //variables for scaling
@@ -661,7 +661,7 @@ const createCompetencesMap = (container) => {
     while (master.length < generated) {
       const [x, y] = phyllotaxis(
         i,
-        TECHNOLOGY_RADIUS - PADDING / 4,
+        TECHNOLOGY_RADIUS - PADDING / 2,
         CENTRAL_HOLE_RADIUS - PADDING / 3,
         generated * 1.2 //more is generated to cover empty spaces
       );
@@ -674,7 +674,7 @@ const createCompetencesMap = (container) => {
 
       const isInSector = slices.some((sector) => {
         const radiuses = sqrt(pow(point.x, 2) + pow(point.y, 2));
-        const angularPadding = MAX_TECH_NODE / radiuses;
+        const angularPadding = (12 * SF) / radiuses;
         return (
           angle >= sector.startAngle + angularPadding &&
           angle < sector.endAngle - angularPadding
