@@ -143,7 +143,7 @@ const createCompetencesMap = (container) => {
   /////////////////////FOR VISUALISATION///////////////////////
 
   //simulations
-  let skill_sim, tech_sim;
+  let simulation;
 
   let svg = d3
     .select(container)
@@ -488,7 +488,7 @@ const createCompetencesMap = (container) => {
 
   function drawTriad(radius, hole) {
     //define the arc for the technology area
-    const arc = d3.arc().innerRadius(hole).outerRadius(radius);
+    const arc = d3.arc().cornerRadius(5).innerRadius(hole).outerRadius(radius);
 
     //define pie
     const pie = d3.pie().sort(null).padAngle(0.02); //increase for more space
@@ -504,8 +504,7 @@ const createCompetencesMap = (container) => {
       .attr("d", arc)
       .attr("fill", "gray");
 
-    return { slices, arc };
-    //to change later
+    return { slices };
   } //drawTriad()
 
   //define boundaries
@@ -623,7 +622,7 @@ const createCompetencesMap = (container) => {
     }
 
     //create and run simulation
-    skill_sim = d3
+    simulation = d3
       .forceSimulation(nodes)
       .force("x", d3.forceX((d) => d.anchorX).strength(0.1))
       .force("y", d3.forceY((d) => d.anchorY).strength(0.1))
@@ -633,7 +632,7 @@ const createCompetencesMap = (container) => {
       )
       .force("bound", boundForce);
 
-    skill_sim.on("tick", () => {
+    simulation.on("tick", () => {
       node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
     });
   } //runSimSkills()
@@ -648,7 +647,7 @@ const createCompetencesMap = (container) => {
     return [r * cos(a), r * sin(a)];
   } //phyllotaxis();
 
-  function positionTechNodes({ slices, arc }) {
+  function positionTechNodes({ slices }) {
     //define the nodes and divide by type
     const all = tech_in_techType.filter((d) => d.type !== "tech_type");
     const required = all.length;
@@ -725,17 +724,30 @@ const createCompetencesMap = (container) => {
       }
     });
 
-    //draw the technology nodes
-    g.append("g")
+    //create and animate the nodes
+    //JOIN THEM TO THE DOM - PRAISE THE DOM
+    const nodes = g
+      .append("g")
       .attr("class", "tech-nodes")
       .selectAll("circle")
       .data(techNodes)
-      .join("circle")
+      .join("circle");
+
+    //set initial state
+    nodes
       .attr("r", (d) => d.radius)
       .attr("fill", COLORS.ui)
+      .attr("cx", 0)
+      .attr("cy", 0);
+
+    //animate
+    nodes
+      .transition()
+      .duration(800)
+      .delay((d, i) => i * 2.5)
       .attr("cx", (d) => d.x)
       .attr("cy", (d) => d.y);
-  }
+  } //positionTechNodes()
 
   //////////////////////////////////
   ////// Sizing functions /////////
@@ -783,7 +795,7 @@ const createCompetencesMap = (container) => {
     skill_tech_scale.range([(MAX_TECH_NODE / 2) * SF, MAX_TECH_NODE * SF]);
     //update the range for link stroke widths
     scale_link_width.exponent(0.75 * SF).range([1 * SF, 2 * SF, 40 * SF]); //maybe need to change exponent
-  }
+  } //handleScale()
 
   chart.width = function (value) {
     if (!arguments.length) return width;
