@@ -49,6 +49,7 @@ const createCompetencesMap = (container) => {
   let max = Math.max;
   let abs = Math.abs;
   let pow = Math.pow;
+  let ceil = Math.ceil;
   let atan2 = Math.atan2;
 
   /////////set sizes
@@ -66,7 +67,7 @@ const createCompetencesMap = (container) => {
   let SF;
 
   //working variables
-  const DEBUG = "visible"; //hidden;
+  const DEBUG = "visible"; //"hidden";
 
   //proportional scaling
   let DONUT_WIDTH,
@@ -398,7 +399,7 @@ const createCompetencesMap = (container) => {
     //call specific drawing and simulation functions;
     drawProjects(PROJECTS_RADIUS);
     const donut = drawDonut(DONUT_RADIUS);
-    const triad = drawTech(CENTRAL_HOLE_RADIUS, TECHNOLOGY_RADIUS);
+    const triad = drawTriad(CENTRAL_HOLE_RADIUS, TECHNOLOGY_RADIUS);
     //calculate mid-points and boundaries
     defineBoundaries(donut);
 
@@ -485,7 +486,7 @@ const createCompetencesMap = (container) => {
     return { thickness, data, arc };
   } //drawDonut()
 
-  function drawTech(radius, hole) {
+  function drawTriad(radius, hole) {
     //define the arc for the technology area
     const arc = d3.arc().innerRadius(hole).outerRadius(radius);
 
@@ -506,7 +507,7 @@ const createCompetencesMap = (container) => {
 
     return { slices, arc };
     //to change later
-  } //drawTech()
+  } //drawTriad()
 
   //define boundaries
   function defineBoundaries({ thickness, data, arc }) {
@@ -638,201 +639,83 @@ const createCompetencesMap = (container) => {
     });
   } //runSimSkills()
 
-  //define the phyllotaxis grid
-  function createPhyllotaxisGrid(points, rmax, rmin) {
-    //collect points
+  //define the phyllotaxis algoritm
+  function phyllotaxis(i, rMax, rMin, points) {
+    const theta = PI * (3 - sqrt(5)); //Golden angle
+    //Use a square root scale for a more even distribution
+    const r = sqrt(i / points) * (rMax - rMin) + rMin;
+    const a = theta * i;
+
+    return [r * cos(a), r * sin(a)];
+  } //phyllotaxis();
+
+  //make grid
+  function createPhyllotaxisGrid(nodes, rMax, rMin) {
+    //create ~30% more grid to have sufficient open spaces
+    const points = ceil(nodes * 1.4);
     const grid = [];
-    const theta = PI * (3 - sqrt(5)); //golden angle
 
     for (let i = 0; i < points; i++) {
-      const r = sqrt(i / points) * (rmax - rmin) + rmin;
-      const a = theta * i;
-
-      grid.push({
-        x: r * cos(a),
-        y: r * sin(a),
-        occupied: false,
-      });
+      const [x, y] = phyllotaxis(i, rMax, rMin, points);
+      grid.push({ x, y, occupied: false });
     }
     return grid;
-  }
-
-  function occupyNearestGridPoints(nodes, points) {
-    //larger nodes first
-    const sorted = nodes.sort((a, b) => b.frequency - a.frequency);
-
-    sorted.forEach((node) => {
-      let closest = null;
-      let minDistance = Infinity;
-
-      //find the nearest unoccupied grid point
-      points.forEach((point) => {
-        if (!point.occupied) {
-          const dx = node.anchorX - point.x;
-          const dy = node.anchorY - point.y;
-          const distance = dx * dx + dy * dy;
-          if (distance < minDistance) {
-            minDistance = distance;
-            closest = point;
-          }
-        }
-      });
-
-      //Assign the node to the closest point
-      if (closest) {
-        node.x = closest.x;
-        node.y = closest.y;
-        closest.occupied = true;
-      }
-    });
-  }
-
-  /*function runSimTech({ slices, arc }) {
-    //get the technology nodes
-    const nodes = tech_in_techType.filter((d) => d.type !== "tech_type");
-
-    //map center of the tech slices
-    const anchors = new Map();
-    const types = ["capt_tech", "rep_tech", "diss_tech"];
-    slices.forEach((d, i) => {
-      const centroid = arc.centroid(d);
-      anchors.set(types[i], { x: centroid[0], y: centroid[1] });
-    });
-
-    //add anchor info and radius to technology nodes
-    nodes.forEach((node) => {
-      const anchor = anchors.get(node.type);
-      node.anchorX = anchor.x;
-      node.anchorY = anchor.y;
-      node.radius = skill_tech_scale(node.frequency);
-    });
-
-    // draw the technology nodes
-    const tech_node = g
-      .append("g")
-      .attr("class", "tech-nodes")
-      .selectAll("circle")
-      .data(nodes)
-      .join("circle")
-      .attr("r", (d) => d.radius)
-      .attr("fill", "blue");
-
-    //create a custom force to keep nodes within the boundaries
-    function boundForce() {
-      for (const node of nodes) {
-        const distance = sqrt(node.x * node.x + node.y * node.y);
-        const maxR = TECHNOLOGY_RADIUS - node.radius;
-        const minR = CENTRAL_HOLE_RADIUS + node.radius;
-
-        //if node is outside pull it back in
-        if (distance > maxR) {
-          angle = atan2(node.y, node.x);
-          node.x = maxR * cos(angle);
-          node.y = maxR * sin(angle);
-        }
-
-        //if node is inside pull it back in
-        if (distance < minR) {
-          angle = atan2(node.y, node.x);
-          node.x = minR * cos(angle);
-          node.y = minR * sin(angle);
-        }
-      }
-    }
-
-    //create and run simulation
-    tech_sim = d3
-      .forceSimulation(nodes)
-      .force("x", d3.forceX((d) => d.anchorX).strength(0.05))
-      .force("y", d3.forceY((d) => d.anchorY).strength(0.05))
-      .force(
-        "collide",
-        d3.forceCollide((d) => d.radius + 1)
-      )
-      .force("bound", boundForce);
-
-    tech_sim.on("tick", () => {
-      tech_node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
-    });
-  } */
+  } //createPhyllotaxisGrid()
 
   function positionTechNodes({ slices, arc }) {
     //define the nodes and divide by type
     const all = tech_in_techType.filter((d) => d.type !== "tech_type");
-    const captNodes = all.filter((d) => d.type === "capt_tech");
-    const repNodes = all.filter((d) => d.type === "rep_tech");
-    const disNodes = all.filter((d) => d.type === "diss_tech");
+    const required = all.length;
+    const generated = required + 6;
 
-    //generate the grid
-    const total = all.length;
-    const points = createPhyllotaxisGrid(
-      total * 1.5,
-      TECHNOLOGY_RADIUS,
-      CENTRAL_HOLE_RADIUS
-    );
+    //build the grid generatively
+    const master = [];
+    let i = 0;
 
-    //define sectors of the arcs
-    const sectors = {
-      capturing: {
-        startAngle: slices[0].startAngle,
-        endAngle: slices[0].endAngle,
-      },
-      represent: {
-        startAngle: slices[1].startAngle,
-        endAngle: slices[1].endAngle,
-      },
-      disseminate: {
-        startAngle: slices[2].startAngle,
-        endAngle: slices[2].endAngle,
-      },
-    };
-
-    //filter the grid point in three sub-grids
-    const captGrid = points.filter((p) => {
-      angle = (atan2(p.y, p.x) + TAU) % TAU;
-      return (
-        angle >= sectors.capturing.startAngle &&
-        angle < sectors.capturing.endAngle
+    while (master.length < generated) {
+      const [x, y] = phyllotaxis(
+        i,
+        TECHNOLOGY_RADIUS - PADDING / 4,
+        CENTRAL_HOLE_RADIUS,
+        generated * 1.5
       );
-    });
-    const repGrid = points.filter((p) => {
-      angle = (atan2(p.y, p.x) + TAU) % TAU;
-      return (
-        angle >= sectors.represent.startAngle &&
-        angle < sectors.represent.endAngle
-      );
-    });
-    const disGrid = points.filter((p) => {
-      angle = (atan2(p.y, p.x) + TAU) % TAU;
-      return (
-        angle >= sectors.disseminate.startAngle &&
-        angle < sectors.disseminate.endAngle
-      );
-    });
+      const point = { x, y };
 
-    //assing anchor points and then position the nodes
-    [captNodes, repNodes, disNodes].forEach((n, i) => {
-      const centroid = arc.centroid(slices[i]);
-      n.forEach((node) => {
-        node.anchorX = centroid[0];
-        node.anchorY = centroid[1];
+      angle = atan2(point.x, -point.y);
+      if (angle < 0) {
+        angle += TAU;
+      }
+
+      const isInSector = slices.some((sector) => {
+        const radiuses = sqrt(pow(point.x, 2) + pow(point.y, 2));
+        const angularPadding = MAX_TECH_NODE / radiuses;
+        return (
+          angle >= sector.startAngle + angularPadding &&
+          angle < sector.endAngle - angularPadding
+        );
       });
-    });
 
-    occupyNearestGridPoints(captNodes, captGrid);
-    occupyNearestGridPoints(repNodes, repGrid);
-    occupyNearestGridPoints(disNodes, disGrid);
+      if (isInSector) {
+        master.push(point);
+      }
 
-    //append the node at their final calculated positions
+      i++;
+    }
+
+    //Let's filter the first 6 points for consistency
+    const filtered_grid = master.slice(6);
+
+    //draw the visual debug master
     g.append("g")
-      .attr("class", "tech-nodes")
+      .attr("class", "phyllo-grid")
       .selectAll("circle")
-      .data(all)
+      .data(filtered_grid)
       .join("circle")
-      .attr("r", (d) => skill_tech_scale(d.frequency))
-      .attr("fill", COLORS.ui)
       .attr("cx", (d) => d.x)
-      .attr("cy", (d) => d.y);
+      .attr("cy", (d) => d.y)
+      .attr("r", 1.5)
+      .attr("fill", "black")
+      .attr("visibility", DEBUG);
   }
 
   /* function positionTechNodes({ slices, arc }) {
