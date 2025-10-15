@@ -737,46 +737,6 @@ const createCompetencesMap = (container) => {
       .attr("cy", (d) => d.y);
   }
 
-  /* function positionTechNodes({ slices, arc }) {
-    //define technology nodes
-    const all = tech_in_techType.filter((d) => d.type !== "tech_type");
-    const captNodes = all.filter((d) => d.type === "capt_tech");
-    const repNodes = all.filter((d) => d.type === "rep_tech");
-    const disNodes = all.filter((d) => d.type === "diss_tech");
-
-    //generate the dynamic layout
-    generatePhyllotaxis(captNodes, TECHNOLOGY_RADIUS, CENTRAL_HOLE_RADIUS);
-    generatePhyllotaxis(repNodes, TECHNOLOGY_RADIUS, CENTRAL_HOLE_RADIUS);
-    generatePhyllotaxis(disNodes, TECHNOLOGY_RADIUS, CENTRAL_HOLE_RADIUS);
-
-    //find the center of each arc sector
-    const sectorCenters = {
-      capt_tech: arc.centroid(slices[0]),
-      rep_tech: arc.centroid(slices[1]),
-      diss_tech: arc.centroid(slices[2]),
-    };
-
-    //position the nodes by offsetting
-    all.forEach((node) => {
-      const [cx, cy] = sectorCenters[node.type];
-
-      //position at the center, then rotate
-      node.x += cx;
-      node.y += cy;
-    });
-
-    //append the nodes to their final calculated position
-    g.append("g")
-      .attr("class", "tech-nodes")
-      .selectAll("circle")
-      .data(all)
-      .join("circle")
-      .attr("r", (d) => skill_tech_scale(d.frequency))
-      .attr("fill", COLORS.ui)
-      .attr("cx", (d) => d.x)
-      .attr("cy", (d) => d.y);
-  }*/
-
   //////////////////////////////////
   ////// Sizing functions /////////
   /////////////////////////////////
