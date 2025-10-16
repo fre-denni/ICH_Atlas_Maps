@@ -28,7 +28,7 @@
 // to see later
 
 //working variables
-const DEBUG = "hidden"; //"visible";
+const DEBUG = "hidden";
 
 const createCompetencesMap = (container) => {
   /***
@@ -53,6 +53,7 @@ const createCompetencesMap = (container) => {
   let abs = Math.abs;
   let pow = Math.pow;
   let ceil = Math.ceil;
+  let floor = Math.floor;
   let atan2 = Math.atan2;
 
   /////////set sizes
@@ -64,6 +65,7 @@ const createCompetencesMap = (container) => {
   const PADDING = 24; //in scale of 8th
   const MAX_TECH_NODE = 8;
   const MAX_SKILL_NODE = 8;
+  let node_height, node_width;
 
   //variables for scaling
   const DEFAULT_SIZE = 1000;
@@ -86,6 +88,15 @@ const createCompetencesMap = (container) => {
   const skill_tech_scale = d3.scaleSqrt();
   const boundary_scale = d3.scaleSqrt();
   const scale_link_width = d3.scalePow();
+  const scale_rad_curve = d3.scaleLinear();
+  const scale_angle_start_offset = d3
+    .scaleLinear()
+    .domain([0, 1])
+    .range([0, 0.01]);
+  const scale_angle_end_offset = d3
+    .scaleLinear()
+    .domain([0, 1])
+    .range([0, 0.03]);
 
   /////////////////////DATASETS///////////////////////
 
@@ -96,6 +107,9 @@ const createCompetencesMap = (container) => {
     dissTech, //same
     projects, //uniqueId
     skillType = []; //uniqueId, angle
+
+  //collect the project positions
+  let proj_pos = [];
 
   //for simulations (una lista da e per progetti?) (distinta da tipo?)
   let skills_in_skillType,
@@ -142,6 +156,13 @@ const createCompetencesMap = (container) => {
 
   /////////////////////FOR VISUALISATION///////////////////////
 
+  ///// DETERMINE LINE RADIAL
+  const radialLine = d3
+    .lineRadial()
+    .angle((d) => d.angle + PI / 2)
+    .radius((d) => d.radius)
+    .curve(d3.curveBasis);
+
   //simulations
   let simulation;
 
@@ -181,20 +202,24 @@ const createCompetencesMap = (container) => {
     if (!projects) {
       return [];
     }
-
-    return projects
-      .split(",")
-      .map((p) => p.trim())
-      .filter((p) => p.length > 0);
+    try {
+      const list = JSON.parse(projects);
+      return Array.isArray(list) ? list : [];
+    } catch (e) {
+      console.error("Failed to parse projects string: ", list, e);
+      return [];
+    }
   } //parseProjectsString()
 
   function handleSkillsdata(data) {
     //Clean receveing data
-    const cleaned = data.map((d) => ({
-      skill: d.Skills,
-      type: d["Skill Type"],
-      projects: parseProjectsString(d.Projects),
-    }));
+    const cleaned = data
+      .filter((d) => d.Skills && d["Skill Type"])
+      .map((d) => ({
+        skill: d.Skills.trim(),
+        type: d["Skill Type"].trim(),
+        projects: parseProjectsString(d.Projects),
+      }));
 
     //console.log(cleaned[5]);
 
@@ -210,7 +235,7 @@ const createCompetencesMap = (container) => {
       frequency: d.projects.length,
     }));
 
-    //console.log(skills[5]);
+    //console.log(skills);
 
     //add domain to scale
     const domain = d3.extent(skills, (d) => d.frequency);
@@ -227,6 +252,8 @@ const createCompetencesMap = (container) => {
       frequency: count,
     }));
 
+    //console.log(skillType); //eliminate whitespace
+
     //Populate type and skill connection
     skills_in_skillType = d3.group(cleaned, (d) => d.type);
     edges_types = cleaned.map((d) => ({
@@ -235,13 +262,7 @@ const createCompetencesMap = (container) => {
     }));
 
     //Populate projects connection
-    const skillNodes = cleaned.map((d) => ({ id: d.skill, type: "skill" }));
-    const typesNodes = cleaned.map((d) => ({ id: d.type, type: "Type" }));
-    const projectNodes = projects.map((name) => ({
-      id: name,
-      type: "project",
-    }));
-    nodes_skillToproj = [...skillNodes, ...projectNodes, ...typesNodes];
+    nodes_skillToproj = cleaned;
 
     edges_skillToproj = cleaned.flatMap((d) =>
       d.projects.map((p) => ({
@@ -249,6 +270,8 @@ const createCompetencesMap = (container) => {
         target: p,
       }))
     );
+
+    shared_skills = cleaned;
   } //handleSkillsdata()
 
   function parseTechString(t) {
@@ -403,6 +426,20 @@ const createCompetencesMap = (container) => {
     //calculate mid-points and boundaries
     defineBoundaries(donut);
 
+    //create a map of the inner anchor point
+    const inner_anchors = new Map(
+      donut.data.map((d) => [
+        d.data.type,
+        { angle: d.angle, radius: d.inner_radius },
+      ])
+    );
+    //console.log("1. Verifying Inner Anchors Map:", inner_anchors);
+
+    //prepare and calculate edge connection
+    const edges = drawSkilltoProjectEdges(inner_anchors);
+    //draw lines
+    drawLines(edges);
+
     //call simulations
     runSimSkills(donut.data);
     positionTechNodes(triad);
@@ -422,8 +459,8 @@ const createCompetencesMap = (container) => {
 
   function drawProjects(radius) {
     //define rhombus width and height (responsive)
-    const node_height = round(8 * SF);
-    const node_width = round(8 * SF);
+    node_height = round(8 * SF);
+    node_width = round(6 * SF);
     //draw svg rhombus
     const rhombus = `M 0 ${-node_height / 2} L ${node_width / 2} 0 L 0 ${
       node_height / 2
@@ -431,11 +468,12 @@ const createCompetencesMap = (container) => {
 
     //calculate positions
     const positions = projects.map((p, i) => {
-      angle = (i / projects.length) * 2 * PI; //distribute evenly
+      angle = (i / projects.length) * TAU - PI / 2; //distribute evenly
       return {
         id: p,
         x: radius * cos(angle),
         y: radius * sin(angle),
+        angle: angle,
       };
     });
 
@@ -452,7 +490,14 @@ const createCompetencesMap = (container) => {
       .attr("class", "project-node")
       .attr("d", rhombus)
       .attr("fill", "green")
-      .attr("transform", (d) => `translate(${d.x}, ${d.y})`);
+      .attr("transform", (d) => {
+        const rotation = (d.angle * 180) / PI;
+        return `translate(${d.x}, ${d.y}) rotate(${rotation})`;
+      });
+
+    //-> to do: rotate the vertices towards the center
+    //make the positions public
+    proj_pos = positions;
   } //drawProjects()
 
   function drawDonut(radius) {
@@ -462,6 +507,7 @@ const createCompetencesMap = (container) => {
     //define arc
     const arc = d3
       .arc()
+      .cornerRadius(5)
       .innerRadius(radius - thickness / 2)
       .outerRadius(radius + thickness / 2);
 
@@ -524,7 +570,10 @@ const createCompetencesMap = (container) => {
       const centroid = arc.centroid(d);
       angle = atan2(centroid[1], centroid[0]);
 
-      d.innerX = inner * cos(angle);
+      d.angle = angle; //store angle
+      d.inner_radius = inner; //store radius
+
+      d.innerX = inner * cos(angle); //I don't think we need this anymore
       d.innerY = inner * sin(angle);
       d.outerX = outer * cos(angle);
       d.outerY = outer * sin(angle);
@@ -749,6 +798,250 @@ const createCompetencesMap = (container) => {
       .attr("cy", (d) => d.y);
   } //positionTechNodes()
 
+  //////////////////////////////////
+  ////// Edges & Connections //////
+  ////////////////////////////////
+
+  //let's calculate the edge directions and curvature
+  //adapted by this https://ich.unesco.org/dive/domain/?language=en visualisation
+  //by Nadie Bremer & UNESCO
+  function addEdgeSettings(d, source_a, target_a) {
+    if (target_a - source_a < -PI) {
+      d.rotation = "cw"; //clockwise
+      d.total_angle = 2 + (target_a - source_a) / PI;
+      d.angle_sign = 1;
+    } else if (target_a - source_a < 0) {
+      d.rotation = "ccw"; //counter-clockwise
+      d.total_angle = (source_a - target_a) / PI;
+      d.angle_sign = -1;
+    } else if (target_a - source_a < PI) {
+      d.rotation = "cw";
+      d.total_angle = (target_a - source_a) / PI;
+      d.angle_sign = 1;
+    } else {
+      d.rotation = "ccw";
+      d.total_angle = 2 - (target_a - source_a) / PI;
+      d.angle_sign = -1;
+    }
+  } //addEdgeSettings()
+
+  //draw edges between nodes and projects
+  function drawSkilltoProjectEdges(anchors) {
+    //create map of coordinates
+    const xy_proj = new Map(proj_pos.map((p) => [p.id, p]));
+    const skillToType = new Map(
+      nodes_skillToproj.map((s) => [s.skill, s.type])
+    );
+
+    const aggregate = new Map();
+
+    //prepare the data for each edge calculating its start and end points
+    edges_skillToproj.map((edge) => {
+      const project = xy_proj.get(edge.target);
+      const skillType = skillToType.get(edge.source);
+      const anchor = anchors.get(skillType);
+
+      //Ensure we found all the necessary point
+      if (!project || !anchor) return null;
+
+      //create an unique key
+      const key = `${skillType}, ${edge.target}`;
+
+      if (!aggregate.has(key)) {
+        const newEdge = {
+          source_id: skillType,
+          source_angle: anchor.angle,
+          source_radius: anchor.radius,
+          target_angle: project.angle,
+          target_radius: PROJECTS_RADIUS,
+          skills: [],
+        };
+
+        //Add rotation properties (cw/ccw)
+        addEdgeSettings(newEdge, newEdge.source_angle, newEdge.target_angle);
+        aggregate.set(key, newEdge);
+      }
+
+      // console.log(newEdge.source);
+      aggregate.get(key).skills.push(edge.source);
+    });
+
+    const unique = Array.from(aggregate.values());
+
+    unique.sort((a, b) => {
+      if (a.rotation < b.rotation) return -1;
+      if (a.rotation > b.rotation) return 1;
+      if (a.total_angle < b.total_angle) return -1;
+      if (a.total_angle > b.total_angle) return 1;
+      return 0;
+    });
+
+    //group data by rotation
+    const grouped = d3.group(unique, (d) => d.source_id);
+    const nested = [];
+    grouped.forEach((source) => {
+      const groupByRotation = d3.group(source, (d) => d.rotation);
+      groupByRotation.forEach((rotationEdges, rotation) => {
+        nested.push({
+          rotation: rotation,
+          values: rotationEdges,
+          edges_count: rotationEdges.length,
+        });
+      });
+    });
+
+    return nested;
+  }
+
+  //Debug points to see if coordinates are correct
+  function drawDebugPoint(angle, radius, color = "red") {
+    g.append("circle")
+      .attr("class", "debug-point")
+      .attr("cx", radius * cos(angle))
+      .attr("cy", radius * sin(angle))
+      .attr("r", 5) // Make it nice and big
+      .attr("fill", color)
+      .style("pointer-events", "none")
+      .attr("visibility", DEBUG);
+  }
+
+  /**
+   * @param {Array} edges - the array of esge objects
+   */
+  function drawLines(edges) {
+    const flatEdges = edges.flatMap((group) => {
+      //Set the domain for our fanning scale
+      scale_rad_curve.domain([-1, group.edges_count]);
+
+      //Define the channel where the curves will be drawn
+      const range_start = DONUT_RADIUS * 0.9;
+      const range_end = PROJECTS_RADIUS * 1.08; //corresponding as a little
+      scale_rad_curve.range([range_start, range_end]);
+
+      //Calculate the berry of the radius
+      group.values.forEach((edge, i) => {
+        edge.rad_curve_line = scale_rad_curve(i);
+      });
+
+      return group.values;
+    });
+
+    const angleDebugData = [];
+    let hasDebugged = false;
+
+    g.append("g")
+      .attr("class", "skill-project-edges")
+      .selectAll("path")
+      .data(flatEdges)
+      .join("path")
+      .attr("d", (d) => {
+        const line_data = [];
+
+        //get source and target coordinates in polar form
+        /* const source_r = sqrt(d.source.x ** 2 + d.source.y ** 2);
+        const target_r = sqrt(d.target.x ** 2 + d.target.y ** 2);*/
+
+        const source_r = d.source_radius;
+        const target_r = d.target_radius;
+
+        const startOffset =
+          d.angle_sign * scale_angle_start_offset(d.total_angle) * PI;
+        const endOffset =
+          d.angle_sign * scale_angle_end_offset(d.total_angle) * PI;
+        const final_start_angle = d.source_angle + startOffset;
+        const final_end_angle = d.target_angle - endOffset;
+
+        angleDebugData.push({
+          source_base_rad: d.source_angle,
+          target_base_rad: d.target_angle,
+          total_angle_for_scale: d.total_angle,
+          start_offset_rad: startOffset,
+          end_offset_rad: endOffset,
+          final_start_angle_rad: final_start_angle,
+          final_end_angle_rad: final_end_angle,
+        });
+
+        const rad_curve_line = d.rad_curve_line; //use pre-calculated radiuses
+
+        //calculate offset angles
+        const start_angle =
+          d.source_angle +
+          d.angle_sign * scale_angle_start_offset(d.total_angle) * PI;
+        const end_angle =
+          d.target_angle -
+          d.angle_sign * scale_angle_end_offset(d.total_angle) * PI;
+
+        if (!hasDebugged) {
+          console.log("First edge:");
+          console.log("Source Data (Cartesian):", d.source);
+          console.log("Source Data (Polar):", {
+            angle: d.source_angle,
+            radius: source_r,
+          });
+          console.log("Target Data (Cartesian):", d.target);
+          console.log("Target Data (Polar):", {
+            angle: d.target_angle,
+            radius: target_r,
+          });
+
+          // Draw a RED circle where the line STARTS
+          drawDebugPoint(d.source_angle, source_r, "red");
+
+          // Draw a BLUE circle where the line ENDS
+          drawDebugPoint(d.target_angle, target_r, "blue");
+
+          drawDebugPoint(start_angle, source_r, "black");
+          drawDebugPoint(end_angle, target_r, "black");
+
+          hasDebugged = true;
+        }
+
+        ///// Construct points for radial line generator
+
+        //actual starting point
+        line_data.push({ angle: d.source_angle, radius: source_r });
+
+        //start of belly
+        line_data.push({ angle: start_angle, radius: rad_curve_line });
+
+        //intermidiate points
+        let da_inner;
+        if (d.target_angle - d.source_angle < -PI)
+          da_inner = TAU + (end_angle - start_angle);
+        else if (d.target_angle - d.source_angle < 0)
+          da_inner = start_angle - end_angle;
+        else if (d.target_angle - d.source_angle < PI)
+          da_inner = end_angle - start_angle;
+        else da_inner = TAU - (end_angle - start_angle);
+
+        const step = 0.07;
+        const n = abs(floor(da_inner / step)) - 1;
+        let curve_angle = start_angle;
+        let sign = d.rotation === "cw" ? 1 : -1;
+        if (n >= 1) {
+          for (let j = 0; j < n; j++) {
+            curve_angle += sign * step;
+            line_data.push({ angle: curve_angle, radius: rad_curve_line });
+          }
+        }
+
+        //end of curve belly
+        line_data.push({ angle: end_angle, radius: rad_curve_line });
+
+        //actual end point (project node)
+        line_data.push({ angle: d.target_angle, radius: target_r });
+
+        //Generate the SVG path
+        return radialLine(line_data);
+      })
+      .attr("fill", "none")
+      .attr("stroke", COLORS.label)
+      .attr("stroke-width", 1.5 * SF)
+      .attr("opacity", 0.5);
+
+    console.log("--- Angle Calculation Debug for ALL Edges ---");
+    console.table(angleDebugData);
+  }
   //////////////////////////////////
   ////// Sizing functions /////////
   /////////////////////////////////
