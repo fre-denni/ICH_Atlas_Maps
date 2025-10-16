@@ -97,6 +97,8 @@ const createCompetencesMap = (container) => {
     .scaleLinear()
     .domain([0, 1])
     .range([0, 0.03]);
+  const scale_curve_depth = d3.scaleLinear();
+  const scale_fan_width = d3.scaleLinear().clamp(true);
 
   /////////////////////DATASETS///////////////////////
 
@@ -514,7 +516,7 @@ const createCompetencesMap = (container) => {
     const pie = d3
       .pie()
       .value((d) => d.frequency)
-      .sort(null)
+      .sort((a, b) => b.frequency - a.frequency) //longest first
       .padAngle(0.015);
 
     //get the data for the angles
@@ -869,11 +871,18 @@ const createCompetencesMap = (container) => {
     const unique = Array.from(aggregate.values());
 
     unique.sort((a, b) => {
+      //sort by the source id
+      if (a.source_id < b.source_id) return -1;
+      if (a.source_id > b.source_id) return 1;
+      //sort by rotation
       if (a.rotation < b.rotation) return -1;
       if (a.rotation > b.rotation) return 1;
-      if (a.total_angle < b.total_angle) return -1;
-      if (a.total_angle > b.total_angle) return 1;
-      return 0;
+      //sort by angular distance
+      if (a.rotation === "ccw") {
+        return b.total_angle - a.total_angle;
+      } else {
+        return a.total_angle - b.total_angle;
+      }
     });
 
     //group data by rotation
@@ -909,13 +918,28 @@ const createCompetencesMap = (container) => {
    * @param {Array} edges - the array of esge objects
    */
   function drawLines(edges) {
+    scale_curve_depth
+      .domain([0, 2])
+      .range([DONUT_RADIUS * 0.85, DONUT_RADIUS * 0.65]);
+
+    scale_fan_width.domain([1, 25]).range([PADDING * 0.5, PADDING * 3]);
+
     const flatEdges = edges.flatMap((group) => {
+      //get angular distance
+      const total_angle = group.values[0].total_angle;
+
+      //calculate central radius
+      const center_radius = scale_curve_depth(total_angle);
+
+      //calculate dynamic spacing
+      const fan_width = scale_fan_width(group.edges_count);
+
       //Set the domain for our fanning scale
       scale_rad_curve.domain([-1, group.edges_count]);
 
       //Define the channel where the curves will be drawn
-      const range_start = DONUT_RADIUS * 0.9;
-      const range_end = PROJECTS_RADIUS * 1.08; //corresponding as a little
+      const range_start = center_radius - fan_width / 2;
+      const range_end = center_radius + fan_width / 2; //corresponding as a little
       scale_rad_curve.range([range_start, range_end]);
 
       //Calculate the berry of the radius
