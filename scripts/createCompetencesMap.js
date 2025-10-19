@@ -89,11 +89,11 @@ const createCompetencesMap = (container) => {
   const scale_angle_start_offset = d3
     .scaleLinear()
     .domain([0, 1])
-    .range([0, 0.01]);
+    .range([0, 0.03]);
   const scale_angle_end_offset = d3
     .scaleLinear()
     .domain([0, 1])
-    .range([0, 0.03]);
+    .range([0, 0.02]);
   const scale_curve_depth = d3.scaleLinear();
   const scale_fan_width = d3.scaleLinear().clamp(true);
 
@@ -433,7 +433,7 @@ const createCompetencesMap = (container) => {
   function draw() {
     g.selectAll("*").remove(); //clean the visualisation
 
-    // IMPORTANT: Clear any cached anchor data
+    //Clear any cached anchor data
     if (simulation) {
       simulation.stop();
       simulation = null;
@@ -458,39 +458,19 @@ const createCompetencesMap = (container) => {
       ])
     );
 
-    // DEBUG: Check what's in the maps
-    console.log("=== MAP MATCHING DEBUG ===");
-    console.log("inner_anchors keys:", Array.from(inner_anchors.keys()));
-    console.log(
-      "typeToSkill keys (sample):",
-      Array.from(typeToSkill.keys()).slice(0, 5)
-    );
-
-    // Check if all typeToSkill values exist as inner_anchor keys
-    const allTypes = new Set(typeToSkill.values());
-    const missingTypes = Array.from(allTypes).filter(
-      (type) => !inner_anchors.has(type)
-    );
-    if (missingTypes.length > 0) {
-      console.error(
-        "TYPES IN typeToSkill BUT NOT IN inner_anchors:",
-        missingTypes
-      );
-    }
-
-    // Check if there are extra anchors not used
-    const unusedAnchors = Array.from(inner_anchors.keys()).filter(
-      (key) => !allTypes.has(key)
-    );
-    if (unusedAnchors.length > 0) {
-      console.warn("ANCHORS NOT REFERENCED BY ANY SKILL:", unusedAnchors);
-    }
-
     //prepare and calculate edge connection
     const sk_edges = drawSkilltoProjectEdges(inner_anchors);
-    drawOuterLines(sk_edges);
     const tc_edges = drawProjToTechEdges(technodes);
-    drawInnerLines(tc_edges);
+
+    // draw default state
+    drawOuterLines(sk_edges.forward);
+    drawInnerLines(tc_edges.forward);
+
+    // draw reverse state
+    //drawOuterLines(sk_edges.reverse);
+    //drawInnerLines(tc_edges.reverse);
+
+    //draw
     //call hover logic
   } //draw()
 
@@ -647,7 +627,7 @@ const createCompetencesMap = (container) => {
     });
 
     // DEBUG: Log to verify angles are updating
-    console.log("=== BOUNDARIES RECALCULATED ===");
+    /*console.log("=== BOUNDARIES RECALCULATED ===");
     console.log(
       "First slice angle:",
       data[0].angle,
@@ -659,7 +639,7 @@ const createCompetencesMap = (container) => {
       data[data.length - 1].angle,
       "Type:",
       data[data.length - 1].data.type
-    );
+    );*/
 
     //draw points
     const points = g.append("g").attr("class", "anchors");
@@ -970,7 +950,6 @@ const createCompetencesMap = (container) => {
 
     //create map of coordinates
     const xy_proj = new Map(proj_pos.map((p) => [p.id, p]));
-
     const aggregate = new Map();
 
     /*
@@ -1006,8 +985,6 @@ const createCompetencesMap = (container) => {
 
       //recalculate project angle
       const project_angle = atan2(project.y, project.x);
-
-      //create an unique key
       const key = `${types}, ${edge.target}`;
 
       if (!aggregate.has(key)) {
@@ -1020,7 +997,7 @@ const createCompetencesMap = (container) => {
           skills: [],
         };
 
-        // DEBUG: Check if we need angle conversion
+        /*// DEBUG: Check if we need angle conversion
         if (!window.angleDebugDone) {
           console.log("=== ANGLE SYSTEM CHECK ===");
           console.log(
@@ -1050,7 +1027,7 @@ const createCompetencesMap = (container) => {
             "deg"
           );
           window.angleDebugDone = true;
-        }
+        }*/
 
         //Add rotation properties (cw/ccw)
         addEdgeSettings(newEdge, newEdge.source_angle, newEdge.target_angle);
@@ -1062,7 +1039,9 @@ const createCompetencesMap = (container) => {
     });
 
     const unique = Array.from(aggregate.values());
+    const reverse = unique.map((d) => ({ ...d }));
 
+    ///////// FORWARD (Skill to Project)
     unique.sort((a, b) => {
       // Sort by source angle (visual position in donut)
       // Normalize angles to [0, 2π) for consistent comparison
@@ -1083,7 +1062,7 @@ const createCompetencesMap = (container) => {
       if (a.rotation < b.rotation) return -1;
       if (a.rotation > b.rotation) return 1;
 
-      // If same rotation, sort by angular distance
+      // If same rotation, sort by angular distance (ASCENDING)
       if (a.rotation === "ccw") {
         return b.total_angle - a.total_angle;
       } else {
@@ -1091,7 +1070,7 @@ const createCompetencesMap = (container) => {
       }
     });
 
-    // DEBUG: Verify edges are sorted by angle
+    /* // DEBUG: Verify edges are sorted by angle
     console.log("=== EDGES AFTER SORTING ===");
     const sortCheck = unique.slice(0, 10).map((e) => ({
       source: e.source_id,
@@ -1099,7 +1078,7 @@ const createCompetencesMap = (container) => {
       target_angle: e.target_angle.toFixed(3),
       rotation: e.rotation,
     }));
-    console.table(sortCheck);
+    console.table(sortCheck);*/
 
     /*
     // DEBUG: Check if source_ids match anchor angles
@@ -1125,6 +1104,32 @@ const createCompetencesMap = (container) => {
       );
     }*/
 
+    //////// REVERSE SORTING (Project to Skill)
+    reverse.sort((a, b) => {
+      const normalizeAngle = (ang) => {
+        while (ang < 0) ang += TAU;
+        while (ang >= TAU) ang -= TAU;
+        return ang;
+      };
+
+      //Sort by target
+      const angleA = normalizeAngle(a.target_angle);
+      const angleB = normalizeAngle(b.target_angle);
+      const angleDiff = angleA - angleB;
+
+      if (abs(angleDiff) > 0.01) return angleDiff;
+      if (a.rotation < b.rotation) return -1;
+      if (a.rotation > b.rotation) return 1;
+
+      // DESCENDING for reverse direction
+      if (a.rotation === "ccw") {
+        return a.total_angle - b.total_angle; // Flipped!
+      } else {
+        return b.total_angle - a.total_angle; // Flipped!
+      }
+    });
+
+    /// GROUP FORWARD EDGES (source)
     // This preserves the visual position ordering
     const angleKey = (angle) => {
       // Normalize to [0, 2π) and round to 3 decimal places
@@ -1139,19 +1144,46 @@ const createCompetencesMap = (container) => {
       return `${angle}_${d.rotation}`;
     };
 
-    const grouped = d3.group(unique, groupKey);
-    const nested = [];
+    const grouped_forward = d3.group(unique, groupKey);
+    const nested_forward = [];
 
-    grouped.forEach((edges, key) => {
+    grouped_forward.forEach((edges, key) => {
       const rotation = key.split("_")[1];
-      nested.push({
+      nested_forward.push({
         rotation: rotation,
         values: edges,
         edges_count: edges.length,
       });
     });
 
-    return nested;
+    /// GROUP REVERSE EDGES (target)
+    const groupKey_reverse = (d) => {
+      const angle = angleKey(d.target_angle);
+      return `${angle}_${d.rotation}`;
+    };
+
+    const grouped_reverse = d3.group(reverse, groupKey_reverse);
+    const nested_reverse = [];
+
+    grouped_reverse.forEach((edges, key) => {
+      const rotation = key.split("_")[1];
+      nested_reverse.push({
+        rotation: rotation,
+        values: edges,
+        edges_count: edges.length,
+      });
+    });
+
+    /*
+    console.log("=== EDGES CREATED ===");
+    console.log("Forward edges (Skills→Projects):", nested_forward.length, "groups");
+    console.log("Reverse edges (Projects→Skills):", nested_reverse.length, "groups");
+    */
+
+    return {
+      forward: nested_forward,
+      reverse: nested_reverse,
+    };
   }
 
   //draw edges between projects and techs
@@ -1211,7 +1243,7 @@ const createCompetencesMap = (container) => {
         const newEdge = {
           source_id: edge.source,
           source_angle: source_pos.angle,
-          source_radius: source_pos.radius, //PROJECT_RADIUS
+          source_radius: source_pos.radius,
           target_angle: target_pos.angle,
           target_radius: target_pos.radius,
         };
@@ -1221,18 +1253,50 @@ const createCompetencesMap = (container) => {
       })
       .filter(Boolean);
 
-    //group edges by source (project)
-    const grouped = d3.group(edgeData, (d) => d.source_id);
-    const nested = [];
-    grouped.forEach((edge) => {
+    //copy for reverse
+    const reverse = edgeData.map((d) => ({ ...d }));
+
+    ////// FORWARD GROUP (project -> tech)
+    const grouped_forward = d3.group(edgeData, (d) => d.source_id);
+    const nested_forward = [];
+
+    grouped_forward.forEach((edge) => {
       edge.sort((a, b) => a.target_angle - b.target_angle);
-      nested.push({
+      nested_forward.push({
         values: edge,
         edges_count: edge.length,
       });
     });
 
-    return nested;
+    ////// REVERSE GROUP (tech -> project)
+    const grouped_reverse = d3.group(reverse, (d) => d.target_angle);
+    const nested_reverse = [];
+
+    grouped_reverse.forEach((edge) => {
+      edge.sort((a, b) => b.source_angle - a.source_angle); // Descending
+      nested_reverse.push({
+        values: edge,
+        edges_count: edge.length,
+      });
+    });
+
+    /*
+    console.log("=== TECH EDGES CREATED ===");
+    console.log(
+      "Forward edges (Projects→Tech):",
+      nested_forward.length,
+      "groups"
+    );
+    console.log(
+      "Reverse edges (Tech→Projects):",
+      nested_reverse.length,
+      "groups"
+    );*/
+
+    return {
+      forward: nested_forward, // Projects → Tech (hover on projects)
+      reverse: nested_reverse, // Tech → Projects (hover on tech)
+    };
   }
 
   /**
@@ -1293,23 +1357,21 @@ const createCompetencesMap = (container) => {
    * @param {Array} edges - the array of esge objects
    */
   function drawOuterLines(edges) {
-    // DEBUG: What structure are we receiving?
+    /*// DEBUG: What structure are we receiving?
     console.log("=== drawOuterLines INPUT ===");
     console.log("Number of edge groups:", edges.length);
     console.log("First group:", {
       rotation: edges[0]?.rotation,
       edges_count: edges[0]?.edges_count,
       first_edge: edges[0]?.values[0],
-    });
+    });*/
 
     // Check if grouping makes sense
     const totalEdges = edges.reduce((sum, g) => sum + g.values.length, 0);
     console.log("Total edges across all groups:", totalEdges);
 
     //determine limits of the edges belly
-    scale_curve_depth
-      .domain([0, 2])
-      .range([DONUT_RADIUS * 0.85, DONUT_RADIUS * 0.65]);
+    scale_curve_depth.domain([0, 2]).range([0.85, 0.65]);
 
     //determine width
     scale_fan_width.domain([1, 25]).range([PADDING * 0.5, PADDING * 3]);
@@ -1319,7 +1381,8 @@ const createCompetencesMap = (container) => {
       const total_angle = group.values[0].total_angle;
 
       //calculate central radius
-      const center_radius = scale_curve_depth(total_angle);
+      const multiplier = scale_curve_depth(total_angle);
+      const center_radius = DONUT_RADIUS * multiplier;
 
       //calculate dynamic spacing
       const fan_width = scale_fan_width(group.edges_count);
@@ -1340,7 +1403,7 @@ const createCompetencesMap = (container) => {
       return group.values;
     });
 
-    // DEBUG: Check curve belly calculations
+    /* // DEBUG: Check curve belly calculations
     console.log("=== OUTER LINES CURVE DEBUG ===");
     const curveDebug = flatEdges.slice(0, 5).map((e) => ({
       source_id: e.source_id,
@@ -1350,7 +1413,7 @@ const createCompetencesMap = (container) => {
       rad_curve_line: e.rad_curve_line.toFixed(2),
       rotation: e.rotation,
     }));
-    console.table(curveDebug);
+    console.table(curveDebug);*/
 
     // Check if any curves have extreme or NaN values
     const badCurves = flatEdges.filter(
@@ -1387,15 +1450,17 @@ const createCompetencesMap = (container) => {
    */
   function drawInnerLines(edges) {
     // Define the channel for the project-to-tech curves
-    scale_curve_depth
-      .domain([0, 2])
-      .range([DONUT_RADIUS * 0.58, PROJECTS_RADIUS * 0.75]);
+    scale_curve_depth.domain([0, 2]).range([1.05, 1.22]);
 
     scale_fan_width.domain([1, 10]).range([PADDING * 0.8, PADDING * 2]);
 
     const flatEdges = edges.flatMap((group) => {
       const total_angle = group.values[0].total_angle;
-      const center_radius = scale_curve_depth(total_angle);
+
+      const base_radius = PROJECTS_RADIUS * 0.76; //Adjust as needed
+      const multiplier = scale_curve_depth(total_angle);
+      const center_radius = base_radius * multiplier;
+
       const fan_width = scale_fan_width(group.edges_count);
 
       scale_rad_curve.domain([-1, group.edges_count]);
@@ -1448,6 +1513,10 @@ const createCompetencesMap = (container) => {
       .attr("opacity", 0.3)
       .attr("visibility", DEBUG);
   } //drawInnerLines()
+
+  ///////////////////////////////////
+  //////// HOVER AND CLICK //////////
+  //////////////////////////////////
 
   //////////////////////////////////
   ////// Sizing functions /////////
