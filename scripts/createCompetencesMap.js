@@ -50,8 +50,6 @@ const createCompetencesMap = (container) => {
   let min = Math.min;
   let max = Math.max;
   let abs = Math.abs;
-  let pow = Math.pow;
-  let ceil = Math.ceil;
   let floor = Math.floor;
   let atan2 = Math.atan2;
 
@@ -62,9 +60,9 @@ const createCompetencesMap = (container) => {
   const MIN_WIDTH = 660;
   const MAX_HEIGHT = 1250; //increase if you want really large viz on screens
   const PADDING = 24; //in scale of 8th
-  const MAX_TECH_NODE = 8;
+  const MAX_TECH_NODE = 7;
   const MAX_SKILL_NODE = 8;
-  let node_height, node_width;
+  let maxDiag, minDiag;
 
   //variables for scaling
   const DEFAULT_SIZE = 1000;
@@ -154,6 +152,17 @@ const createCompetencesMap = (container) => {
     */
     label: "#A3A3A3",
     text: "#121212",
+  };
+
+  const tech_colors = d3
+    .scaleOrdinal()
+    .domain(["capt_tech", "rep_tech", "diss_tech"])
+    .range(["#FFC107", "#F44336", "#12446dff"]); // Yellow, Red, Blue
+
+  const techTypeToSector = {
+    capt_tech: 0,
+    rep_tech: 1,
+    diss_tech: 2,
   };
 
   /////////////////////FOR VISUALISATION///////////////////////
@@ -339,9 +348,9 @@ const createCompetencesMap = (container) => {
       if (entry.type === "diss_tech") dissTech.push(entry);
     });
 
-    /*console.log(capTech[0]);
-    console.log(repTech[0]);
-    console.log(dissTech[0]);*/
+    console.log(capTech);
+    console.log(dissTech);
+    console.log(repTech);
 
     //create a local list of unique projects and tech
     const prj = new Set(tech.map((d) => d.projects));
@@ -423,6 +432,13 @@ const createCompetencesMap = (container) => {
 
   function draw() {
     g.selectAll("*").remove(); //clean the visualisation
+
+    // IMPORTANT: Clear any cached anchor data
+    if (simulation) {
+      simulation.stop();
+      simulation = null;
+    }
+
     //call specific drawing and simulation functions;
     drawProjects(PROJECTS_RADIUS);
     const donut = drawDonut(DONUT_RADIUS);
@@ -441,7 +457,34 @@ const createCompetencesMap = (container) => {
         { angle: d.angle, radius: d.inner_radius },
       ])
     );
-    //console.log("1. Verifying Inner Anchors Map:", inner_anchors);
+
+    // DEBUG: Check what's in the maps
+    console.log("=== MAP MATCHING DEBUG ===");
+    console.log("inner_anchors keys:", Array.from(inner_anchors.keys()));
+    console.log(
+      "typeToSkill keys (sample):",
+      Array.from(typeToSkill.keys()).slice(0, 5)
+    );
+
+    // Check if all typeToSkill values exist as inner_anchor keys
+    const allTypes = new Set(typeToSkill.values());
+    const missingTypes = Array.from(allTypes).filter(
+      (type) => !inner_anchors.has(type)
+    );
+    if (missingTypes.length > 0) {
+      console.error(
+        "TYPES IN typeToSkill BUT NOT IN inner_anchors:",
+        missingTypes
+      );
+    }
+
+    // Check if there are extra anchors not used
+    const unusedAnchors = Array.from(inner_anchors.keys()).filter(
+      (key) => !allTypes.has(key)
+    );
+    if (unusedAnchors.length > 0) {
+      console.warn("ANCHORS NOT REFERENCED BY ANY SKILL:", unusedAnchors);
+    }
 
     //prepare and calculate edge connection
     const sk_edges = drawSkilltoProjectEdges(inner_anchors);
@@ -464,16 +507,17 @@ const createCompetencesMap = (container) => {
 
   function drawProjects(radius) {
     //define rhombus width and height (responsive)
-    node_height = round(8 * SF);
-    node_width = round(6 * SF);
+    maxDiag = round(8 * SF);
+    minDiag = round(6 * SF);
     //draw svg rhombus
-    const rhombus = `M 0 ${-node_height / 2} L ${node_width / 2} 0 L 0 ${
-      node_height / 2
-    } L ${-node_width / 2} 0 Z`;
+    const rhombus = `M 0 ${-maxDiag / 2} L ${minDiag / 2} 0 L 0 ${
+      maxDiag / 2
+    } L ${-minDiag / 2} 0 Z`;
 
     //calculate positions
     const positions = projects.map((p, i) => {
       angle = (i / projects.length) * TAU - PI / 2; //distribute evenly
+
       return {
         id: p,
         x: radius * cos(angle),
@@ -518,8 +562,8 @@ const createCompetencesMap = (container) => {
 
     const pie = d3
       .pie()
-      .value((d) => d.frequency)
-      .sort(null) //(a, b) => b.frequency - a.frequency) //longest first
+      .value((d) => d.frequency) //() => 1) //
+      .sort((a, b) => d3.descending(a.type, b.type))
       .padAngle(0.015);
 
     //get the data for the angles
@@ -542,8 +586,15 @@ const createCompetencesMap = (container) => {
     const arc = d3.arc().cornerRadius(5).innerRadius(hole).outerRadius(radius);
 
     //define pie
-    const pie = d3.pie().sort(null).padAngle(0.02); //increase for more space
-    const slices = pie([1, 1, 1]);
+    const pie = d3
+      .pie()
+      .sort(null)
+      .padAngle(0.02) //increase for more space
+      .startAngle(-PI / 2)
+      .endAngle((3 * PI) / 2);
+
+    const frequencies = [capTech.length, repTech.length, dissTech.length];
+    const slices = pie(frequencies);
 
     //draw
     g.append("g")
@@ -565,24 +616,50 @@ const createCompetencesMap = (container) => {
     const outer = DONUT_RADIUS + thickness * 1.5 + SKILL_BOUNDARY_RADIUS;
     const frequency = d3.extent(data, (d) => d.data.frequency);
 
+    // Clear any old angle data to force fresh calculation
+    data.forEach((d) => {
+      delete d.angle;
+      delete d.inner_radius;
+      delete d.innerX;
+      delete d.innerY;
+      delete d.outerX;
+      delete d.outerY;
+    });
+
     //create scale
     boundary_scale
       .domain(frequency)
       .range([SKILL_BOUNDARY_RADIUS / 2, SKILL_BOUNDARY_RADIUS * 2]);
 
     //assign coordinates
+    //assign coordinates - create fresh objects to avoid stale data
     data.forEach((d) => {
       const centroid = arc.centroid(d);
       angle = atan2(centroid[1], centroid[0]);
 
-      d.angle = angle; //store angle
-      d.inner_radius = inner; //store radius
-
-      d.innerX = inner * cos(angle); //I don't think we need this anymore
+      // Force new calculation by creating new properties
+      d.angle = angle;
+      d.inner_radius = inner;
+      d.innerX = inner * cos(angle);
       d.innerY = inner * sin(angle);
       d.outerX = outer * cos(angle);
       d.outerY = outer * sin(angle);
     });
+
+    // DEBUG: Log to verify angles are updating
+    console.log("=== BOUNDARIES RECALCULATED ===");
+    console.log(
+      "First slice angle:",
+      data[0].angle,
+      "Type:",
+      data[0].data.type
+    );
+    console.log(
+      "Last slice angle:",
+      data[data.length - 1].angle,
+      "Type:",
+      data[data.length - 1].data.type
+    );
 
     //draw points
     const points = g.append("g").attr("class", "anchors");
@@ -701,109 +778,155 @@ const createCompetencesMap = (container) => {
     return [r * cos(a), r * sin(a)];
   } //phyllotaxis();
 
+  /**
+   * Function to position in a phyllotaxis grid the technology nodes
+   * IMPORTANT: the angles for the phyllo grid are different from the pie()
+   * and drawRadialLine() function, so for it to work the exact coordinates are stored
+   * and then convert it back in drawProjtoTechEdges()
+   * @param {Object}  - coordinates of the slice
+   * @returns {Object} - x,y and polar coordinates of the nodes
+   */
   function positionTechNodes({ slices }) {
-    //define the nodes and divide by type
+    //get the needed technologies and transform them in points
     const all = tech_in_techType.filter((d) => d.type !== "tech_type");
     const required = all.length;
-    const generated = required + 6;
+    const total = round(required * 1.3);
 
-    //build the grid generatively
+    //generate master grid
     const master = [];
-    let i = 0;
-
-    while (master.length < generated) {
+    for (let i = 0; master.length < total; i++) {
       const [x, y] = phyllotaxis(
         i,
-        TECHNOLOGY_RADIUS - PADDING / 2,
-        CENTRAL_HOLE_RADIUS - PADDING / 3,
-        generated * 1.2 //more is generated to cover empty spaces
+        TECHNOLOGY_RADIUS - PADDING / 3,
+        CENTRAL_HOLE_RADIUS,
+        total * 1.25
       );
-      const point = { x, y };
+      master.push({ x, y });
+    }
 
-      angle = atan2(point.x, -point.y);
-      if (angle < 0) {
+    const filtered_grid = master.filter((p) => {
+      angle = atan2(p.x, -p.y);
+
+      if (angle < slices[0].startAngle) {
         angle += TAU;
       }
 
       const isInSector = slices.some((sector) => {
-        const radiuses = sqrt(pow(point.x, 2) + pow(point.y, 2));
-        const angularPadding = (12 * SF) / radiuses;
+        const radius = sqrt(p.x ** 2 + p.y ** 2);
+        const padding = (12 * SF) / radius;
         return (
-          angle >= sector.startAngle + angularPadding &&
-          angle < sector.endAngle - angularPadding
+          angle > sector.startAngle + padding &&
+          angle < sector.endAngle - padding
         );
       });
 
-      if (isInSector) {
-        master.push(point);
-      }
+      return isInSector;
+    });
 
-      i++;
-    }
+    const boundaryCircles = g
+      .append("g")
+      .attr("class", "debug-boundary-circles")
+      .attr("visibility", DEBUG);
 
-    //Let's filter the first 6 points for consistency
-    const filtered_grid = master.slice(6);
+    // Outer boundary circle
+    boundaryCircles
+      .append("circle")
+      .attr("cx", 0)
+      .attr("cy", 0)
+      .attr("r", TECHNOLOGY_RADIUS - PADDING / 2)
+      .attr("fill", "none")
+      .attr("stroke", "black")
+      .attr("stroke-width", 1)
+      .attr("stroke-dasharray", "4,4");
 
-    //draw the visual debug master
+    // Inner boundary circle
+    boundaryCircles
+      .append("circle")
+      .attr("cx", 0)
+      .attr("cy", 0)
+      .attr("r", CENTRAL_HOLE_RADIUS + PADDING / 2)
+      .attr("fill", "none")
+      .attr("stroke", "black")
+      .attr("stroke-width", 1)
+      .attr("stroke-dasharray", "4,4");
+
     g.append("g")
-      .attr("class", "phyllo-grid")
+      .attr("class", "debug-phyllotaxis-grid")
       .selectAll("circle")
-      .data(filtered_grid)
+      .data(master)
       .join("circle")
       .attr("cx", (d) => d.x)
       .attr("cy", (d) => d.y)
       .attr("r", 1.5)
       .attr("fill", "black")
+      .attr("opacity", 0.5)
       .attr("visibility", DEBUG);
 
-    const techNodes = tech_in_techType.filter((d) => d.type !== "tech_type");
-    //get tech nodes and calculate their visual radius
-    techNodes.forEach((node) => {
-      node.radius = skill_tech_scale(node.frequency);
-    });
-    //sort nodes by frequency
-    techNodes.sort((a, b) => b.frequency - a.frequency);
+    //define three sectors
+    const sectors = { 0: [], 1: [], 2: [] };
 
-    //sort grid point
-    filtered_grid.sort((a, b) => {
-      const dA = sqrt(pow(a.x, 2) + pow(a.y, 2));
-      const dB = sqrt(pow(b.x, 2) + pow(b.y, 2));
-      return dA - dB;
-    });
+    filtered_grid.forEach((p) => {
+      angle = atan2(p.x, -p.y);
+      if (angle < slices[0].startAngle) {
+        angle += TAU;
+      }
 
-    techNodes.forEach((node, index) => {
-      if (filtered_grid[index]) {
-        node.x = filtered_grid[index].x;
-        node.y = filtered_grid[index].y;
+      const sectorIndex = slices.findIndex(
+        (s) => angle >= s.startAngle && angle < s.endAngle
+      );
+
+      if (sectorIndex !== -1) {
+        p.angle = atan2(p.x, -p.y);
+        sectors[sectorIndex].push(p);
       }
     });
 
-    //create and animate the nodes
-    //JOIN THEM TO THE DOM - PRAISE THE DOM
-    const nodes = g
-      .append("g")
+    for (const k in sectors) {
+      sectors[k].sort((a, b) => b.x ** 2 + b.y ** 2 - (a.x ** 2 + a.y ** 2));
+    }
+
+    all.forEach((n) => {
+      n.radius = skill_tech_scale(n.frequency);
+    });
+
+    const grouped = d3.group(all, (d) => d.type);
+    const positionedNodes = [];
+
+    ["capt_tech", "rep_tech", "diss_tech"].forEach((type) => {
+      const types = grouped.get(type) || [];
+      types.sort((a, b) => b.frequency - a.frequency);
+
+      sectorIndex = techTypeToSector[type];
+      const points = sectors[sectorIndex];
+
+      types.forEach((n, i) => {
+        if (points[i]) {
+          n.x = points[i].x;
+          n.y = points[i].y;
+          n.angle = points[i].angle;
+          n.radii = sqrt(n.x ** 2 + n.y ** 2);
+          positionedNodes.push(n);
+        }
+      });
+    });
+
+    g.append("g")
       .attr("class", "tech-nodes")
       .selectAll("circle")
-      .data(techNodes)
-      .join("circle");
-
-    //set initial state
-    nodes
+      .data(positionedNodes)
+      .join("circle")
       .attr("r", (d) => d.radius)
-      .attr("fill", COLORS.ui)
+      .attr("fill", (d) => tech_colors(d.type))
       .attr("cx", 0)
-      .attr("cy", 0);
-
-    //animate
-    nodes
+      .attr("cy", 0)
       .transition()
       .duration(800)
       .delay((d, i) => i * 2.5)
       .attr("cx", (d) => d.x)
       .attr("cy", (d) => d.y);
 
-    return techNodes;
-  } //positionTechNodes()
+    return positionedNodes;
+  } //positionTechNodes
 
   //////////////////////////////////
   ////// Edges & Connections //////
@@ -811,33 +934,66 @@ const createCompetencesMap = (container) => {
 
   //let's calculate the edge directions and curvature
   //adapted by this https://ich.unesco.org/dive/domain/?language=en visualisation
-  //by Nadie Bremer & UNESCO
+  //by Nadie Bremer for UNESCO
   function addEdgeSettings(d, source_a, target_a) {
-    if (target_a - source_a < -PI) {
-      d.rotation = "cw"; //clockwise
-      d.total_angle = 2 + (target_a - source_a) / PI;
-      d.angle_sign = 1;
-    } else if (target_a - source_a < 0) {
-      d.rotation = "ccw"; //counter-clockwise
-      d.total_angle = (source_a - target_a) / PI;
-      d.angle_sign = -1;
-    } else if (target_a - source_a < PI) {
+    const angle_diff = target_a - source_a;
+
+    if (angle_diff < -PI) {
       d.rotation = "cw";
-      d.total_angle = (target_a - source_a) / PI;
       d.angle_sign = 1;
+      d.total_angle = (TAU + angle_diff) / PI;
+    } else if (angle_diff < 0) {
+      d.rotation = "ccw";
+      d.angle_sign = -1;
+      d.total_angle = -angle_diff / PI;
+    } else if (angle_diff < PI) {
+      d.rotation = "cw";
+      d.angle_sign = 1;
+      d.total_angle = angle_diff / PI;
     } else {
       d.rotation = "ccw";
-      d.total_angle = 2 - (target_a - source_a) / PI;
       d.angle_sign = -1;
+      d.total_angle = (TAU - angle_diff) / PI;
     }
   } //addEdgeSettings()
 
   //draw edges between skills and projects
   function drawSkilltoProjectEdges(anchors) {
+    console.log("=== ANCHORS RECEIVED IN drawSkilltoProjectEdges ===");
+    anchors.forEach((value, key) => {
+      console.log(
+        `"${key}": angle=${value.angle.toFixed(
+          3
+        )}, radius=${value.radius.toFixed(2)}`
+      );
+    });
+
     //create map of coordinates
     const xy_proj = new Map(proj_pos.map((p) => [p.id, p]));
 
     const aggregate = new Map();
+
+    /*
+    // DEBUG: Check coordinate systems
+    if (proj_pos.length > 0 && anchors.size > 0) {
+      const sample_proj = proj_pos[0];
+      const sample_anchor = Array.from(anchors.values())[0];
+
+      console.log("=== OUTER LINES COORDINATE CHECK ===");
+      console.log("Sample Project:", {
+        id: sample_proj.id,
+        angle_stored: sample_proj.angle,
+        angle_from_xy: atan2(sample_proj.y, sample_proj.x),
+        diff_deg: (
+          ((atan2(sample_proj.y, sample_proj.x) - sample_proj.angle) * 180) /
+          PI
+        ).toFixed(2),
+      });
+      console.log("Sample Anchor:", {
+        angle: sample_anchor.angle,
+        note: "This uses atan2(y,x) from arc.centroid - STANDARD system",
+      });
+    }*/
 
     //prepare the data for each edge calculating its start and end points
     edges_skillToproj.map((edge) => {
@@ -848,6 +1004,9 @@ const createCompetencesMap = (container) => {
       //Ensure we found all the necessary point
       if (!project || !anchor) return null;
 
+      //recalculate project angle
+      const project_angle = atan2(project.y, project.x);
+
       //create an unique key
       const key = `${types}, ${edge.target}`;
 
@@ -856,10 +1015,42 @@ const createCompetencesMap = (container) => {
           source_id: types,
           source_angle: anchor.angle,
           source_radius: anchor.radius,
-          target_angle: project.angle,
+          target_angle: project_angle,
           target_radius: PROJECTS_RADIUS,
           skills: [],
         };
+
+        // DEBUG: Check if we need angle conversion
+        if (!window.angleDebugDone) {
+          console.log("=== ANGLE SYSTEM CHECK ===");
+          console.log(
+            "Anchor angle:",
+            anchor.angle,
+            "rad =",
+            ((anchor.angle * 180) / PI).toFixed(1),
+            "deg"
+          );
+          console.log(
+            "Project angle:",
+            project.angle,
+            "rad =",
+            ((project.angle * 180) / PI).toFixed(1),
+            "deg"
+          );
+          console.log(
+            "Project x,y:",
+            project.x.toFixed(2),
+            project.y.toFixed(2)
+          );
+          console.log(
+            "Angle from x,y:",
+            atan2(project.y, project.x),
+            "rad =",
+            ((atan2(project.y, project.x) * 180) / PI).toFixed(1),
+            "deg"
+          );
+          window.angleDebugDone = true;
+        }
 
         //Add rotation properties (cw/ccw)
         addEdgeSettings(newEdge, newEdge.source_angle, newEdge.target_angle);
@@ -873,13 +1064,26 @@ const createCompetencesMap = (container) => {
     const unique = Array.from(aggregate.values());
 
     unique.sort((a, b) => {
-      //sort by the source id
-      if (a.source_id < b.source_id) return -1;
-      if (a.source_id > b.source_id) return 1;
-      //sort by rotation
+      // Sort by source angle (visual position in donut)
+      // Normalize angles to [0, 2π) for consistent comparison
+      const normalizeAngle = (ang) => {
+        while (ang < 0) ang += TAU;
+        while (ang >= TAU) ang -= TAU;
+        return ang;
+      };
+
+      const angleA = normalizeAngle(a.source_angle);
+      const angleB = normalizeAngle(b.source_angle);
+      const angleDiff = angleA - angleB;
+
+      // If angles are significantly different, sort by angle
+      if (abs(angleDiff) > 0.01) return angleDiff;
+
+      // If from same source (same angle), sort by rotation direction
       if (a.rotation < b.rotation) return -1;
       if (a.rotation > b.rotation) return 1;
-      //sort by angular distance
+
+      // If same rotation, sort by angular distance
       if (a.rotation === "ccw") {
         return b.total_angle - a.total_angle;
       } else {
@@ -887,17 +1091,63 @@ const createCompetencesMap = (container) => {
       }
     });
 
-    //group data by rotation
-    const grouped = d3.group(unique, (d) => d.source_id);
+    // DEBUG: Verify edges are sorted by angle
+    console.log("=== EDGES AFTER SORTING ===");
+    const sortCheck = unique.slice(0, 10).map((e) => ({
+      source: e.source_id,
+      source_angle: e.source_angle.toFixed(3),
+      target_angle: e.target_angle.toFixed(3),
+      rotation: e.rotation,
+    }));
+    console.table(sortCheck);
+
+    /*
+    // DEBUG: Check if source_ids match anchor angles
+    console.log("=== EDGE SORTING DEBUG ===");
+    const sourceCheck = unique.slice(0, 5).map((e) => ({
+      source_id: e.source_id,
+      source_angle: e.source_angle,
+      target_angle: e.target_angle,
+      rotation: e.rotation,
+      total_angle: e.total_angle.toFixed(3),
+    }));
+    console.table(sourceCheck);
+
+    // Check if all source_ids have corresponding anchors
+    const missingAnchors = unique.filter((e) => {
+      const anchor = anchors.get(e.source_id);
+      return !anchor;
+    });
+    if (missingAnchors.length > 0) {
+      console.error(
+        "MISSING ANCHORS:",
+        missingAnchors.map((e) => e.source_id)
+      );
+    }*/
+
+    // This preserves the visual position ordering
+    const angleKey = (angle) => {
+      // Normalize to [0, 2π) and round to 3 decimal places
+      let normalized = angle;
+      while (normalized < 0) normalized += TAU;
+      while (normalized >= TAU) normalized -= TAU;
+      return round(normalized * 1000) / 1000;
+    };
+
+    const groupKey = (d) => {
+      const angle = angleKey(d.source_angle);
+      return `${angle}_${d.rotation}`;
+    };
+
+    const grouped = d3.group(unique, groupKey);
     const nested = [];
-    grouped.forEach((source) => {
-      const groupByRotation = d3.group(source, (d) => d.rotation);
-      groupByRotation.forEach((rotationEdges, rotation) => {
-        nested.push({
-          rotation: rotation,
-          values: rotationEdges,
-          edges_count: rotationEdges.length,
-        });
+
+    grouped.forEach((edges, key) => {
+      const rotation = key.split("_")[1];
+      nested.push({
+        rotation: rotation,
+        values: edges,
+        edges_count: edges.length,
       });
     });
 
@@ -907,16 +1157,48 @@ const createCompetencesMap = (container) => {
   //draw edges between projects and techs
   function drawProjToTechEdges(nodes) {
     //create lookup maps for project and technology positions
-    const project_positions = new Map(proj_pos.map((p) => [p.id, p]));
+    /*const tech_positions = new Map(
+      //convert to polar
+      nodes.map((t) => [t.id, { angle: t.angle, radius: t.radii }])
+    );*/
+
+    const project_positions = new Map(
+      //convert to polar with corrected angle for edge calculations
+      proj_pos.map((p) => {
+        const standard_angle = atan2(p.y, p.x);
+        return [p.id, { angle: standard_angle, radius: PROJECTS_RADIUS }];
+      })
+    );
 
     const tech_positions = new Map(
       nodes.map((t) => {
-        //convert to polar
-        const angle = atan2(t.y, t.x);
-        const radius = sqrt(t.x ** 2 + t.y ** 2);
-        return [t.id, { angle, radius }];
+        // Recalculate BOTH angle and radius from actual x,y coordinates
+        // This ensures the edge endpoint matches the node position exactly
+        const standard_angle = atan2(t.y, t.x);
+        const actual_radius = sqrt(t.x * t.x + t.y * t.y);
+        return [t.id, { angle: standard_angle, radius: actual_radius }];
       })
     );
+
+    // Debug: Check a few mappings
+    /*if (nodes.length > 0) {
+      const sample = nodes[0];
+      const mapped = tech_positions.get(sample.id);
+      console.log("Tech node mapping check:");
+      console.log("  Node:", {
+        id: sample.id,
+        x: sample.x,
+        y: sample.y,
+        stored_angle: sample.angle,
+        stored_radii: sample.radii,
+      });
+      console.log("  Mapped:", mapped);
+      console.log("  Angle diff (radians):", mapped.angle - sample.angle);
+      console.log(
+        "  Angle diff (degrees):",
+        (((mapped.angle - sample.angle) * 180) / PI).toFixed(2)
+      );
+    }*/
 
     //prepare data for each edge
     const edgeData = edges_projTotech
@@ -929,7 +1211,7 @@ const createCompetencesMap = (container) => {
         const newEdge = {
           source_id: edge.source,
           source_angle: source_pos.angle,
-          source_radius: PROJECTS_RADIUS,
+          source_radius: source_pos.radius, //PROJECT_RADIUS
           target_angle: target_pos.angle,
           target_radius: target_pos.radius,
         };
@@ -939,51 +1221,23 @@ const createCompetencesMap = (container) => {
       })
       .filter(Boolean);
 
-    //Sort edges for the fanning effect
-    edgeData.sort((a, b) => {
-      if (a.source_id < b.source_id) return -1;
-      if (a.source_id > b.source_id) return 1;
-      if (a.rotation < b.rotation) return -1;
-      if (a.rotation > b.rotation) return 1;
-      if (a.rotation === "cw") {
-        return b.total_angle - a.total_angle;
-      } else {
-        return a.total_angle - b.total_angle;
-      }
-    });
-
     //group edges by source (project)
     const grouped = d3.group(edgeData, (d) => d.source_id);
     const nested = [];
-    grouped.forEach((source) => {
-      const groupByRotation = d3.group(source, (d) => d.rotation);
-      groupByRotation.forEach((rotationEdges, rotation) => {
-        nested.push({
-          rotation: rotation,
-          values: rotationEdges,
-          edges_count: rotationEdges.length,
-        });
+    grouped.forEach((edge) => {
+      edge.sort((a, b) => a.target_angle - b.target_angle);
+      nested.push({
+        values: edge,
+        edges_count: edge.length,
       });
     });
 
     return nested;
   }
 
-  //Debug points to see if coordinates are correct
-  function drawDebugPoint(angle, radius, color = "red") {
-    g.append("circle")
-      .attr("class", "debug-point")
-      .attr("cx", radius * cos(angle))
-      .attr("cy", radius * sin(angle))
-      .attr("r", 5) // Make it nice and big
-      .attr("fill", color)
-      .style("pointer-events", "none")
-      .attr("visibility", DEBUG);
-  }
-
   /**
    * Generates the curving belly
-   * @params {Object} d - edge data object
+   * @params {Object} - edge data object
    * @returns {String} SVG path string
    */
   function generateRadialPath(d) {
@@ -1039,10 +1293,25 @@ const createCompetencesMap = (container) => {
    * @param {Array} edges - the array of esge objects
    */
   function drawOuterLines(edges) {
+    // DEBUG: What structure are we receiving?
+    console.log("=== drawOuterLines INPUT ===");
+    console.log("Number of edge groups:", edges.length);
+    console.log("First group:", {
+      rotation: edges[0]?.rotation,
+      edges_count: edges[0]?.edges_count,
+      first_edge: edges[0]?.values[0],
+    });
+
+    // Check if grouping makes sense
+    const totalEdges = edges.reduce((sum, g) => sum + g.values.length, 0);
+    console.log("Total edges across all groups:", totalEdges);
+
+    //determine limits of the edges belly
     scale_curve_depth
       .domain([0, 2])
       .range([DONUT_RADIUS * 0.85, DONUT_RADIUS * 0.65]);
 
+    //determine width
     scale_fan_width.domain([1, 25]).range([PADDING * 0.5, PADDING * 3]);
 
     const flatEdges = edges.flatMap((group) => {
@@ -1071,6 +1340,33 @@ const createCompetencesMap = (container) => {
       return group.values;
     });
 
+    // DEBUG: Check curve belly calculations
+    console.log("=== OUTER LINES CURVE DEBUG ===");
+    const curveDebug = flatEdges.slice(0, 5).map((e) => ({
+      source_id: e.source_id,
+      source_angle: e.source_angle.toFixed(3),
+      target_angle: e.target_angle.toFixed(3),
+      total_angle: e.total_angle.toFixed(3),
+      rad_curve_line: e.rad_curve_line.toFixed(2),
+      rotation: e.rotation,
+    }));
+    console.table(curveDebug);
+
+    // Check if any curves have extreme or NaN values
+    const badCurves = flatEdges.filter(
+      (e) =>
+        isNaN(e.rad_curve_line) ||
+        e.rad_curve_line < DONUT_RADIUS * 0.5 ||
+        e.rad_curve_line > DONUT_RADIUS
+    );
+    if (badCurves.length > 0) {
+      console.error(
+        "BAD CURVE VALUES:",
+        badCurves.length,
+        "edges with invalid rad_curve_line"
+      );
+    }
+
     g.append("g")
       .attr("class", "skill-project-edges")
       .selectAll("path")
@@ -1093,9 +1389,9 @@ const createCompetencesMap = (container) => {
     // Define the channel for the project-to-tech curves
     scale_curve_depth
       .domain([0, 2])
-      .range([PROJECTS_RADIUS * 0.88, TECHNOLOGY_RADIUS * 1.05]);
+      .range([DONUT_RADIUS * 0.58, PROJECTS_RADIUS * 0.75]);
 
-    scale_fan_width.domain([1, 10]).range([PADDING * 0.5, PADDING * 3]);
+    scale_fan_width.domain([1, 10]).range([PADDING * 0.8, PADDING * 2]);
 
     const flatEdges = edges.flatMap((group) => {
       const total_angle = group.values[0].total_angle;
@@ -1124,6 +1420,33 @@ const createCompetencesMap = (container) => {
       .attr("stroke", COLORS.label)
       .attr("stroke-width", 1 * SF)
       .attr("opacity", 0.4);
+
+    g.append("g")
+      .attr("class", "debug-edge-endpoints")
+      .selectAll("circle")
+      .data(flatEdges)
+      .join("circle")
+      .attr("cx", (d) => d.target_radius * cos(d.target_angle))
+      .attr("cy", (d) => d.target_radius * sin(d.target_angle))
+      .attr("r", 3)
+      .attr("fill", "red")
+      .attr("opacity", 0.8)
+      .attr("visibility", DEBUG);
+
+    // Debug: Draw lines showing the "correct" straight path
+    g.append("g")
+      .attr("class", "debug-straight-lines")
+      .selectAll("line")
+      .data(flatEdges)
+      .join("line")
+      .attr("x1", (d) => d.source_radius * cos(d.source_angle))
+      .attr("y1", (d) => d.source_radius * sin(d.source_angle))
+      .attr("x2", (d) => d.target_radius * cos(d.target_angle))
+      .attr("y2", (d) => d.target_radius * sin(d.target_angle))
+      .attr("stroke", "blue")
+      .attr("stroke-width", 1)
+      .attr("opacity", 0.3)
+      .attr("visibility", DEBUG);
   } //drawInnerLines()
 
   //////////////////////////////////
