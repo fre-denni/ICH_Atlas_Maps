@@ -491,7 +491,7 @@ const createCompetencesMap = (container) => {
 
     const pie = d3
       .pie()
-      .value((d) => d.frequency)
+      .value(() => 1) //(d) => d.frequency)
       .sort((a, b) => abs(a.frequency - 15) - abs(b.frequency - 75))
       .padAngle(0.015);
 
