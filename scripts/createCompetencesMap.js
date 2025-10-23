@@ -23,10 +23,6 @@
 // This tool is built upon d3.js and bboxCollide libraries, and visualises
 // the mapping of competences and technologies required to different fruitions output of projects
 
-//to handle resizing automatically
-//https://stackoverflow.com/questions/16265123/resize-svg-when-window-is-resized-in-d3-js
-// to see later
-
 //working variables
 const DEBUG = "hidden";
 
@@ -850,56 +846,6 @@ const createCompetencesMap = (container) => {
       .attr("d", arc)
       .attr("fill", COLORS.ui);
   } //drawDonut()
-
-  /***
-   * Render boundary circles and anchor points
-   * @param {Object}  - precalculated donut positions
-   */
-  function defineBoundaries(donutData) {
-    const { data } = donutData;
-
-    // Draw anchor points
-    const points = g.append("g").attr("class", "anchors");
-
-    points
-      .selectAll("circle.inner-point")
-      .data(data)
-      .join("circle")
-      .attr("class", "inner-point")
-      .attr("cx", (d) => d.innerX)
-      .attr("cy", (d) => d.innerY)
-      .attr("r", 3 * SF)
-      .attr("fill", "gray")
-      .attr("visibility", DEBUG);
-
-    points
-      .selectAll("circle.outer-point")
-      .data(data)
-      .join("circle")
-      .attr("class", "outer-point")
-      .attr("cx", (d) => d.outerX)
-      .attr("cy", (d) => d.outerY)
-      .attr("r", 3 * SF)
-      .attr("fill", "gray")
-      .attr("visibility", DEBUG);
-
-    // Draw boundary circles
-    const boundaries = g.append("g").attr("class", "skill-boundaries");
-
-    boundaries
-      .selectAll("circle.boundary")
-      .data(data)
-      .join("circle")
-      .attr("class", "boundary")
-      .attr("cx", (d) => d.outerX)
-      .attr("cy", (d) => d.outerY)
-      .attr("r", (d) => boundary_scale(d.data.frequency))
-      .attr("fill", "none")
-      .attr("stroke", "gray")
-      .attr("stroke-width", 1)
-      .attr("stroke-dasharray", "4,4")
-      .attr("visibility", DEBUG);
-  } //renderBoundaries;()
 
   /***
    * Calculate and draw triad slices
@@ -2636,6 +2582,53 @@ const createCompetencesMap = (container) => {
   }; //handle resizes
 
   ////// DEBUGS (Eliminate in production)
+
+  //Render boundary circles and anchor points
+  function defineBoundaries(donutData) {
+    const { data } = donutData;
+
+    // Draw anchor points
+    const points = g.append("g").attr("class", "anchors");
+
+    points
+      .selectAll("circle.inner-point")
+      .data(data)
+      .join("circle")
+      .attr("class", "inner-point")
+      .attr("cx", (d) => d.innerX)
+      .attr("cy", (d) => d.innerY)
+      .attr("r", 3 * SF)
+      .attr("fill", "gray")
+      .attr("visibility", DEBUG);
+
+    points
+      .selectAll("circle.outer-point")
+      .data(data)
+      .join("circle")
+      .attr("class", "outer-point")
+      .attr("cx", (d) => d.outerX)
+      .attr("cy", (d) => d.outerY)
+      .attr("r", 3 * SF)
+      .attr("fill", "gray")
+      .attr("visibility", DEBUG);
+
+    // Draw boundary circles
+    const boundaries = g.append("g").attr("class", "skill-boundaries");
+
+    boundaries
+      .selectAll("circle.boundary")
+      .data(data)
+      .join("circle")
+      .attr("class", "boundary")
+      .attr("cx", (d) => d.outerX)
+      .attr("cy", (d) => d.outerY)
+      .attr("r", (d) => boundary_scale(d.data.frequency))
+      .attr("fill", "none")
+      .attr("stroke", "gray")
+      .attr("stroke-width", 1)
+      .attr("stroke-dasharray", "4,4")
+      .attr("visibility", DEBUG);
+  } //renderBoundaries;()
 
   //Visualize Delaunay triangulation for debugging
   function showDelaunayMesh() {
