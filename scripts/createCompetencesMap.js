@@ -140,13 +140,14 @@ const createCompetencesMap = (container) => {
   let tech_node_by_id;
   let donut_arc_by_type;
 
-  //Hover elements (SVG selections)
-  let hover_elements = {
-    skills: null,
-    projects: null,
-    techs: null,
-    donut_arcs: null,
-  };
+  //Delaunay diagrams for efficient hover detection
+  let delaunay_skills;
+  let delaunay_projects;
+  let delaunay_techs;
+
+  // Delaunay hover settings
+  const HOVER_THRESHOLD_SKILL = 20; // pixels beyond node radius
+  const HOVER_THRESHOLD_TECH = 20; // pixels beyond node radius
 
   //Node lookups and labels
   let vizProj,
@@ -511,7 +512,7 @@ const createCompetencesMap = (container) => {
       .pie()
       .value(() => 1) //(d) => d.frequency)
       .sort((a, b) => abs(a.frequency - 15) - abs(b.frequency - 75))
-      .padAngle(0.015);
+      .padAngle(0.03);
 
     const data = pie(skillType);
 
@@ -785,7 +786,8 @@ const createCompetencesMap = (container) => {
     renderSkillNodes(skillnodes, true);
 
     //////// HOVER LOGIC
-    setupHoverElements(skillnodes, proj_pos, technodes);
+    buildDelaunayDiagrams(skillnodes, proj_pos, technodes);
+    setupHoverDetection();
   } //draw()
 
   function chart(skillData, techData, projData) {
@@ -807,8 +809,8 @@ const createCompetencesMap = (container) => {
    */
   function drawProjects(positions) {
     //define rhombus width and height (responsive)
-    maxDiag = round(8 * SF);
-    minDiag = round(6 * SF);
+    maxDiag = round(10 * SF);
+    minDiag = round(8 * SF);
     //draw svg rhombus
     const rhombus = `M 0 ${-maxDiag / 2} L ${minDiag / 2} 0 L 0 ${
       maxDiag / 2
@@ -994,7 +996,6 @@ const createCompetencesMap = (container) => {
 
       simulation.on("tick", () => {
         nodeSelection.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
-        updateSkillHoverPositions();
       });
     }
   } //renderSkillNodes()
@@ -1786,6 +1787,539 @@ const createCompetencesMap = (container) => {
     console.log("  - Donut arcs:", donut_arc_by_type.size);
   } //buildNodeLookups()
 
+  /////////// DELAUNEY
+  /**
+   * Build Delaunay diagrams for efficient hover detection
+   * Creates spatial indices for O(log n) nearest-neighbor lookup
+   * Called once after all nodes are calculated in draw()
+   * @param {Array} sk - Array of skill nodes
+   * @param {Array} pr - Array of project positions
+   * @param {Array} tc - Array of tech nodes
+   */
+  function buildDelaunayDiagrams(sk, pr, tc) {
+    // Create Delaunay diagram for skills using their x,y positions
+    delaunay_skills = d3.Delaunay.from(
+      sk,
+      (d) => d.x,
+      (d) => d.y
+    );
+
+    // Create Delaunay diagram for projects using their x,y positions
+    delaunay_projects = d3.Delaunay.from(
+      pr,
+      (d) => d.x,
+      (d) => d.y
+    );
+
+    // Create Delaunay diagram for techs using their x,y positions
+    delaunay_techs = d3.Delaunay.from(
+      tc,
+      (d) => d.x,
+      (d) => d.y
+    );
+
+    console.log("Built Delaunay diagrams for hover detection:");
+    console.log("  - Skills:", sk.length, "nodes");
+    console.log("  - Projects:", pr.length, "nodes");
+    console.log("  - Techs:", tc.length, "nodes");
+  } //buildDelaunayDiagrams()
+
+  /**
+   * Find the closest node to mouse position across all node types
+   * Uses Delaunay diagrams for O(log n) lookup performance
+   * @param {number} mx - Mouse x position (adjusted for SVG transform)
+   * @param {number} my - Mouse y position (adjusted for SVG transform)
+   * @returns {Object|null} { node, type, distance } or null if no node within threshold
+   */
+  function findClosestNode(mx, my) {
+    let closestNode = null;
+    let closestDist = Infinity;
+    let closestType = null;
+
+    // Check skills
+    if (delaunay_skills) {
+      const skillIdx = delaunay_skills.find(mx, my);
+      const skillNodes = [...skill_node_by_id.values()];
+
+      if (skillIdx >= 0 && skillIdx < skillNodes.length) {
+        const skillNode = skillNodes[skillIdx];
+        const skillDist = sqrt(
+          (skillNode.x - mx) ** 2 + (skillNode.y - my) ** 2
+        );
+
+        // Check if within hover threshold (node radius + extra padding)
+        const threshold = skillNode.radius + HOVER_THRESHOLD_SKILL;
+
+        if (skillDist < threshold && skillDist < closestDist) {
+          closestNode = skillNode;
+          closestDist = skillDist;
+          closestType = "skill";
+        }
+      }
+    }
+
+    // Check projects
+    if (delaunay_projects) {
+      const projIdx = delaunay_projects.find(mx, my);
+      const projNodes = [...project_node_by_id.values()];
+
+      if (projIdx >= 0 && projIdx < projNodes.length) {
+        const projNode = projNodes[projIdx];
+        const projDist = sqrt((projNode.x - mx) ** 2 + (projNode.y - my) ** 2);
+
+        // For rhombus, use GENEROUS threshold
+        // Use the full diagonal size as threshold (rhombus is oriented at angle)
+        const threshold = max(maxDiag, minDiag) * 1.2; // 120% of max diagonal
+
+        if (projDist < threshold && projDist < closestDist) {
+          closestNode = projNode;
+          closestDist = projDist;
+          closestType = "project";
+        }
+      }
+
+      // Check techs
+      if (delaunay_techs) {
+        const techIdx = delaunay_techs.find(mx, my);
+        const techNodes = [...tech_node_by_id.values()];
+
+        if (techIdx >= 0 && techIdx < techNodes.length) {
+          const techNode = techNodes[techIdx];
+          const techDist = sqrt(
+            (techNode.x - mx) ** 2 + (techNode.y - my) ** 2
+          );
+
+          // Check if within hover threshold
+          const threshold = techNode.radius + HOVER_THRESHOLD_TECH;
+
+          if (techDist < threshold && techDist < closestDist) {
+            closestNode = techNode;
+            closestDist = techDist;
+            closestType = "tech";
+          }
+        }
+      }
+    }
+
+    // Return closest node if found, otherwise null
+    return closestNode
+      ? { node: closestNode, type: closestType, distance: closestDist }
+      : null;
+  } //findClosestNode()
+
+  /**
+   * Setup hover detection using Delaunay diagrams
+   * Attaches a single mousemove listener to SVG instead of per-node listeners
+   * Called once at the end of draw() after Delaunay diagrams are built
+   */
+  function setupHoverDetection() {
+    // Remove any existing hover listeners
+    svg.on("mousemove", null);
+    svg.on("mouseleave", null);
+
+    // Add single mousemove listener to SVG
+    svg.on("mousemove", function (event) {
+      // Get mouse position relative to SVG
+      const [mx, my] = d3.pointer(event);
+
+      // Adjust for SVG transform (centered at width/2, height/2)
+      const adjusted_x = mx - width / 2;
+      const adjusted_y = my - height / 2;
+
+      // FIRST: Check if hovering over a donut arc (skill type)
+      // Calculate polar coordinates from mouse position
+      const mouse_angle_raw = atan2(adjusted_y, adjusted_x);
+      const mouse_radius = sqrt(adjusted_x ** 2 + adjusted_y ** 2);
+
+      // Normalize angle to 0-2π range (D3 arc angles are in this range)
+      let mouse_angle = (mouse_angle_raw + PI / 2) % TAU;
+      if (mouse_angle < 0) mouse_angle += TAU;
+
+      // Get donut dimensions from the arc generator or data
+      // IMPORTANT: Use the actual dimensions from your donutData
+      const donut_inner_radius = donutData.inner; // Adjust based on your actual inner radius
+      const donut_outer_radius = DONUT_RADIUS + donutData.thickness / 2; // Your DONUT_RADIUS variable
+
+      // Check if mouse is within donut radius range
+      if (
+        mouse_radius >= donut_inner_radius &&
+        mouse_radius <= donut_outer_radius
+      ) {
+        // Find which arc the angle corresponds to
+        const hoveredArc = donutData.data.find((d) => {
+          let startAngle = d.startAngle;
+          let endAngle = d.endAngle;
+
+          // Handle wrap-around case (arc crosses 0/2π boundary)
+          if (endAngle < startAngle) {
+            // Arc wraps around, check two conditions
+            return mouse_angle >= startAngle || mouse_angle <= endAngle;
+          } else {
+            // Normal case
+            return mouse_angle >= startAngle && mouse_angle <= endAngle;
+          }
+        });
+
+        if (hoveredArc) {
+          onNodeHover(hoveredArc, "skill_type");
+          return; // Exit early, don't check other nodes
+        }
+
+        if (window.DEBUG_DONUT) {
+          // Use a flag instead of always logging
+          console.log("Donut hover debug:");
+          console.log(
+            "  Mouse radius:",
+            mouse_radius.toFixed(2),
+            "Expected:",
+            donut_inner_radius.toFixed(2),
+            "-",
+            donut_outer_radius.toFixed(2)
+          );
+          console.log(
+            "  Mouse angle:",
+            mouse_angle.toFixed(4),
+            "rad",
+            "(" + ((mouse_angle * 180) / PI).toFixed(1) + "°)"
+          );
+          console.log(
+            "  Arcs:",
+            donutData.data.map((d) => ({
+              type: d.data.type,
+              start: ((d.startAngle * 180) / PI).toFixed(1) + "°",
+              end: ((d.endAngle * 180) / PI).toFixed(1) + "°",
+            }))
+          );
+        }
+      }
+
+      // SECOND: Check other nodes using Delaunay (only if not hovering donut)
+      const found = findClosestNode(adjusted_x, adjusted_y);
+
+      if (found) {
+        // Node found within threshold - trigger hover
+        onNodeHover(found.node, found.type);
+      } else if (hover_active) {
+        // No node nearby but hover is active - exit hover
+        onNodeHoverExit();
+      }
+    });
+
+    // Add mouseleave listener to handle mouse leaving SVG
+    svg.on("mouseleave", function () {
+      if (hover_active) {
+        onNodeHoverExit();
+      }
+    });
+
+    console.log("✅ Delaunay hover detection setup complete");
+  } //setupHoverDetection()
+
+  /**
+   * Visualize hover detection areas for debugging
+   * Shows circles for skills/techs and rectangles for projects
+   * Call from console: window.showHoverAreas()
+   */
+  function showHoverAreas() {
+    console.log("🎯 Showing hover detection areas...");
+
+    // Remove existing debug layer
+    g.selectAll(".hover-debug-layer").remove();
+
+    // Create debug layer
+    const debug_layer = g
+      .append("g")
+      .attr("class", "hover-debug-layer")
+      .style("pointer-events", "none");
+
+    // 1. DONUT HOVER AREA (annulus)
+    const donut_thickness = donutData.thickness;
+    const donut_inner = DONUT_RADIUS - donut_thickness / 2;
+    const donut_outer = DONUT_RADIUS + donut_thickness / 2;
+
+    debug_layer
+      .append("circle")
+      .attr("cx", 0)
+      .attr("cy", 0)
+      .attr("r", donut_inner)
+      .attr("fill", "none")
+      .attr("stroke", "red")
+      .attr("stroke-width", 2)
+      .attr("stroke-dasharray", "5,5")
+      .attr("opacity", 0.7);
+
+    debug_layer
+      .append("circle")
+      .attr("cx", 0)
+      .attr("cy", 0)
+      .attr("r", donut_outer)
+      .attr("fill", "none")
+      .attr("stroke", "red")
+      .attr("stroke-width", 2)
+      .attr("stroke-dasharray", "5,5")
+      .attr("opacity", 0.7);
+
+    // Add label
+    debug_layer
+      .append("text")
+      .attr("x", donut_outer + 10)
+      .attr("y", 0)
+      .text("Donut Hover Area")
+      .attr("fill", "red")
+      .attr("font-size", 12)
+      .attr("font-weight", "bold");
+
+    // 2. SKILL NODE HOVER AREAS
+    const skillNodes = [...skill_node_by_id.values()];
+    skillNodes.forEach((node) => {
+      const threshold = node.radius + HOVER_THRESHOLD_SKILL;
+
+      debug_layer
+        .append("circle")
+        .attr("cx", node.x)
+        .attr("cy", node.y)
+        .attr("r", threshold)
+        .attr("fill", "purple")
+        .attr("opacity", 0.15)
+        .attr("stroke", "purple")
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", "3,3");
+    });
+
+    // 3. PROJECT NODE HOVER AREAS
+    const projNodes = [...project_node_by_id.values()];
+    projNodes.forEach((node) => {
+      const threshold = max(maxDiag, minDiag) * 1.2;
+
+      debug_layer
+        .append("circle")
+        .attr("cx", node.x)
+        .attr("cy", node.y)
+        .attr("r", threshold)
+        .attr("fill", "green")
+        .attr("opacity", 0.2)
+        .attr("stroke", "green")
+        .attr("stroke-width", 2)
+        .attr("stroke-dasharray", "4,4");
+    });
+
+    // 4. TECH NODE HOVER AREAS
+    const techNodes = [...tech_node_by_id.values()];
+    techNodes.forEach((node) => {
+      const threshold = node.radius + HOVER_THRESHOLD_TECH;
+
+      debug_layer
+        .append("circle")
+        .attr("cx", node.x)
+        .attr("cy", node.y)
+        .attr("r", threshold)
+        .attr("fill", "orange")
+        .attr("opacity", 0.15)
+        .attr("stroke", "orange")
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", "3,3");
+    });
+
+    console.log("✅ Hover areas visible:");
+    console.log("  - Red dashed circles = Donut hover area");
+    console.log("  - Purple areas = Skills");
+    console.log("  - Green areas = Projects");
+    console.log("  - Orange areas = Technologies");
+    console.log("\nCall hideHoverAreas() to remove");
+  }
+
+  /**
+   * Hide hover area visualization
+   */
+  function hideHoverAreas() {
+    g.selectAll(".hover-debug-layer").remove();
+    console.log("👁️ Hover areas hidden");
+  }
+
+  /**
+   * Toggle hover areas visibility
+   */
+  function toggleHoverAreas() {
+    const exists = !g.select(".hover-debug-layer").empty();
+    if (exists) {
+      hideHoverAreas();
+    } else {
+      showHoverAreas();
+    }
+  }
+
+  /**
+   * Visualize donut arc boundaries and angles
+   * Shows lines from center to arc boundaries
+   * Call from console: window.showDonutArcs()
+   */
+  function showDonutArcs() {
+    console.log("🎯 Showing donut arc boundaries...");
+
+    // Remove existing
+    g.selectAll(".donut-debug-layer").remove();
+
+    const debug_layer = g
+      .append("g")
+      .attr("class", "donut-debug-layer")
+      .style("pointer-events", "none");
+
+    const colors = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#FFA07A", "#98D8C8"];
+
+    donutData.data.forEach((d, i) => {
+      const color = colors[i % colors.length];
+
+      // Draw line for start angle
+      const startX = DONUT_RADIUS * 1.3 * cos(d.startAngle);
+      const startY = DONUT_RADIUS * 1.3 * sin(d.startAngle);
+
+      debug_layer
+        .append("line")
+        .attr("x1", 0)
+        .attr("y1", 0)
+        .attr("x2", startX)
+        .attr("y2", startY)
+        .attr("stroke", color)
+        .attr("stroke-width", 2)
+        .attr("opacity", 0.8);
+
+      // Draw line for end angle
+      const endX = DONUT_RADIUS * 1.3 * cos(d.endAngle);
+      const endY = DONUT_RADIUS * 1.3 * sin(d.endAngle);
+
+      debug_layer
+        .append("line")
+        .attr("x1", 0)
+        .attr("y1", 0)
+        .attr("x2", endX)
+        .attr("y2", endY)
+        .attr("stroke", color)
+        .attr("stroke-width", 2)
+        .attr("stroke-dasharray", "5,5")
+        .attr("opacity", 0.8);
+
+      // Add label at middle of arc
+      const midAngle = (d.startAngle + d.endAngle) / 2;
+      const labelRadius = DONUT_RADIUS * 1.5;
+      const labelX = labelRadius * cos(midAngle);
+      const labelY = labelRadius * sin(midAngle);
+
+      debug_layer
+        .append("text")
+        .attr("x", labelX)
+        .attr("y", labelY)
+        .attr("text-anchor", "middle")
+        .attr("font-size", 10)
+        .attr("font-weight", "bold")
+        .attr("fill", color)
+        .text(
+          `${d.data.type}\n${((d.startAngle * 180) / PI).toFixed(0)}° - ${(
+            (d.endAngle * 180) /
+            PI
+          ).toFixed(0)}°`
+        );
+    });
+
+    console.log("✅ Arc boundaries shown");
+    console.log("Solid lines = start angle, Dashed lines = end angle");
+    console.log("\nCall hideDonutArcs() to remove");
+  }
+
+  function hideDonutArcs() {
+    g.selectAll(".donut-debug-layer").remove();
+    console.log("👁️ Arc boundaries hidden");
+  }
+
+  /**
+   * Show live mouse position and angle
+   * Updates in real-time as mouse moves
+   * Call from console: window.showMouseDebug()
+   */
+  function showMouseDebug() {
+    console.log("🎯 Mouse debug mode ON");
+
+    // Remove existing
+    g.selectAll(".mouse-debug-layer").remove();
+
+    const debug_layer = g
+      .append("g")
+      .attr("class", "mouse-debug-layer")
+      .style("pointer-events", "none");
+
+    // Crosshair lines
+    const crosshair_v = debug_layer
+      .append("line")
+      .attr("stroke", "red")
+      .attr("stroke-width", 1)
+      .attr("opacity", 0.5);
+
+    const crosshair_h = debug_layer
+      .append("line")
+      .attr("stroke", "red")
+      .attr("stroke-width", 1)
+      .attr("opacity", 0.5);
+
+    // Mouse circle
+    const mouse_circle = debug_layer
+      .append("circle")
+      .attr("r", 5)
+      .attr("fill", "red")
+      .attr("opacity", 0.7);
+
+    // Info text
+    const info_text = debug_layer
+      .append("text")
+      .attr("font-size", 11)
+      .attr("font-family", "monospace")
+      .attr("fill", "red")
+      .attr("font-weight", "bold");
+
+    // Add real-time update
+    svg.on("mousemove.debug", function (event) {
+      const [mx, my] = d3.pointer(event);
+      const adjusted_x = mx - width / 2;
+      const adjusted_y = my - height / 2;
+
+      const mouse_angle_raw = atan2(adjusted_y, adjusted_x);
+      let mouse_angle = mouse_angle_raw;
+      if (mouse_angle < 0) mouse_angle += TAU;
+
+      const mouse_radius = sqrt(adjusted_x ** 2 + adjusted_y ** 2);
+
+      // Update crosshair
+      crosshair_v
+        .attr("x1", adjusted_x)
+        .attr("y1", -height / 2)
+        .attr("x2", adjusted_x)
+        .attr("y2", height / 2);
+
+      crosshair_h
+        .attr("x1", -width / 2)
+        .attr("y1", adjusted_y)
+        .attr("x2", width / 2)
+        .attr("y2", adjusted_y);
+
+      // Update circle
+      mouse_circle.attr("cx", adjusted_x).attr("cy", adjusted_y);
+
+      // Update text
+      const angle_deg = ((mouse_angle * 180) / PI).toFixed(1);
+      info_text
+        .attr("x", adjusted_x + 15)
+        .attr("y", adjusted_y - 10)
+        .text(`r: ${mouse_radius.toFixed(1)}px | θ: ${angle_deg}°`);
+    });
+
+    console.log("✅ Mouse debug active - move mouse over visualization");
+    console.log("Call hideMouseDebug() to stop");
+  }
+
+  function hideMouseDebug() {
+    g.selectAll(".mouse-debug-layer").remove();
+    svg.on("mousemove.debug", null);
+    console.log("👁️ Mouse debug OFF");
+  }
+
   /////////// EDGE FILTERING HELPERS
 
   /**
@@ -2065,237 +2599,35 @@ const createCompetencesMap = (container) => {
     return { projects };
   } //getConnectedToTech()
 
-  /////// HOVER DETECTION SETUP
-
-  /**
-   * Setup invisible SVG elements for hover detection
-   * Creates transparent overlay elements that capture mouse events
-   * Should be called at the end of draw() after all nodes are rendered
-   * @param {Array} skillnodes - Array of skill node objects
-   * @param {Array} proj_pos - Array of project position objects
-   * @param {Array} technodes - Array of tech node objects
-   */
-  function setupHoverElements(skillnodes, proj_pos, technodes) {
-    // Remove any existing hover elements
-    g.selectAll(".hover-layer").remove();
-
-    // Create hover layer group (on top of everything)
-    const hover_layer = g
-      .append("g")
-      .attr("class", "hover-layer")
-      .style("pointer-events", "all");
-
-    console.log("Setting up hover elements...");
-
-    // SKILL NODES - Invisible circles
-    hover_elements.skills = hover_layer
-      .append("g")
-      .attr("class", "skill-hover-group")
-      .selectAll("circle.skill-hover")
-      .data(skillnodes)
-      .join("circle")
-      .attr("class", "skill-hover")
-      .attr("cx", (d) => d.x)
-      .attr("cy", (d) => d.y)
-      .attr("r", (d) => d.radius)
-      .style("fill", "none")
-      .style("stroke", "none")
-      .style("pointer-events", "all")
-      .style("cursor", "pointer")
-      .on("mouseover", function (event, d) {
-        onNodeHover(d, "skill");
-      })
-      .on("mouseout", function (event, d) {
-        onNodeHoverExit();
-      });
-
-    console.log(`  - Created ${skillnodes.length} skill hover elements`);
-
-    // PROJECT NODES - Invisible rhombus paths
-    hover_elements.projects = hover_layer
-      .append("g")
-      .attr("class", "project-hover-group")
-      .selectAll("path.project-hover")
-      .data(proj_pos)
-      .join("path")
-      .attr("class", "project-hover")
-      .attr("d", (d) => createProjectHoverPath(d))
-      .attr("transform", (d) => {
-        const rotation = (d.angle * 180) / PI;
-        return `translate(${d.x}, ${d.y}) rotate(${rotation})`;
-      })
-      .style("fill", "none")
-      .style("stroke", "none")
-      .style("pointer-events", "all")
-      .style("cursor", "pointer")
-      // ✅ NEW: Add event handlers
-      .on("mouseover", function (event, d) {
-        onNodeHover(d, "project");
-      })
-      .on("mouseout", function (event, d) {
-        onNodeHoverExit();
-      });
-
-    console.log(`  - Created ${proj_pos.length} project hover elements`);
-
-    // TECH NODES - Invisible circles
-    hover_elements.techs = hover_layer
-      .append("g")
-      .attr("class", "tech-hover-group")
-      .selectAll("circle.tech-hover")
-      .data(technodes)
-      .join("circle")
-      .attr("class", "tech-hover")
-      .attr("cx", (d) => d.x)
-      .attr("cy", (d) => d.y)
-      .attr("r", (d) => d.radius + 3 * SF)
-      .style("fill", "none")
-      .style("stroke", "none")
-      .style("pointer-events", "all")
-      .style("cursor", "pointer")
-      // ✅ NEW: Add event handlers
-      .on("mouseover", function (event, d) {
-        onNodeHover(d, "tech");
-      })
-      .on("mouseout", function (event, d) {
-        onNodeHoverExit();
-      });
-
-    console.log(`  - Created ${technodes.length} tech hover elements`);
-
-    // DONUT ARCS - Invisible arc paths
-    hover_elements.donut_arcs = hover_layer
-      .append("g")
-      .attr("class", "donut-hover-group")
-      .selectAll("path.donut-hover")
-      .data(donutData.data)
-      .join("path")
-      .attr("class", "donut-hover")
-      .attr("d", donutData.arc)
-      .style("fill", "none")
-      .style("stroke", "none")
-      .style("pointer-events", "all")
-      .style("cursor", "pointer")
-      .on("mouseover", function (event, d) {
-        onNodeHover(d, "skill_type");
-      })
-      .on("mouseout", function (event, d) {
-        onNodeHoverExit();
-      });
-
-    console.log(
-      `  - Created ${donutData.data.length} donut arc hover elements`
-    );
-    console.log("✅ Hover elements setup complete");
-  } //setupHoverElements()
-
-  /**
-   * Update skill hover element positions to match current node positions
-   * Called during simulation tick to keep hover areas synchronized with moving nodes
-   */
-  function updateSkillHoverPositions() {
-    if (!hover_elements.skills) return;
-
-    hover_elements.skills.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
-  }
-
   ////// DEBUGS
-  /**
-   * Show hover boundaries for debugging
-   * Makes all invisible hover elements visible with semi-transparent colors
-   * Call this from browser console: showHoverElements()
-   */
-  function showHoverElements() {
-    console.log("🔍 Showing hover boundaries...");
-
-    // Show skill hover circles in purple
-    g.selectAll(".skill-hover")
-      .style("fill", COLORS.proj)
-      .style("fill-opacity", 0.3)
-      .style("stroke", COLORS.proj)
-      .style("stroke-width", 2 * SF)
-      .style("stroke-opacity", 0.6);
-
-    // Show project hover paths in green
-    g.selectAll(".project-hover")
-      .style("fill", "green")
-      .style("fill-opacity", 0.3)
-      .style("stroke", "green")
-      .style("stroke-width", 2 * SF)
-      .style("stroke-opacity", 0.6);
-
-    // Show tech hover circles in orange
-    g.selectAll(".tech-hover")
-      .style("fill", "#FFA726")
-      .style("fill-opacity", 0.3)
-      .style("stroke", "#FFA726")
-      .style("stroke-width", 2 * SF)
-      .style("stroke-opacity", 0.6);
-
-    // Show donut hover arcs in deep purple
-    g.selectAll(".donut-hover")
-      .style("fill", COLORS.ui)
-      .style("fill-opacity", 0.3)
-      .style("stroke", COLORS.ui)
-      .style("stroke-width", 2 * SF)
-      .style("stroke-opacity", 0.6);
-
-    console.log("✅ Hover boundaries visible:");
-    console.log("  - Purple circles = Skills");
-    console.log("  - Green rhombus = Projects");
-    console.log("  - Orange circles = Technologies");
-    console.log("  - Deep purple arcs = Skill Types (donut)");
-  }
 
   /**
-   * Hide hover boundaries (return to normal state)
-   * Makes all hover elements invisible again
-   * Call this from browser console: hideHoverElements()
+   * Visualize Delaunay triangulation for debugging
+   * Draws the Delaunay mesh on top of visualization
    */
-  function hideHoverElements() {
-    console.log("👁️ Hiding hover boundaries...");
+  function showDelaunayMesh() {
+    // Remove existing mesh if any
+    g.selectAll(".delaunay-mesh").remove();
 
-    // Hide all hover elements
-    g.selectAll(".skill-hover")
-      .style("fill", "none")
-      .style("fill-opacity", 0)
-      .style("stroke", "none")
-      .style("stroke-opacity", 0);
-
-    g.selectAll(".project-hover")
-      .style("fill", "none")
-      .style("fill-opacity", 0)
-      .style("stroke", "none")
-      .style("stroke-opacity", 0);
-
-    g.selectAll(".tech-hover")
-      .style("fill", "none")
-      .style("fill-opacity", 0)
-      .style("stroke", "none")
-      .style("stroke-opacity", 0);
-
-    g.selectAll(".donut-hover")
-      .style("fill", "none")
-      .style("fill-opacity", 0)
-      .style("stroke", "none")
-      .style("stroke-opacity", 0);
-
-    console.log("✅ Hover boundaries hidden");
-  }
-
-  /**
-   * Toggle hover boundaries visibility
-   * Call this from browser console: toggleHoverElements()
-   */
-  function toggleHoverElements() {
-    // Check if currently visible by checking one element
-    const isVisible = g.select(".skill-hover").style("fill-opacity") !== "0";
-
-    if (isVisible) {
-      hideHoverElements();
-    } else {
-      showHoverElements();
+    // Draw skills Delaunay
+    if (delaunay_skills) {
+      const skillNodes = [...skill_node_by_id.values()];
+      g.append("path")
+        .attr("class", "delaunay-mesh")
+        .attr("d", delaunay_skills.render())
+        .attr("fill", "none")
+        .attr("stroke", "red")
+        .attr("stroke-width", 0.5)
+        .attr("opacity", 0.3);
     }
+
+    console.log("✅ Delaunay mesh visible");
+  }
+
+  // Expose to window
+  if (typeof window !== "undefined") {
+    window.showDelaunayMesh = showDelaunayMesh;
+    console.log("🛠️ Debug: showDelaunayMesh() available");
   }
 
   ///////// HELPERS
@@ -2653,22 +2985,6 @@ const createCompetencesMap = (container) => {
     g.selectAll(".donut-skill path").attr("opacity", 1.0);
   } //resetAllNodesOpacity()
 
-  /**
-   * Create hover path for project rhombus
-   * Slightly larger than visible shape for easier hovering
-   * @param {Object} d - Project node data
-   * @returns {string} SVG path string
-   */
-  function createProjectHoverPath(d) {
-    const padding = 8 * SF; // Extra space for easier hovering
-    const maxD = maxDiag + padding;
-    const minD = minDiag + padding;
-
-    return `M 0 ${-maxD / 2} L ${minD / 2} 0 L 0 ${maxD / 2} L ${
-      -minD / 2
-    } 0 Z`;
-  } //createProjectHoverPath()
-
   //////////////////////////////////
   ////// Sizing functions /////////
   /////////////////////////////////
@@ -2739,16 +3055,25 @@ const createCompetencesMap = (container) => {
     draw();
   }; //handle resizes
 
-  // Expose debug functions to window for console access
   if (typeof window !== "undefined") {
-    window.showHoverElements = showHoverElements;
-    window.hideHoverElements = hideHoverElements;
-    window.toggleHoverElements = toggleHoverElements;
+    window.showHoverAreas = showHoverAreas;
+    window.hideHoverAreas = hideHoverAreas;
+    window.toggleHoverAreas = toggleHoverAreas;
+    window.showDonutArcs = showDonutArcs;
+    window.hideDonutArcs = hideDonutArcs;
+    window.showMouseDebug = showMouseDebug;
+    window.hideMouseDebug = hideMouseDebug;
+
+    // Debug flags
+    window.DEBUG_HOVER = false;
+    window.DEBUG_DONUT = false;
 
     console.log("🛠️ Debug functions available:");
-    console.log("  - showHoverElements() - Show hover boundaries");
-    console.log("  - hideHoverElements() - Hide hover boundaries");
-    console.log("  - toggleHoverElements() - Toggle visibility");
+    console.log("  - showHoverAreas() / hideHoverAreas() / toggleHoverAreas()");
+    console.log("  - showDonutArcs() / hideDonutArcs()");
+    console.log("  - showMouseDebug() / hideMouseDebug()");
+    console.log("  - window.DEBUG_HOVER = true (enable project hover logs)");
+    console.log("  - window.DEBUG_DONUT = true (enable donut hover logs)");
   }
 
   return chart;
