@@ -2250,269 +2250,8 @@ const createCompetencesMap = (container) => {
     return { projects };
   } //getConnectedToTech()
 
-  ////// DEBUGS
-
-  //Visualize Delaunay triangulation for debugging
-  function showDelaunayMesh() {
-    // Remove existing mesh if any
-    g.selectAll(".delaunay-mesh").remove();
-
-    // Draw skills Delaunay
-    if (delaunay_skills) {
-      const skillNodes = [...skill_node_by_id.values()];
-      g.append("path")
-        .attr("class", "delaunay-mesh")
-        .attr("d", delaunay_skills.render())
-        .attr("fill", "none")
-        .attr("stroke", "red")
-        .attr("stroke-width", 0.5)
-        .attr("opacity", 0.3);
-    }
-  } //showDelaunayMesh()
-
-  // Expose to window
-  if (typeof window !== "undefined") {
-    window.showDelaunayMesh = showDelaunayMesh;
-    console.log("🛠️ Debug: showDelaunayMesh() available");
-  }
-
-  //Show live mouse position and angle
-  function showMouseDebug() {
-    // Remove existing
-    g.selectAll(".mouse-debug-layer").remove();
-
-    const debug_layer = g
-      .append("g")
-      .attr("class", "mouse-debug-layer")
-      .style("pointer-events", "none");
-
-    // Crosshair lines
-    const crosshair_v = debug_layer
-      .append("line")
-      .attr("stroke", "red")
-      .attr("stroke-width", 1)
-      .attr("opacity", 0.5);
-
-    const crosshair_h = debug_layer
-      .append("line")
-      .attr("stroke", "red")
-      .attr("stroke-width", 1)
-      .attr("opacity", 0.5);
-
-    // Mouse circle
-    const mouse_circle = debug_layer
-      .append("circle")
-      .attr("r", 5)
-      .attr("fill", "red")
-      .attr("opacity", 0.7);
-
-    // Info text
-    const info_text = debug_layer
-      .append("text")
-      .attr("font-size", 11)
-      .attr("font-family", "monospace")
-      .attr("fill", "red")
-      .attr("font-weight", "bold");
-
-    // Add real-time update
-    svg.on("mousemove.debug", function (event) {
-      const [mx, my] = d3.pointer(event);
-      const adjusted_x = mx - width / 2;
-      const adjusted_y = my - height / 2;
-
-      const mouse_angle_raw = atan2(adjusted_y, adjusted_x);
-      let mouse_angle = mouse_angle_raw;
-      if (mouse_angle < 0) mouse_angle += TAU;
-
-      const mouse_radius = sqrt(adjusted_x ** 2 + adjusted_y ** 2);
-
-      // Update crosshair
-      crosshair_v
-        .attr("x1", adjusted_x)
-        .attr("y1", -height / 2)
-        .attr("x2", adjusted_x)
-        .attr("y2", height / 2);
-
-      crosshair_h
-        .attr("x1", -width / 2)
-        .attr("y1", adjusted_y)
-        .attr("x2", width / 2)
-        .attr("y2", adjusted_y);
-
-      // Update circle
-      mouse_circle.attr("cx", adjusted_x).attr("cy", adjusted_y);
-
-      // Update text
-      const angle_deg = ((mouse_angle * 180) / PI).toFixed(1);
-      info_text
-        .attr("x", adjusted_x + 15)
-        .attr("y", adjusted_y - 10)
-        .text(`r: ${mouse_radius.toFixed(1)}px | θ: ${angle_deg}°`);
-    });
-  } // showMouseDebug()
-
-  function hideMouseDebug() {
-    g.selectAll(".mouse-debug-layer").remove();
-    svg.on("mousemove.debug", null);
-  } //hideMouseDebug()s
-
-  //Visualize hover detection areas for debugging
-  function showHoverAreas() {
-    // Remove existing debug layer
-    g.selectAll(".hover-debug-layer").remove();
-
-    // Create debug layer
-    const debug_layer = g
-      .append("g")
-      .attr("class", "hover-debug-layer")
-      .style("pointer-events", "none");
-
-    // 1. DONUT HOVER AREA (annulus)
-    const donut_thickness = donutData.thickness;
-    const donut_inner = DONUT_RADIUS - donut_thickness / 2;
-    const donut_outer = DONUT_RADIUS + donut_thickness / 2;
-
-    debug_layer
-      .append("circle")
-      .attr("cx", 0)
-      .attr("cy", 0)
-      .attr("r", donut_inner)
-      .attr("fill", "none")
-      .attr("stroke", "red")
-      .attr("stroke-width", 2)
-      .attr("stroke-dasharray", "5,5")
-      .attr("opacity", 0.7);
-
-    debug_layer
-      .append("circle")
-      .attr("cx", 0)
-      .attr("cy", 0)
-      .attr("r", donut_outer)
-      .attr("fill", "none")
-      .attr("stroke", "red")
-      .attr("stroke-width", 2)
-      .attr("stroke-dasharray", "5,5")
-      .attr("opacity", 0.7);
-
-    // Add label
-    debug_layer
-      .append("text")
-      .attr("x", donut_outer + 10)
-      .attr("y", 0)
-      .text("Donut Hover Area")
-      .attr("fill", "red")
-      .attr("font-size", 12)
-      .attr("font-weight", "bold");
-
-    // 2. SKILL NODE HOVER AREAS
-    const skillNodes = [...skill_node_by_id.values()];
-    skillNodes.forEach((node) => {
-      const threshold = node.radius + HOVER_THRESHOLD_SKILL;
-
-      debug_layer
-        .append("circle")
-        .attr("cx", node.x)
-        .attr("cy", node.y)
-        .attr("r", threshold)
-        .attr("fill", "purple")
-        .attr("opacity", 0.15)
-        .attr("stroke", "purple")
-        .attr("stroke-width", 1)
-        .attr("stroke-dasharray", "3,3");
-    });
-
-    // 3. PROJECT NODE HOVER AREAS
-    const projNodes = [...project_node_by_id.values()];
-    projNodes.forEach((node) => {
-      const threshold = max(maxDiag, minDiag) * 1.2;
-
-      debug_layer
-        .append("circle")
-        .attr("cx", node.x)
-        .attr("cy", node.y)
-        .attr("r", threshold)
-        .attr("fill", "green")
-        .attr("opacity", 0.2)
-        .attr("stroke", "green")
-        .attr("stroke-width", 2)
-        .attr("stroke-dasharray", "4,4");
-    });
-
-    // 4. TECH NODE HOVER AREAS
-    const techNodes = [...tech_node_by_id.values()];
-    techNodes.forEach((node) => {
-      const threshold = node.radius + HOVER_THRESHOLD_TECH;
-
-      debug_layer
-        .append("circle")
-        .attr("cx", node.x)
-        .attr("cy", node.y)
-        .attr("r", threshold)
-        .attr("fill", "orange")
-        .attr("opacity", 0.15)
-        .attr("stroke", "orange")
-        .attr("stroke-width", 1)
-        .attr("stroke-dasharray", "3,3");
-    });
-  } //showHoverAreas()
-
-  //Hide hover area visualization
-  function hideHoverAreas() {
-    g.selectAll(".hover-debug-layer").remove();
-  } //hideHoverAreas()
-
-  //Toggle hover areas visibility
-  function toggleHoverAreas() {
-    const exists = !g.select(".hover-debug-layer").empty();
-    if (exists) {
-      hideHoverAreas();
-    } else {
-      showHoverAreas();
-    }
-  } //toggleHoverAreas()
-
-  function techBugs(master) {
-    // Boundary circles
-    const boundaryCircles = g
-      .append("g")
-      .attr("class", "debug-boundary-circles")
-      .attr("visibility", DEBUG);
-
-    boundaryCircles
-      .append("circle")
-      .attr("cx", 0)
-      .attr("cy", 0)
-      .attr("r", TECHNOLOGY_RADIUS - PADDING / 2)
-      .attr("fill", "none")
-      .attr("stroke", "black")
-      .attr("stroke-width", 1)
-      .attr("stroke-dasharray", "4,4");
-
-    boundaryCircles
-      .append("circle")
-      .attr("cx", 0)
-      .attr("cy", 0)
-      .attr("r", CENTRAL_HOLE_RADIUS + PADDING / 2)
-      .attr("fill", "none")
-      .attr("stroke", "black")
-      .attr("stroke-width", 1)
-      .attr("stroke-dasharray", "4,4");
-
-    // Phyllotaxis grid
-    g.append("g")
-      .attr("class", "debug-phyllotaxis-grid")
-      .selectAll("circle")
-      .data(master)
-      .join("circle")
-      .attr("cx", (d) => d.x)
-      .attr("cy", (d) => d.y)
-      .attr("r", 1.5)
-      .attr("fill", "black")
-      .attr("opacity", 0.5)
-      .attr("visibility", DEBUG);
-  } //techBugs
-
   ///////// HELPERS
+
   //Handle node hover event
   function onNodeHover(node, type) {
     // Prevent rapid toggling
@@ -2895,6 +2634,268 @@ const createCompetencesMap = (container) => {
     updateTooltipSizes();
     draw();
   }; //handle resizes
+
+  ////// DEBUGS (Eliminate in production)
+
+  //Visualize Delaunay triangulation for debugging
+  function showDelaunayMesh() {
+    // Remove existing mesh if any
+    g.selectAll(".delaunay-mesh").remove();
+
+    // Draw skills Delaunay
+    if (delaunay_skills) {
+      const skillNodes = [...skill_node_by_id.values()];
+      g.append("path")
+        .attr("class", "delaunay-mesh")
+        .attr("d", delaunay_skills.render())
+        .attr("fill", "none")
+        .attr("stroke", "red")
+        .attr("stroke-width", 0.5)
+        .attr("opacity", 0.3);
+    }
+  } //showDelaunayMesh()
+
+  //Show live mouse position and angle
+  function showMouseDebug() {
+    // Remove existing
+    g.selectAll(".mouse-debug-layer").remove();
+
+    const debug_layer = g
+      .append("g")
+      .attr("class", "mouse-debug-layer")
+      .style("pointer-events", "none");
+
+    // Crosshair lines
+    const crosshair_v = debug_layer
+      .append("line")
+      .attr("stroke", "red")
+      .attr("stroke-width", 1)
+      .attr("opacity", 0.5);
+
+    const crosshair_h = debug_layer
+      .append("line")
+      .attr("stroke", "red")
+      .attr("stroke-width", 1)
+      .attr("opacity", 0.5);
+
+    // Mouse circle
+    const mouse_circle = debug_layer
+      .append("circle")
+      .attr("r", 5)
+      .attr("fill", "red")
+      .attr("opacity", 0.7);
+
+    // Info text
+    const info_text = debug_layer
+      .append("text")
+      .attr("font-size", 11)
+      .attr("font-family", "monospace")
+      .attr("fill", "red")
+      .attr("font-weight", "bold");
+
+    // Add real-time update
+    svg.on("mousemove.debug", function (event) {
+      const [mx, my] = d3.pointer(event);
+      const adjusted_x = mx - width / 2;
+      const adjusted_y = my - height / 2;
+
+      const mouse_angle_raw = atan2(adjusted_y, adjusted_x);
+      let mouse_angle = mouse_angle_raw;
+      if (mouse_angle < 0) mouse_angle += TAU;
+
+      const mouse_radius = sqrt(adjusted_x ** 2 + adjusted_y ** 2);
+
+      // Update crosshair
+      crosshair_v
+        .attr("x1", adjusted_x)
+        .attr("y1", -height / 2)
+        .attr("x2", adjusted_x)
+        .attr("y2", height / 2);
+
+      crosshair_h
+        .attr("x1", -width / 2)
+        .attr("y1", adjusted_y)
+        .attr("x2", width / 2)
+        .attr("y2", adjusted_y);
+
+      // Update circle
+      mouse_circle.attr("cx", adjusted_x).attr("cy", adjusted_y);
+
+      // Update text
+      const angle_deg = ((mouse_angle * 180) / PI).toFixed(1);
+      info_text
+        .attr("x", adjusted_x + 15)
+        .attr("y", adjusted_y - 10)
+        .text(`r: ${mouse_radius.toFixed(1)}px | θ: ${angle_deg}°`);
+    });
+  } // showMouseDebug()
+
+  function hideMouseDebug() {
+    g.selectAll(".mouse-debug-layer").remove();
+    svg.on("mousemove.debug", null);
+  } //hideMouseDebug()s
+
+  //Visualize hover detection areas for debugging
+  function showHoverAreas() {
+    // Remove existing debug layer
+    g.selectAll(".hover-debug-layer").remove();
+
+    // Create debug layer
+    const debug_layer = g
+      .append("g")
+      .attr("class", "hover-debug-layer")
+      .style("pointer-events", "none");
+
+    // 1. DONUT HOVER AREA (annulus)
+    const donut_thickness = donutData.thickness;
+    const donut_inner = DONUT_RADIUS - donut_thickness / 2;
+    const donut_outer = DONUT_RADIUS + donut_thickness / 2;
+
+    debug_layer
+      .append("circle")
+      .attr("cx", 0)
+      .attr("cy", 0)
+      .attr("r", donut_inner)
+      .attr("fill", "none")
+      .attr("stroke", "red")
+      .attr("stroke-width", 2)
+      .attr("stroke-dasharray", "5,5")
+      .attr("opacity", 0.7);
+
+    debug_layer
+      .append("circle")
+      .attr("cx", 0)
+      .attr("cy", 0)
+      .attr("r", donut_outer)
+      .attr("fill", "none")
+      .attr("stroke", "red")
+      .attr("stroke-width", 2)
+      .attr("stroke-dasharray", "5,5")
+      .attr("opacity", 0.7);
+
+    // Add label
+    debug_layer
+      .append("text")
+      .attr("x", donut_outer + 10)
+      .attr("y", 0)
+      .text("Donut Hover Area")
+      .attr("fill", "red")
+      .attr("font-size", 12)
+      .attr("font-weight", "bold");
+
+    // 2. SKILL NODE HOVER AREAS
+    const skillNodes = [...skill_node_by_id.values()];
+    skillNodes.forEach((node) => {
+      const threshold = node.radius + HOVER_THRESHOLD_SKILL;
+
+      debug_layer
+        .append("circle")
+        .attr("cx", node.x)
+        .attr("cy", node.y)
+        .attr("r", threshold)
+        .attr("fill", "purple")
+        .attr("opacity", 0.15)
+        .attr("stroke", "purple")
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", "3,3");
+    });
+
+    // 3. PROJECT NODE HOVER AREAS
+    const projNodes = [...project_node_by_id.values()];
+    projNodes.forEach((node) => {
+      const threshold = max(maxDiag, minDiag) * 1.2;
+
+      debug_layer
+        .append("circle")
+        .attr("cx", node.x)
+        .attr("cy", node.y)
+        .attr("r", threshold)
+        .attr("fill", "green")
+        .attr("opacity", 0.2)
+        .attr("stroke", "green")
+        .attr("stroke-width", 2)
+        .attr("stroke-dasharray", "4,4");
+    });
+
+    // 4. TECH NODE HOVER AREAS
+    const techNodes = [...tech_node_by_id.values()];
+    techNodes.forEach((node) => {
+      const threshold = node.radius + HOVER_THRESHOLD_TECH;
+
+      debug_layer
+        .append("circle")
+        .attr("cx", node.x)
+        .attr("cy", node.y)
+        .attr("r", threshold)
+        .attr("fill", "orange")
+        .attr("opacity", 0.15)
+        .attr("stroke", "orange")
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", "3,3");
+    });
+  } //showHoverAreas()
+
+  //Hide hover area visualization
+  function hideHoverAreas() {
+    g.selectAll(".hover-debug-layer").remove();
+  } //hideHoverAreas()
+
+  //Toggle hover areas visibility
+  function toggleHoverAreas() {
+    const exists = !g.select(".hover-debug-layer").empty();
+    if (exists) {
+      hideHoverAreas();
+    } else {
+      showHoverAreas();
+    }
+  } //toggleHoverAreas()
+
+  function techBugs(master) {
+    // Boundary circles
+    const boundaryCircles = g
+      .append("g")
+      .attr("class", "debug-boundary-circles")
+      .attr("visibility", DEBUG);
+
+    boundaryCircles
+      .append("circle")
+      .attr("cx", 0)
+      .attr("cy", 0)
+      .attr("r", TECHNOLOGY_RADIUS - PADDING / 2)
+      .attr("fill", "none")
+      .attr("stroke", "black")
+      .attr("stroke-width", 1)
+      .attr("stroke-dasharray", "4,4");
+
+    boundaryCircles
+      .append("circle")
+      .attr("cx", 0)
+      .attr("cy", 0)
+      .attr("r", CENTRAL_HOLE_RADIUS + PADDING / 2)
+      .attr("fill", "none")
+      .attr("stroke", "black")
+      .attr("stroke-width", 1)
+      .attr("stroke-dasharray", "4,4");
+
+    // Phyllotaxis grid
+    g.append("g")
+      .attr("class", "debug-phyllotaxis-grid")
+      .selectAll("circle")
+      .data(master)
+      .join("circle")
+      .attr("cx", (d) => d.x)
+      .attr("cy", (d) => d.y)
+      .attr("r", 1.5)
+      .attr("fill", "black")
+      .attr("opacity", 0.5)
+      .attr("visibility", DEBUG);
+  } //techBugs
+
+  // Expose to window
+  if (typeof window !== "undefined") {
+    window.showDelaunayMesh = showDelaunayMesh;
+    console.log("🛠️ Debug: showDelaunayMesh() available");
+  }
 
   if (typeof window !== "undefined") {
     window.showHoverAreas = showHoverAreas;
