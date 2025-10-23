@@ -169,7 +169,7 @@ const createCompetencesMap = (container) => {
     arrow_size: 5, // Arrow triangle size
     cta_size: 18, // CTA button size
     cta_offset: 40, // CTA vertical offset from bottom
-    offset_y: 8, // Distance from node
+    offset_y: 12, // Distance from node
   };
 
   //modals
@@ -1588,7 +1588,7 @@ const createCompetencesMap = (container) => {
 
     // Update content padding and border radius
     tooltip_content
-      .style("width", `${width}px`)
+      .style("max-width", `${width}px`)
       .style("padding", `${padding_v}px ${padding_h}px`)
       .style("border-radius", `${border_radius}px`);
 
@@ -1697,12 +1697,16 @@ const createCompetencesMap = (container) => {
     }
 
     // Make tooltip visible but transparent to measure it
-    tooltip.style("display", "block").style("opacity", "0");
+    tooltip
+      .style("display", "block")
+      .style("visibility", "hidden")
+      .style("opacity", "0");
 
     // Get dimensions after content is set
     const content_rect = tooltip_content.node().getBoundingClientRect();
     const content_height = content_rect.height;
     const content_width = content_rect.width;
+    tooltip.style("visibility", "visible");
 
     // Convert SVG coordinates to page coordinates
     const svg_element = svg.node();
