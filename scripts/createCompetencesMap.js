@@ -142,8 +142,9 @@ const createCompetencesMap = (container) => {
   let delaunay_techs;
 
   // Delaunay hover settings
-  const HOVER_THRESHOLD_SKILL = 20; // pixels beyond node radius
-  const HOVER_THRESHOLD_TECH = 20; // pixels beyond node radius
+  const HOVER_THRESHOLD_SKILL = 5; // pixels beyond node radius
+  const RHOMBUS_HOVER_PADDING = 8;
+  const HOVER_THRESHOLD_TECH = 30; // pixels beyond node radius
 
   //Node lookups and labels
   let vizProj;
@@ -162,10 +163,9 @@ const createCompetencesMap = (container) => {
     label_size: 7, // Label font size
     header_size: 10, // Header font size
     label_margin: 2, // Space between label and header
-    arrow_size: 5, // Arrow triangle size
     cta_size: 18, // CTA button size
     cta_offset: 40, // CTA vertical offset from bottom
-    offset_y: 12, // Distance from node
+    offset_y: 18, // Distance from node
   };
 
   //modals
@@ -941,6 +941,7 @@ const createCompetencesMap = (container) => {
 
       simulation.on("tick", () => {
         nodeSelection.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
+        rebuildSkillDelaunay(nodes);
       });
     }
   } //renderSkillNodes()
@@ -1483,7 +1484,6 @@ const createCompetencesMap = (container) => {
     const label_size = TOOLTIP_BASE.label_size * SF;
     const header_size = TOOLTIP_BASE.header_size * SF;
     const label_margin = TOOLTIP_BASE.label_margin * SF;
-    const arrow_size = TOOLTIP_BASE.arrow_size * SF;
     const border_radius = 4 * SF;
     const cta_size = TOOLTIP_BASE.cta_size * SF;
 
@@ -1619,12 +1619,11 @@ const createCompetencesMap = (container) => {
     const page_y = svg_center_y + y;
 
     // Calculate positions
-    const arrow_size = TOOLTIP_BASE.arrow_size * SF;
     const offset_y = TOOLTIP_BASE.offset_y * SF;
     const cta_offset = TOOLTIP_BASE.cta_offset * SF;
 
     // Total height including arrow
-    const total_height = content_height + arrow_size;
+    const total_height = content_height;
 
     // Position tooltip centered horizontally, above node
     const tooltip_x = page_x - content_width / 2;
@@ -1719,6 +1718,64 @@ const createCompetencesMap = (container) => {
     );
   } //buildDelaunayDiagrams()
 
+  //for simulation
+  function rebuildSkillDelaunay(skillnodes) {
+    if (!skillnodes || skillnodes.length === 0) return;
+
+    delaunay_skills = d3.Delaunay.from(
+      skillnodes,
+      (d) => d.x,
+      (d) => d.y
+    );
+  } //rebuildSkillDelaunay()
+
+  //check if the rhombus is rotated
+  function isPointInRotatedRhombus(
+    px,
+    py,
+    cx,
+    cy,
+    angle,
+    maxDiag,
+    minDiag,
+    padding = 0
+  ) {
+    // Apply padding to dimensions
+    const halfHeight = maxDiag / 2 + padding;
+    const halfWidth = minDiag / 2 + padding;
+
+    // Translate point to rhombus-centered coordinates
+    const dx = px - cx;
+    const dy = py - cy;
+
+    // Apply inverse rotation to get point in rhombus's local space
+    const cos_a = cos(-angle);
+    const sin_a = sin(-angle);
+    const local_x = dx * cos_a - dy * sin_a;
+    const local_y = dx * sin_a + dy * cos_a;
+
+    // Check if point is inside rhombus using cross product method
+    // A point is inside if it's on the correct side of all 4 edges
+
+    // Edge 1: Top to Right
+    const edge1 =
+      local_x * halfHeight + local_y * halfWidth <= halfHeight * halfWidth;
+
+    // Edge 2: Right to Bottom
+    const edge2 =
+      local_x * halfHeight - local_y * halfWidth <= halfHeight * halfWidth;
+
+    // Edge 3: Bottom to Left
+    const edge3 =
+      -local_x * halfHeight - local_y * halfWidth <= halfHeight * halfWidth;
+
+    // Edge 4: Left to Top
+    const edge4 =
+      -local_x * halfHeight + local_y * halfWidth <= halfHeight * halfWidth;
+
+    return edge1 && edge2 && edge3 && edge4;
+  } //isPointInRotatedRhombus()
+
   /**
    * Find the closest node to mouse position across all node types
    * Uses Delaunay diagrams for O(log n) lookup performance
@@ -1753,19 +1810,28 @@ const createCompetencesMap = (container) => {
       }
     }
 
-    // Check projects
+    // Check projects - Use accurate rotated rhombus detection
     if (delaunay_projects) {
       const projIdx = delaunay_projects.find(mx, my);
       const projNodes = [...project_node_by_id.values()];
 
       if (projIdx >= 0 && projIdx < projNodes.length) {
         const projNode = projNodes[projIdx];
+
+        // Calculate distance for comparison (still needed to find "closest")
         const projDist = sqrt((projNode.x - mx) ** 2 + (projNode.y - my) ** 2);
+        const isInside = isPointInRotatedRhombus(
+          mx,
+          my, // Mouse position
+          projNode.x,
+          projNode.y, // Rhombus center
+          projNode.angle, // Rotation angle
+          maxDiag,
+          minDiag, // Rhombus dimensions
+          RHOMBUS_HOVER_PADDING // Hover padding
+        );
 
-        // Use the full diagonal size as threshold (rhombus is oriented at angle)
-        const threshold = max(maxDiag, minDiag) * 1.2; // 120% of max diagonal
-
-        if (projDist < threshold && projDist < closestDist) {
+        if (isInside && projDist < closestDist) {
           closestNode = projNode;
           closestDist = projDist;
           closestType = "project";
@@ -1888,7 +1954,13 @@ const createCompetencesMap = (container) => {
 
       if (found) {
         // Node found within threshold - trigger hover
-        onNodeHover(found.node, found.type);
+        if (
+          !hover_active ||
+          hovered_node !== found.node ||
+          hovered_type !== found.type
+        ) {
+          onNodeHover(found.node, found.type);
+        }
       } else if (hover_active) {
         // No node nearby but hover is active - exit hover
         onNodeHoverExit();
@@ -1901,6 +1973,31 @@ const createCompetencesMap = (container) => {
         onNodeHoverExit();
       }
     });
+
+    // Also handle mouseleave on tooltip itself (for project tooltips with CTA)
+    if (tooltip) {
+      tooltip.on("mouseleave.cleanup", function () {
+        // Small delay to allow moving between node and tooltip
+        setTimeout(() => {
+          // Check if we're really outside both node and tooltip
+          if (hover_active && hovered_type === "project") {
+            const tooltip_bounds = tooltip.node().getBoundingClientRect();
+            const mouse_x = d3.event ? d3.event.clientX : 0;
+            const mouse_y = d3.event ? d3.event.clientY : 0;
+
+            // If mouse is outside tooltip bounds, exit hover
+            if (
+              mouse_x < tooltip_bounds.left ||
+              mouse_x > tooltip_bounds.right ||
+              mouse_y < tooltip_bounds.top ||
+              mouse_y > tooltip_bounds.bottom
+            ) {
+              onNodeHoverExit();
+            }
+          }
+        }, 100); // Small 100ms grace period
+      });
+    }
 
     console.log("✅ Delaunay hover detection setup complete");
   } //setupHoverDetection()
@@ -2201,7 +2298,9 @@ const createCompetencesMap = (container) => {
   //Handle node hover event
   function onNodeHover(node, type) {
     // Prevent rapid toggling
-    if (hover_active && hovered_node === node && hovered_type === type) return;
+    if (hover_active && hovered_node === node && hovered_type === type) {
+      return;
+    }
 
     // Update state
     hover_active = true;
@@ -2236,17 +2335,20 @@ const createCompetencesMap = (container) => {
     showTooltip(node, type, node_x, node_y);
   } //onNodeHover()
 
-  // Handle mouse exit from node
+  //handle hover when mouse exit
   function onNodeHoverExit() {
-    // Check if we're still hovering something
+    // GUARD: Check if we're still hovering something
     if (!hover_active) return;
 
-    // Reset state
+    console.log("Hover exit");
+
+    // Reset state BEFORE calling reset functions
+    // This prevents re-entry if resetHoverVisuals triggers events
     hover_active = false;
+    const prev_node = hovered_node;
+    const prev_type = hovered_type;
     hovered_node = null;
     hovered_type = null;
-
-    console.log("Hover exit");
 
     // Reset visual state
     resetHoverVisuals();
@@ -2628,7 +2730,7 @@ const createCompetencesMap = (container) => {
       .attr("stroke-width", 1)
       .attr("stroke-dasharray", "4,4")
       .attr("visibility", DEBUG);
-  } //renderBoundaries;()
+  } //renderBoundaries()
 
   //Visualize Delaunay triangulation for debugging
   function showDelaunayMesh() {
@@ -2795,16 +2897,24 @@ const createCompetencesMap = (container) => {
 
     // 3. PROJECT NODE HOVER AREAS
     const projNodes = [...project_node_by_id.values()];
+
     projNodes.forEach((node) => {
-      const threshold = max(maxDiag, minDiag) * 1.2;
+      // Define rhombus vertices with padding
+      const halfHeight = maxDiag / 2 + RHOMBUS_HOVER_PADDING;
+      const halfWidth = minDiag / 2 + RHOMBUS_HOVER_PADDING;
+
+      // Create rhombus path in local coordinates
+      const rhombus_path = `M 0,${-halfHeight} L ${halfWidth},0 L 0,${halfHeight} L ${-halfWidth},0 Z`;
 
       debug_layer
-        .append("circle")
-        .attr("cx", node.x)
-        .attr("cy", node.y)
-        .attr("r", threshold)
+        .append("path")
+        .attr("d", rhombus_path)
+        .attr(
+          "transform",
+          `translate(${node.x}, ${node.y}) rotate(${(node.angle * 180) / PI})`
+        )
         .attr("fill", "green")
-        .attr("opacity", 0.2)
+        .attr("opacity", 0.15)
         .attr("stroke", "green")
         .attr("stroke-width", 2)
         .attr("stroke-dasharray", "4,4");
@@ -2887,7 +2997,6 @@ const createCompetencesMap = (container) => {
   // Expose to window
   if (typeof window !== "undefined") {
     window.showDelaunayMesh = showDelaunayMesh;
-    console.log("🛠️ Debug: showDelaunayMesh() available");
   }
 
   if (typeof window !== "undefined") {
@@ -2902,12 +3011,6 @@ const createCompetencesMap = (container) => {
     // Debug flags
     window.DEBUG_HOVER = false;
     window.DEBUG_DONUT = false;
-
-    console.log("  - showHoverAreas() / hideHoverAreas() / toggleHoverAreas()");
-    console.log("  - showDonutArcs() / hideDonutArcs()");
-    console.log("  - showMouseDebug() / hideMouseDebug()");
-    console.log("  - window.DEBUG_HOVER = true (enable project hover logs)");
-    console.log("  - window.DEBUG_DONUT = true (enable donut hover logs)");
   }
 
   return chart;
