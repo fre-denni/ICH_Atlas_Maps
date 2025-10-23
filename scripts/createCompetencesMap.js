@@ -59,7 +59,7 @@ const createCompetencesMap = (container) => {
   let angle;
 
   const MIN_WIDTH = 660;
-  const MAX_HEIGHT = 1250; //increase if you want really large viz on screens
+  const MAX_HEIGHT = 1250; //increase if you want really large viz on tall screens
   const PADDING = 24; //in scale of 8th
   const MAX_TECH_NODE = 7;
   const MAX_SKILL_NODE = 8;
@@ -150,8 +150,7 @@ const createCompetencesMap = (container) => {
   const HOVER_THRESHOLD_TECH = 20; // pixels beyond node radius
 
   //Node lookups and labels
-  let vizProj,
-    clicked = []; //collect clicked nodes -- need to collect related?
+  let vizProj;
 
   //tooltips
   let tooltip;
@@ -161,7 +160,7 @@ const createCompetencesMap = (container) => {
 
   //Tooltip dimensions (SF = 1)
   const TOOLTIP_BASE = {
-    width: 80, // Fixed width (convert to max width)
+    width: 80, // max width
     padding_v: 8, // Vertical padding
     padding_h: 10, // Horizontal padding
     label_size: 7, // Label font size
@@ -181,6 +180,7 @@ const createCompetencesMap = (container) => {
     fruition_label,
     domain_label,
     hyperlink = [];
+
   const DESCRIPTION_WORDS = 25; //to change if needed
 
   /////////////////////GEOMETRY & VISUALS///////////////////////
@@ -189,13 +189,11 @@ const createCompetencesMap = (container) => {
   const COLORS = {
     background: "#f5f5f0",
     ui: "#440EB3",
-    proj: "#8F8AEB",
-    /**
-    skills:,
-    disstech:,
-    reptech:,
-    captech:, 
-    */
+    skill: "#8F8AEB",
+    //proj:
+    capt_tech: "#FFC107",
+    rep_tech: "#F44336",
+    diss_tech: "#12446dff",
     label: "#A3A3A3",
     text: "#121212",
   };
@@ -203,9 +201,10 @@ const createCompetencesMap = (container) => {
   const tech_colors = d3
     .scaleOrdinal()
     .domain(["capt_tech", "rep_tech", "diss_tech"])
-    .range(["#FFC107", "#F44336", "#12446dff"]); // Yellow, Red, Blue
+    .range([COLORS.capt_tech, COLORS.rep_tech, COLORS.diss_tech]); // Yellow, Red, Blue
 
   const techTypeToSector = {
+    //map tech sector to tech type
     capt_tech: 0,
     rep_tech: 1,
     diss_tech: 2,
@@ -342,7 +341,7 @@ const createCompetencesMap = (container) => {
     }
     //consistent data cleaning
     return list.map((d) => d.trim());
-  }
+  } //parseTechString()
 
   function handleTechdata(data) {
     const tech = data.flatMap((d) => {
@@ -570,7 +569,7 @@ const createCompetencesMap = (container) => {
     const a = theta * i;
 
     return [r * cos(a), r * sin(a)];
-  } //phyllotaxis();
+  } //phyllotaxis()
 
   /***
    * Calculate technology node positions using the phyllotaxis
@@ -669,7 +668,7 @@ const createCompetencesMap = (container) => {
     });
 
     return positionedNodes;
-  }
+  } //calcTechNodePosition()
 
   /***
    * Calculate skillnode position
@@ -962,7 +961,7 @@ const createCompetencesMap = (container) => {
       .data(nodes)
       .join("circle")
       .attr("r", (d) => d.radius)
-      .attr("fill", COLORS.proj)
+      .attr("fill", COLORS.skill)
       .attr("cx", (d) => d.x)
       .attr("cy", (d) => d.y);
 
@@ -1040,7 +1039,7 @@ const createCompetencesMap = (container) => {
       .attr("fill", "black")
       .attr("opacity", 0.5)
       .attr("visibility", DEBUG);
-  }
+  } //techBugs
 
   //////////////////////////////////
   ////// Edges & Connections //////
@@ -1222,7 +1221,7 @@ const createCompetencesMap = (container) => {
       forward: nested_forward,
       reverse: nested_reverse,
     };
-  }
+  } //calcSkilltoProjectEdges()
 
   /**
    * Calculate project-to-tech edges (pure calculation, no rendering)
@@ -1231,6 +1230,7 @@ const createCompetencesMap = (container) => {
    * @returns {Object} {forward: edges[], reverse: edges[]}
    */
   function calcProjToTechEdges(proj_pos, technodes) {
+    //create a map of the rpject and tech positions
     const project_positions = new Map(
       proj_pos.map((p) => {
         const standard_angle = atan2(p.y, p.x);
@@ -1269,32 +1269,28 @@ const createCompetencesMap = (container) => {
 
     const reverse = edgeData.map((d) => ({ ...d }));
 
-    // ============================================
     // FORWARD GROUPING (Projects → Tech)
     // Group by SOURCE (each project)
-    // ============================================
     const grouped_forward = d3.group(edgeData, (d) => d.source_id);
     const nested_forward = [];
 
     grouped_forward.forEach((edges) => {
       edges.sort((a, b) => a.target_angle - b.target_angle);
       nested_forward.push({
-        values: edges, // ← No rotation property here
+        values: edges,
         edges_count: edges.length,
       });
     });
 
-    // ============================================
     // REVERSE GROUPING (Tech → Projects)
     // Group by TARGET (each tech)
-    // ============================================
     const grouped_reverse = d3.group(reverse, (d) => d.target_angle);
     const nested_reverse = [];
 
     grouped_reverse.forEach((edges) => {
       edges.sort((a, b) => b.source_angle - a.source_angle);
       nested_reverse.push({
-        values: edges, // ← No rotation property here either
+        values: edges,
         edges_count: edges.length,
       });
     });
@@ -1303,7 +1299,7 @@ const createCompetencesMap = (container) => {
       forward: nested_forward,
       reverse: nested_reverse,
     };
-  }
+  } //calcProjToTechEdges
 
   /**
    * Generates the curving belly
@@ -1570,7 +1566,7 @@ const createCompetencesMap = (container) => {
       .attr("stroke", "currentColor")
       .attr("stroke-width", "2")
       .attr("stroke-linecap", "round");
-  }
+  } //initTooltip()
 
   //update tooltips based on SF
   function updateTooltipSizes() {
@@ -1627,7 +1623,7 @@ const createCompetencesMap = (container) => {
           onNodeHoverExit();
         }
       });
-  }
+  } //updateTooltipSizes()
 
   /**
    * Show tooltip for any node type
@@ -1651,7 +1647,7 @@ const createCompetencesMap = (container) => {
       case "skill":
         label_text = "SKILL";
         header_text = node.id;
-        header_color = COLORS.proj;
+        header_color = COLORS.skill;
         break;
 
       case "tech":
@@ -1746,7 +1742,7 @@ const createCompetencesMap = (container) => {
       .transition()
       .duration(150)
       .style("opacity", "1");
-  }
+  } //showTooltip()
 
   /**
    * Hide tooltip
@@ -1817,11 +1813,6 @@ const createCompetencesMap = (container) => {
       (d) => d.x,
       (d) => d.y
     );
-
-    console.log("Built Delaunay diagrams for hover detection:");
-    console.log("  - Skills:", sk.length, "nodes");
-    console.log("  - Projects:", pr.length, "nodes");
-    console.log("  - Techs:", tc.length, "nodes");
   } //buildDelaunayDiagrams()
 
   /**
@@ -1867,7 +1858,6 @@ const createCompetencesMap = (container) => {
         const projNode = projNodes[projIdx];
         const projDist = sqrt((projNode.x - mx) ** 2 + (projNode.y - my) ** 2);
 
-        // For rhombus, use GENEROUS threshold
         // Use the full diagonal size as threshold (rhombus is oriented at angle)
         const threshold = max(maxDiag, minDiag) * 1.2; // 120% of max diagonal
 
@@ -2021,8 +2011,6 @@ const createCompetencesMap = (container) => {
    * Call from console: window.showHoverAreas()
    */
   function showHoverAreas() {
-    console.log("🎯 Showing hover detection areas...");
-
     // Remove existing debug layer
     g.selectAll(".hover-debug-layer").remove();
 
@@ -2119,22 +2107,14 @@ const createCompetencesMap = (container) => {
         .attr("stroke-width", 1)
         .attr("stroke-dasharray", "3,3");
     });
-
-    console.log("✅ Hover areas visible:");
-    console.log("  - Red dashed circles = Donut hover area");
-    console.log("  - Purple areas = Skills");
-    console.log("  - Green areas = Projects");
-    console.log("  - Orange areas = Technologies");
-    console.log("\nCall hideHoverAreas() to remove");
-  }
+  } //showHoverAreas()
 
   /**
    * Hide hover area visualization
    */
   function hideHoverAreas() {
     g.selectAll(".hover-debug-layer").remove();
-    console.log("👁️ Hover areas hidden");
-  }
+  } //hideHoverAreas()
 
   /**
    * Toggle hover areas visibility
@@ -2146,7 +2126,7 @@ const createCompetencesMap = (container) => {
     } else {
       showHoverAreas();
     }
-  }
+  } //toggleHoverAreas()
 
   /**
    * Visualize donut arc boundaries and angles
@@ -2154,8 +2134,6 @@ const createCompetencesMap = (container) => {
    * Call from console: window.showDonutArcs()
    */
   function showDonutArcs() {
-    console.log("🎯 Showing donut arc boundaries...");
-
     // Remove existing
     g.selectAll(".donut-debug-layer").remove();
 
@@ -2219,16 +2197,11 @@ const createCompetencesMap = (container) => {
           ).toFixed(0)}°`
         );
     });
-
-    console.log("✅ Arc boundaries shown");
-    console.log("Solid lines = start angle, Dashed lines = end angle");
-    console.log("\nCall hideDonutArcs() to remove");
-  }
+  } // showDonutArcs()
 
   function hideDonutArcs() {
     g.selectAll(".donut-debug-layer").remove();
-    console.log("👁️ Arc boundaries hidden");
-  }
+  } //hideDonutArcs()
 
   /**
    * Show live mouse position and angle
@@ -2236,8 +2209,6 @@ const createCompetencesMap = (container) => {
    * Call from console: window.showMouseDebug()
    */
   function showMouseDebug() {
-    console.log("🎯 Mouse debug mode ON");
-
     // Remove existing
     g.selectAll(".mouse-debug-layer").remove();
 
@@ -2309,25 +2280,16 @@ const createCompetencesMap = (container) => {
         .attr("y", adjusted_y - 10)
         .text(`r: ${mouse_radius.toFixed(1)}px | θ: ${angle_deg}°`);
     });
-
-    console.log("✅ Mouse debug active - move mouse over visualization");
-    console.log("Call hideMouseDebug() to stop");
-  }
+  } // showMouseDebug()
 
   function hideMouseDebug() {
     g.selectAll(".mouse-debug-layer").remove();
     svg.on("mousemove.debug", null);
-    console.log("👁️ Mouse debug OFF");
-  }
+  } //hideMouseDebug()
 
   /////////// EDGE FILTERING HELPERS
 
-  /**
-   * Get edges originating from a specific skill node (FORWARD)
-   * Used when hovering on a skill node
-   * @param {string} skill_id - The skill identifier (e.g., "Photoshop")
-   * @returns {Array} Filtered edges from skill type to projects
-   */
+  //Get edges originating from a specific skill node (FORWARD)
   function getEdgesFromSkill(skill_id) {
     // Get skill type for this skill
     const skill_type = typeToSkill.get(skill_id);
@@ -2339,24 +2301,14 @@ const createCompetencesMap = (container) => {
     );
   } //getEdgesFromSkill()
 
-  /**
-   * Get edges originating from a skill type (FORWARD)
-   * Used when hovering on a donut arc
-   * @param {string} skill_type - The skill type identifier (e.g., "Design")
-   * @returns {Array} Filtered edges from skill type to projects
-   */
+  //Get edges originating from a skill type (FORWARD)
   function getEdgesFromSkillType(skill_type) {
     return sk_edges_curves_global.filter(
       (edge) => edge.source_id === skill_type
     );
   } //getEdgesFromSkillType()
 
-  /**
-   * Get edges pointing TO a project from skills (for REVERSE display)
-   * Used when hovering on a project node
-   * @param {string} project_id - The project identifier
-   * @returns {Array} Filtered edges that connect to this project
-   */
+  //Get edges pointing TO a project from skills (for REVERSE display)
   function getEdgesToProject(project_id) {
     // Find which skills connect to this project
     const project_skills = edges_skillToproj
@@ -2373,24 +2325,14 @@ const createCompetencesMap = (container) => {
     );
   } //getEdgesToProject()
 
-  /**
-   * Get edges FROM a project to techs (FORWARD)
-   * Used when hovering on a project node
-   * @param {string} project_id - The project identifier
-   * @returns {Array} Filtered edges from project to techs
-   */
+  //Get edges FROM a project to techs (FORWARD)
   function getEdgesFromProject(project_id) {
     return tc_edges_curves_global.filter(
       (edge) => edge.source_id === project_id
     );
   } //getEdgesFromProject()
 
-  /**
-   * Get edges pointing TO a tech from projects (for REVERSE display)
-   * Used when hovering on a tech node
-   * @param {string} tech_id - The tech identifier
-   * @returns {Array} Filtered edges that connect to this tech
-   */
+  //Get edges pointing TO a tech from projects (for REVERSE display)
   function getEdgesToTech(tech_id) {
     // Find which projects use this tech
     const projects_with_tech = edges_projTotech
@@ -2405,13 +2347,7 @@ const createCompetencesMap = (container) => {
     );
   } //getEdgesToTech()
 
-  /**
-   * Get ONLY edges between specific skills and a specific project
-   * Used for project hover to show only direct connections
-   * @param {string} project_id - The project identifier
-   * @param {Array} skill_ids - Array of skill identifiers connected to this project
-   * @returns {Array} Filtered edges ONLY between these skills and this project
-   */
+  //Get ONLY edges between specific skills and a specific project
   function getEdgesBetweenSkillsAndProject(project_id, skill_ids) {
     const project_node = project_node_by_id.get(project_id);
     if (!project_node) return [];
@@ -2435,13 +2371,7 @@ const createCompetencesMap = (container) => {
     });
   } //getEdgesBetweenSkillsAndProject()
 
-  /**
-   * Get ONLY edges between a specific project and specific techs
-   * Used for project hover to show only direct connections
-   * @param {string} project_id - The project identifier
-   * @param {Array} tech_ids - Array of tech identifiers used by this project
-   * @returns {Array} Filtered edges ONLY between this project and these techs
-   */
+  //Get ONLY edges between a specific project and specific techs
   function getEdgesBetweenProjectAndTechs(project_id, tech_ids) {
     const tech_ids_set = new Set(tech_ids);
 
@@ -2456,13 +2386,7 @@ const createCompetencesMap = (container) => {
     });
   } //getEdgesBetweenProjectAndTechs()
 
-  /**
-   * Get ONLY edges between specific projects and a specific tech
-   * Used for tech hover to show only direct connections
-   * @param {string} tech_id - The tech identifier
-   * @param {Array} project_ids - Array of project identifiers that use this tech
-   * @returns {Array} Filtered edges ONLY between these projects and this tech
-   */
+  //Get ONLY edges between specific projects and a specific tech
   function getEdgesBetweenProjectsAndTech(tech_id, project_ids) {
     const tech_node = tech_node_by_id.get(tech_id);
     if (!tech_node) return [];
@@ -2496,11 +2420,7 @@ const createCompetencesMap = (container) => {
 
   /////// CONNECT NODES HELPERS
 
-  /**
-   * Get all nodes connected to a skill node
-   * @param {Object} skill_node - The skill node object
-   * @returns {Object} { projects: [], skill_type_arc: Object }
-   */
+  //Get all nodes connected to a skill node
   function getConnectedToSkill(skill_node) {
     // Get projects using this skill
     const project_ids = edges_skillToproj
@@ -2517,11 +2437,7 @@ const createCompetencesMap = (container) => {
     return { projects, skill_type_arc };
   } //getConnectedToSkill()
 
-  /**
-   * Get all nodes connected to a skill type (donut arc)
-   * @param {string} skill_type - The skill type identifier
-   * @returns {Object} { skill_nodes: [], projects: [] }
-   */
+  //Get all nodes connected to a skill type (donut arc)
   function getConnectedToSkillType(skill_type) {
     // Get all skill nodes of this type
     const skill_nodes = Array.from(skill_node_by_id.values()).filter(
@@ -2545,11 +2461,7 @@ const createCompetencesMap = (container) => {
     return { skill_nodes, projects };
   } //getConnectedToSkillType()
 
-  /**
-   * Get all nodes connected to a project
-   * @param {Object} project_node - The project node object
-   * @returns {Object} { skill_nodes: [], skill_type_arcs: [], tech_nodes: [] }
-   */
+  //Get all nodes connected to a project
   function getConnectedToProject(project_node) {
     // Get skills used by this project
     const skill_names = edges_skillToproj
@@ -2581,11 +2493,7 @@ const createCompetencesMap = (container) => {
     return { skill_nodes, skill_type_arcs, tech_nodes };
   } //getConnectedToProject()
 
-  /**
-   * Get all nodes connected to a tech node
-   * @param {Object} tech_node - The tech node object
-   * @returns {Object} { projects: [] }
-   */
+  //Get all nodes connected to a tech node
   function getConnectedToTech(tech_node) {
     // Get projects using this tech
     const project_ids = edges_projTotech
@@ -2601,10 +2509,7 @@ const createCompetencesMap = (container) => {
 
   ////// DEBUGS
 
-  /**
-   * Visualize Delaunay triangulation for debugging
-   * Draws the Delaunay mesh on top of visualization
-   */
+  //Visualize Delaunay triangulation for debugging
   function showDelaunayMesh() {
     // Remove existing mesh if any
     g.selectAll(".delaunay-mesh").remove();
@@ -2620,9 +2525,7 @@ const createCompetencesMap = (container) => {
         .attr("stroke-width", 0.5)
         .attr("opacity", 0.3);
     }
-
-    console.log("✅ Delaunay mesh visible");
-  }
+  } //showDelaunayMesh()
 
   // Expose to window
   if (typeof window !== "undefined") {
@@ -2631,11 +2534,7 @@ const createCompetencesMap = (container) => {
   }
 
   ///////// HELPERS
-  /**
-   * Handle node hover event
-   * @param {Object} node - The hovered node data
-   * @param {string} type - Node type: 'skill' | 'skill_type' | 'project' | 'tech'
-   */
+  //Handle node hover event
   function onNodeHover(node, type) {
     // Prevent rapid toggling
     if (hover_active && hovered_node === node && hovered_type === type) return;
@@ -2673,9 +2572,7 @@ const createCompetencesMap = (container) => {
     showTooltip(node, type, node_x, node_y);
   } //onNodeHover()
 
-  /**
-   * Handle mouse exit from node
-   */
+  // Handle mouse exit from node
   function onNodeHoverExit() {
     // Check if we're still hovering something
     if (!hover_active) return;
@@ -2692,11 +2589,7 @@ const createCompetencesMap = (container) => {
     hideTooltip();
   } //onNodeHoverExit()
 
-  /**
-   * Update visual state based on hovered node
-   * @param {Object} node - The hovered node
-   * @param {string} type - Node type
-   */
+  //Update visual state based on hovered node
   function updateHoverVisuals(type, node) {
     // Get edges and connected nodes based on type
     let edges_to_show = [];
@@ -2757,9 +2650,7 @@ const createCompetencesMap = (container) => {
     showEdges(edges_to_show, type, node);
   } //updateHoverVisuals()
 
-  /**
-   * Reset visual state after hover exit
-   */
+  //Reset visual state after hover exit
   function resetHoverVisuals() {
     console.log("Resetting hover visuals");
 
@@ -2770,15 +2661,11 @@ const createCompetencesMap = (container) => {
     resetAllNodesOpacity();
   } //resetHoverVisuals()
 
-  /**
-   * Get edge color based on hovered node type
-   * @param {string} type - The type of hovered node
-   * @returns {string} Color hex code
-   */
+  //Get edge color based on hovered node type
   function getEdgeColorForHoverType(type, node = null) {
     switch (type) {
       case "skill":
-        return COLORS.proj; // Purple/lilac for skills
+        return COLORS.skill; // Purple/lilac for skills
       case "skill_type":
         return COLORS.ui; // Deep purple for skill types
       case "project":
@@ -2797,10 +2684,7 @@ const createCompetencesMap = (container) => {
   } //getEdgeColorForHoverType()
 
   ////// EDGE VISIBILITY CONTROL
-  /**
-   * Show specific edges with full opacity
-   * @param {Array} edges - Array of edge objects to show
-   */
+  //Show specific edges with full opacity
   function showEdges(edges, hoverType, hoverNode = null) {
     // Create Set of edges for O(1) lookup
     const edgeSet = new Set(edges);
@@ -2821,9 +2705,7 @@ const createCompetencesMap = (container) => {
       .attr("stroke", (d) => (edgeSet.has(d) ? edgeColor : COLORS.label));
   } //showEdges()
 
-  /**
-   * Hide all edges
-   */
+  //Hide all edges
   function hideAllEdges() {
     g.selectAll(".skill-project-edges path")
       .attr("opacity", 0)
@@ -2834,11 +2716,7 @@ const createCompetencesMap = (container) => {
       .attr("stroke-width", 1.5 * SF);
   } //hideAllEdges()
 
-  /**
-   * Highlight nodes for skill hover
-   * @param {Object} skill_node - The hovered skill node
-   * @param {Object} connected - Connected nodes from getConnectedToSkill()
-   */
+  //Highlight nodes for skill hover
   function highlightSkillHover(skill_node, connected) {
     // Fade all nodes first
     fadeAllNodes();
@@ -2862,11 +2740,7 @@ const createCompetencesMap = (container) => {
     );
   } //highlightSkillHover()
 
-  /**
-   * Highlight nodes for skill type hover
-   * @param {Object} donut_arc - The hovered donut arc
-   * @param {Object} connected - Connected nodes from getConnectedToSkillType()
-   */
+  //Highlight nodes for skill type hover
   function highlightSkillTypeHover(donut_arc, connected) {
     const skill_type = donut_arc.data.type;
 
@@ -2890,11 +2764,7 @@ const createCompetencesMap = (container) => {
     );
   } //highlightSkillTypeHover()
 
-  /**
-   * Highlight nodes for project hover
-   * @param {Object} project_node - The hovered project node
-   * @param {Object} connected - Connected nodes from getConnectedToProject()
-   */
+  //Highlight nodes for project hover
   function highlightProjectHover(project_node, connected) {
     // Fade all nodes first
     fadeAllNodes();
@@ -2932,11 +2802,7 @@ const createCompetencesMap = (container) => {
     );
   } //highlightProjectHover()
 
-  /**
-   * Highlight nodes for tech hover
-   * @param {Object} tech_node - The hovered tech node
-   * @param {Object} connected - Connected nodes from getConnectedToTech()
-   */
+  // Highlight nodes for tech hover
   function highlightTechHover(tech_node, connected) {
     // Fade all nodes first
     fadeAllNodes();
@@ -2960,9 +2826,7 @@ const createCompetencesMap = (container) => {
     );
   } //highlightTechHover()
 
-  /**
-   * Fade all nodes to low opacity
-   */
+  //Fade all nodes to low opacity
   function fadeAllNodes() {
     g.selectAll(".skill-nodes circle").attr("opacity", 0.4);
     g.selectAll(".project-ring path").attr("opacity", 0.4);
@@ -2970,9 +2834,7 @@ const createCompetencesMap = (container) => {
     g.selectAll(".donut-skill path").attr("opacity", 0.4);
   } //fadeAllNodes()
 
-  /**
-   * Reset all nodes to full opacity
-   */
+  // Reset all nodes to full opacity
   function resetAllNodesOpacity() {
     g.selectAll(".skill-nodes circle").attr("opacity", 1.0);
     g.selectAll(".project-ring path")
@@ -3068,7 +2930,6 @@ const createCompetencesMap = (container) => {
     window.DEBUG_HOVER = false;
     window.DEBUG_DONUT = false;
 
-    console.log("🛠️ Debug functions available:");
     console.log("  - showHoverAreas() / hideHoverAreas() / toggleHoverAreas()");
     console.log("  - showDonutArcs() / hideDonutArcs()");
     console.log("  - showMouseDebug() / hideMouseDebug()");
