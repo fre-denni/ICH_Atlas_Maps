@@ -152,9 +152,27 @@ const createCompetencesMap = (container) => {
   let vizProj,
     clicked = []; //collect clicked nodes -- need to collect related?
 
-  //modals + html variables
-  let nodeModal, projModal;
+  //tooltips
+  let tooltip;
+  let tooltip_content;
   let header, label;
+  let cta;
+
+  //Tooltip dimensions (SF = 1)
+  const TOOLTIP_BASE = {
+    width: 80, // Fixed width (convert to max width)
+    padding_v: 8, // Vertical padding
+    padding_h: 10, // Horizontal padding
+    label_size: 7, // Label font size
+    header_size: 10, // Header font size
+    label_margin: 2, // Space between label and header
+    arrow_size: 5, // Arrow triangle size
+    cta_size: 18, // CTA button size
+    cta_offset: 40, // CTA vertical offset from bottom
+    offset_y: 8, // Distance from node
+  };
+
+  //modals
   let title,
     date,
     description,
@@ -771,6 +789,8 @@ const createCompetencesMap = (container) => {
   } //draw()
 
   function chart(skillData, techData, projData) {
+    // Initialize tooltip
+    initTooltip();
     //data logic
     prepareData(skillData, techData, projData);
     //call resizing (first draw)
@@ -974,9 +994,10 @@ const createCompetencesMap = (container) => {
 
       simulation.on("tick", () => {
         nodeSelection.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
+        updateSkillHoverPositions();
       });
     }
-  }
+  } //renderSkillNodes()
 
   //// DEBUGS
   function techBugs(master) {
@@ -1322,12 +1343,12 @@ const createCompetencesMap = (container) => {
       da_inner = end_angle - start_angle;
     else da_inner = TAU - (end_angle - start_angle);
 
-    const min_points = 8; // Minimum points even for short curves
+    const min_points = 16; // Minimum points even for short curves
     const max_points = 40; // Maximum points for very long curves
 
     // Calculate desired number of points based on angular distance
-    let desired_points = Math.ceil(abs(da_inner) * 8); // ~8 points per radian
-    desired_points = Math.max(min_points, Math.min(max_points, desired_points));
+    let desired_points = ceil(abs(da_inner) * 8); // ~8 points per radian
+    desired_points = max(min_points, min(max_points, desired_points));
 
     const step = abs(da_inner) / desired_points;
     const n = desired_points - 1; // We already have start/end
@@ -1438,6 +1459,305 @@ const createCompetencesMap = (container) => {
   ///////////////////////////////////
   //////// HOVER AND CLICK //////////
   //////////////////////////////////
+
+  //////////// TOOLTIPS
+  function initTooltip() {
+    // Select or create container
+    const container = d3.select("#tooltips-container");
+
+    // Create single tooltip
+    tooltip = container
+      .append("div")
+      .attr("class", "competences-tooltip")
+      .style("position", "fixed")
+      .style("pointer-events", "none")
+      .style("z-index", "1000")
+      .style("opacity", "0")
+      .style("display", "none")
+      .style("transition", "opacity 0.15s ease");
+
+    // Content wrapper
+    tooltip_content = tooltip
+      .append("div")
+      .attr("class", "tooltip-content")
+      .style("position", "relative")
+      .style("background", COLORS.background)
+      .style("box-shadow", "0px 4px 16px rgba(0, 0, 0, 0.15)");
+
+    // Label (uppercase text)
+    label = tooltip_content
+      .append("p")
+      .attr("class", "tooltip-label")
+      .style("margin", "0")
+      .style("padding", "0")
+      .style("text-align", "center")
+      .style("font-family", "'Inter', sans-serif")
+      .style("font-weight", "600")
+      .style("text-transform", "uppercase")
+      .style("letter-spacing", "0.05em")
+      .style("line-height", "1");
+
+    // Header (main text)
+    header = tooltip_content
+      .append("h3")
+      .attr("class", "tooltip-header")
+      .style("margin", "0")
+      .style("padding", "0")
+      .style("text-align", "center")
+      .style("font-family", "'IBM Plex Serif', serif")
+      .style("font-weight", "400")
+      .style("line-height", "1.1")
+      .style("word-wrap", "break-word")
+      .style("overflow-wrap", "break-word");
+
+    // CTA wrapper (only for projects)
+    cta = tooltip
+      .append("button")
+      .attr("class", "tooltip-cta")
+      .style("position", "absolute")
+      .style("left", "50%")
+      .style("transform", "translateX(-50%)")
+      .style("display", "none")
+      .style("align-items", "center")
+      .style("justify-content", "center")
+      .style("border-radius", "50%")
+      .style("background", "transparent")
+      .style("cursor", "pointer")
+      .style("transition", "all 0.2s ease")
+      .style("padding", "0")
+      .style("pointer-events", "all")
+      .on("mouseenter", function () {
+        const color = d3.select(this).attr("data-color");
+        d3.select(this)
+          .style("background", color)
+          .style("border", `${2 * SF}px solid ${color}`);
+        d3.select(this).select("svg").style("color", COLORS.background);
+      })
+      .on("mouseleave", function () {
+        const color = d3.select(this).attr("data-color");
+        d3.select(this)
+          .style("background", "transparent")
+          .style("border", `${2 * SF}px solid ${color}`);
+        d3.select(this).select("svg").style("color", color);
+      })
+      .on("click", function () {
+        if (hovered_node && hovered_type === "project") {
+          onProjectClick(hovered_node);
+        }
+      });
+
+    // CTA SVG icon
+    const cta_svg = cta
+      .append("svg")
+      .attr("viewBox", "0 0 20 20")
+      .attr("fill", "none")
+      .style("pointer-events", "none")
+      .style("display", "block");
+
+    cta_svg
+      .append("circle")
+      .attr("cx", "10")
+      .attr("cy", "10")
+      .attr("r", "9")
+      .attr("stroke", "currentColor")
+      .attr("stroke-width", "2")
+      .attr("fill", "none");
+
+    cta_svg
+      .append("path")
+      .attr("d", "M10 6V14M6 10H14")
+      .attr("stroke", "currentColor")
+      .attr("stroke-width", "2")
+      .attr("stroke-linecap", "round");
+  }
+
+  //update tooltips based on SF
+  function updateTooltipSizes() {
+    if (!tooltip) return;
+
+    // Calculate scaled dimensions
+    const width = TOOLTIP_BASE.width * SF;
+    const padding_v = TOOLTIP_BASE.padding_v * SF;
+    const padding_h = TOOLTIP_BASE.padding_h * SF;
+    const label_size = TOOLTIP_BASE.label_size * SF;
+    const header_size = TOOLTIP_BASE.header_size * SF;
+    const label_margin = TOOLTIP_BASE.label_margin * SF;
+    const arrow_size = TOOLTIP_BASE.arrow_size * SF;
+    const border_radius = 4 * SF;
+    const cta_size = TOOLTIP_BASE.cta_size * SF;
+
+    // Update content padding and border radius
+    tooltip_content
+      .style("width", `${width}px`)
+      .style("padding", `${padding_v}px ${padding_h}px`)
+      .style("border-radius", `${border_radius}px`);
+
+    // Update label
+    label.style("font-size", `${label_size}px`);
+
+    // Update header
+    header
+      .style("font-size", `${header_size}px`)
+      .style("margin-top", `${label_margin}px`);
+
+    // Update CTA
+    cta
+      .style("width", `${cta_size}px`)
+      .style("height", `${cta_size}px`)
+      .style("border", `${2 * SF}px solid currentColor`);
+
+    cta
+      .select("svg")
+      .attr("width", cta_size * 0.65)
+      .attr("height", cta_size * 0.65);
+
+    // Add mouse events to tooltip itself to prevent flickering
+    tooltip
+      .on("mouseenter", function () {
+        // Keep tooltip visible when mouse enters it
+        if (hovered_type === "project") {
+          // Only for projects since they have interactive CTA
+          d3.select(this).style("opacity", "1");
+        }
+      })
+      .on("mouseleave", function () {
+        // Hide when leaving tooltip
+        if (hovered_type === "project") {
+          onNodeHoverExit();
+        }
+      });
+  }
+
+  /**
+   * Show tooltip for any node type
+   * Unified function that handles all cases
+   * @param {Object} node - Node data
+   * @param {string} type - 'skill' | 'tech' | 'project' | 'skill_type'
+   * @param {number} x - SVG x coordinate of node
+   * @param {number} y - SVG y coordinate of node
+   */
+  function showTooltip(node, type, x, y) {
+    if (!tooltip) return;
+
+    let label_text = "";
+    let header_text = "";
+    let header_color = COLORS.text;
+    let show_cta = false;
+    let cta_color = "green";
+
+    // Configure based on node type
+    switch (type) {
+      case "skill":
+        label_text = "SKILL";
+        header_text = node.id;
+        header_color = COLORS.proj;
+        break;
+
+      case "tech":
+        const tech_labels = {
+          capt_tech: "CAPTURING TECHNOLOGY",
+          rep_tech: "REPRESENTATION TECHNOLOGY",
+          diss_tech: "DISSEMINATION TECHNOLOGY",
+        };
+        label_text = tech_labels[node.type] || "TECHNOLOGY";
+        header_text = node.id;
+        header_color = tech_colors(node.type);
+        break;
+
+      case "project":
+        label_text = "CASE STUDY";
+        const proj_data = vizProj.find((p) => p.title === node.id);
+        header_text = proj_data ? proj_data.display : node.id;
+        header_color = "green";
+        show_cta = true;
+        cta_color = "green";
+        break;
+
+      default:
+        return;
+    }
+
+    // Update content
+    label.text(label_text).style("color", COLORS.text);
+
+    header.text(header_text).style("color", header_color);
+
+    // Update background and arrow color
+    tooltip_content.style("background", COLORS.background);
+
+    if (show_cta) {
+      cta
+        .style("display", "flex")
+        .style("color", cta_color)
+        .style("border-color", cta_color)
+        .attr("data-color", cta_color);
+      cta.select("svg").style("color", cta_color);
+    } else {
+      cta.style("display", "none");
+    }
+
+    // Make tooltip visible but transparent to measure it
+    tooltip.style("display", "block").style("opacity", "0");
+
+    // Get dimensions after content is set
+    const content_rect = tooltip_content.node().getBoundingClientRect();
+    const content_height = content_rect.height;
+    const content_width = content_rect.width;
+
+    // Convert SVG coordinates to page coordinates
+    const svg_element = svg.node();
+    const svg_rect = svg_element.getBoundingClientRect();
+    const svg_center_x = svg_rect.left + svg_rect.width / 2;
+    const svg_center_y = svg_rect.top + svg_rect.height / 2;
+
+    const page_x = svg_center_x + x;
+    const page_y = svg_center_y + y;
+
+    // Calculate positions
+    const arrow_size = TOOLTIP_BASE.arrow_size * SF;
+    const offset_y = TOOLTIP_BASE.offset_y * SF;
+    const cta_offset = TOOLTIP_BASE.cta_offset * SF;
+
+    // Total height including arrow
+    const total_height = content_height + arrow_size;
+
+    // Position tooltip centered horizontally, above node
+    const tooltip_x = page_x - content_width / 2;
+    const tooltip_y = page_y - total_height - offset_y;
+
+    // Position CTA button if visible
+    if (show_cta) {
+      const cta_y = content_height + cta_offset;
+      cta.style("top", `${cta_y}px`);
+    }
+
+    // Allow pointer events only for projects (to click CTA)
+    tooltip.style("pointer-events", show_cta ? "all" : "none");
+
+    // Set final position and show
+    tooltip
+      .style("left", `${tooltip_x}px`)
+      .style("top", `${tooltip_y}px`)
+      .transition()
+      .duration(150)
+      .style("opacity", "1");
+  }
+
+  /**
+   * Hide tooltip
+   */
+  function hideTooltip() {
+    if (!tooltip) return;
+
+    tooltip
+      .style("pointer-events", "none")
+      .transition()
+      .duration(150)
+      .style("opacity", "0")
+      .on("end", function () {
+        d3.select(this).style("display", "none");
+      });
+  } //hideTooltip()
 
   /***
    * Build node lookups for quick node access during hover
@@ -1852,7 +2172,6 @@ const createCompetencesMap = (container) => {
       .style("stroke", "none")
       .style("pointer-events", "all")
       .style("cursor", "pointer")
-      // ✅ NEW: Add event handlers
       .on("mouseover", function (event, d) {
         onNodeHover(d, "skill_type");
       })
@@ -1866,6 +2185,115 @@ const createCompetencesMap = (container) => {
     console.log("✅ Hover elements setup complete");
   } //setupHoverElements()
 
+  /**
+   * Update skill hover element positions to match current node positions
+   * Called during simulation tick to keep hover areas synchronized with moving nodes
+   */
+  function updateSkillHoverPositions() {
+    if (!hover_elements.skills) return;
+
+    hover_elements.skills.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
+  }
+
+  ////// DEBUGS
+  /**
+   * Show hover boundaries for debugging
+   * Makes all invisible hover elements visible with semi-transparent colors
+   * Call this from browser console: showHoverElements()
+   */
+  function showHoverElements() {
+    console.log("🔍 Showing hover boundaries...");
+
+    // Show skill hover circles in purple
+    g.selectAll(".skill-hover")
+      .style("fill", COLORS.proj)
+      .style("fill-opacity", 0.3)
+      .style("stroke", COLORS.proj)
+      .style("stroke-width", 2 * SF)
+      .style("stroke-opacity", 0.6);
+
+    // Show project hover paths in green
+    g.selectAll(".project-hover")
+      .style("fill", "green")
+      .style("fill-opacity", 0.3)
+      .style("stroke", "green")
+      .style("stroke-width", 2 * SF)
+      .style("stroke-opacity", 0.6);
+
+    // Show tech hover circles in orange
+    g.selectAll(".tech-hover")
+      .style("fill", "#FFA726")
+      .style("fill-opacity", 0.3)
+      .style("stroke", "#FFA726")
+      .style("stroke-width", 2 * SF)
+      .style("stroke-opacity", 0.6);
+
+    // Show donut hover arcs in deep purple
+    g.selectAll(".donut-hover")
+      .style("fill", COLORS.ui)
+      .style("fill-opacity", 0.3)
+      .style("stroke", COLORS.ui)
+      .style("stroke-width", 2 * SF)
+      .style("stroke-opacity", 0.6);
+
+    console.log("✅ Hover boundaries visible:");
+    console.log("  - Purple circles = Skills");
+    console.log("  - Green rhombus = Projects");
+    console.log("  - Orange circles = Technologies");
+    console.log("  - Deep purple arcs = Skill Types (donut)");
+  }
+
+  /**
+   * Hide hover boundaries (return to normal state)
+   * Makes all hover elements invisible again
+   * Call this from browser console: hideHoverElements()
+   */
+  function hideHoverElements() {
+    console.log("👁️ Hiding hover boundaries...");
+
+    // Hide all hover elements
+    g.selectAll(".skill-hover")
+      .style("fill", "none")
+      .style("fill-opacity", 0)
+      .style("stroke", "none")
+      .style("stroke-opacity", 0);
+
+    g.selectAll(".project-hover")
+      .style("fill", "none")
+      .style("fill-opacity", 0)
+      .style("stroke", "none")
+      .style("stroke-opacity", 0);
+
+    g.selectAll(".tech-hover")
+      .style("fill", "none")
+      .style("fill-opacity", 0)
+      .style("stroke", "none")
+      .style("stroke-opacity", 0);
+
+    g.selectAll(".donut-hover")
+      .style("fill", "none")
+      .style("fill-opacity", 0)
+      .style("stroke", "none")
+      .style("stroke-opacity", 0);
+
+    console.log("✅ Hover boundaries hidden");
+  }
+
+  /**
+   * Toggle hover boundaries visibility
+   * Call this from browser console: toggleHoverElements()
+   */
+  function toggleHoverElements() {
+    // Check if currently visible by checking one element
+    const isVisible = g.select(".skill-hover").style("fill-opacity") !== "0";
+
+    if (isVisible) {
+      hideHoverElements();
+    } else {
+      showHoverElements();
+    }
+  }
+
   ///////// HELPERS
   /**
    * Handle node hover event
@@ -1873,15 +2301,40 @@ const createCompetencesMap = (container) => {
    * @param {string} type - Node type: 'skill' | 'skill_type' | 'project' | 'tech'
    */
   function onNodeHover(node, type) {
+    // Prevent rapid toggling
+    if (hover_active && hovered_node === node && hovered_type === type) return;
+
     // Update state
     hover_active = true;
     hovered_node = node;
     hovered_type = type;
 
-    console.log(`Hovering on ${type}:`, node.id || node.data?.type);
-
     // Update visual state
     updateHoverVisuals(type, node);
+
+    // Show tooltip at node position
+    let node_x, node_y;
+
+    switch (type) {
+      case "skill":
+        node_x = node.x;
+        node_y = node.y;
+        break;
+      case "project":
+        const proj_node = project_node_by_id.get(node.id);
+        node_x = proj_node.x;
+        node_y = proj_node.y;
+        break;
+      case "tech":
+        node_x = node.x;
+        node_y = node.y;
+        break;
+      case "skill_type":
+        // Don't show tooltip for skill_type
+        return;
+    }
+
+    showTooltip(node, type, node_x, node_y);
   } //onNodeHover()
 
   /**
@@ -1900,6 +2353,7 @@ const createCompetencesMap = (container) => {
 
     // Reset visual state
     resetHoverVisuals();
+    hideTooltip();
   } //onNodeHoverExit()
 
   /**
@@ -2202,7 +2656,7 @@ const createCompetencesMap = (container) => {
    * @returns {string} SVG path string
    */
   function createProjectHoverPath(d) {
-    const padding = 4 * SF; // Extra space for easier hovering
+    const padding = 8 * SF; // Extra space for easier hovering
     const maxD = maxDiag + padding;
     const minD = minDiag + padding;
 
@@ -2276,8 +2730,22 @@ const createCompetencesMap = (container) => {
     g.attr("transform", `translate(${width / 2}, ${height / 2})`);
     handleSizes(width, height);
     handleScales();
+    // Update tooltip sizes
+    updateTooltipSizes();
     draw();
   }; //handle resizes
+
+  // Expose debug functions to window for console access
+  if (typeof window !== "undefined") {
+    window.showHoverElements = showHoverElements;
+    window.hideHoverElements = hideHoverElements;
+    window.toggleHoverElements = toggleHoverElements;
+
+    console.log("🛠️ Debug functions available:");
+    console.log("  - showHoverElements() - Show hover boundaries");
+    console.log("  - hideHoverElements() - Hide hover boundaries");
+    console.log("  - toggleHoverElements() - Toggle visibility");
+  }
 
   return chart;
 };
