@@ -59,7 +59,7 @@ const createCompetencesMap = (container) => {
   const PADDING = 24; //in scale of 8th
   const MAX_TECH_NODE = 7;
   const MAX_SKILL_NODE = 8;
-  let maxDiag, minDiag;
+  const PROJ_NODE = 4;
 
   //variables for scaling
   const DEFAULT_SIZE = 1000;
@@ -129,6 +129,7 @@ const createCompetencesMap = (container) => {
   let hover_active = false;
   let hovered_node = null;
   let hovered_type = null; //skill, skill_type, project, tech
+  let hover_debounce_active = false;
 
   //lookup maps
   let skill_node_by_id;
@@ -143,8 +144,8 @@ const createCompetencesMap = (container) => {
 
   // Delaunay hover settings
   const HOVER_THRESHOLD_SKILL = 5; // pixels beyond node radius
-  const RHOMBUS_HOVER_PADDING = 3;
-  const HOVER_THRESHOLD_TECH = 30; // pixels beyond node radius
+  const HOVER_THRESHOLD_PROJECT = 8;
+  const HOVER_THRESHOLD_TECH = 8; // pixels beyond node radius
 
   //Node lookups and labels
   let vizProj;
@@ -483,6 +484,7 @@ const createCompetencesMap = (container) => {
         x: radius * cos(angle),
         y: radius * sin(angle),
         angle: angle,
+        radius: PROJ_NODE * SF,
       };
     });
 
@@ -766,6 +768,27 @@ const createCompetencesMap = (container) => {
     //Build lookup maps for quick access
     buildNodeLookups(skillnodes, proj_pos, technodes);
 
+    // This happens once per draw, avoiding expensive calculations in mousemove
+    const all_proj_nodes = [...project_node_by_id.values()];
+    for (const proj_node of all_proj_nodes) {
+      let min_dist = Infinity;
+
+      for (const other_proj of all_proj_nodes) {
+        if (other_proj.id === proj_node.id) continue; // Skip self
+
+        const dx = proj_node.x - other_proj.x;
+        const dy = proj_node.y - other_proj.y;
+        const dist = sqrt(dx * dx + dy * dy);
+
+        if (dist < min_dist) {
+          min_dist = dist;
+        }
+      }
+
+      // Store in the node object for later use
+      proj_node.nearest_neighbor_dist = min_dist;
+    }
+
     //Render in desired order
     drawTriad(triadData);
     drawDonut(donutData);
@@ -803,30 +826,21 @@ const createCompetencesMap = (container) => {
    * @param {Array} positions
    */
   function drawProjects(positions) {
-    //define rhombus width and height (responsive)
-    maxDiag = round(10 * SF);
-    minDiag = round(8 * SF);
-    //draw svg rhombus
-    const rhombus = `M 0 ${-maxDiag / 2} L ${minDiag / 2} 0 L 0 ${
-      maxDiag / 2
-    } L ${-minDiag / 2} 0 Z`;
-
-    //draw functions
     let project_ring = g
       .append("g")
       .attr("class", "project-ring")
-      .selectAll("path")
+      .selectAll("circle")
       .data(positions)
-      .join("path");
+      .join("circle");
 
     project_ring
       .attr("class", "project-node")
-      .attr("d", rhombus)
+      .attr("r", (d) => d.radius)
       .attr("fill", COLORS.proj)
-      .attr("transform", (d) => {
-        const rotation = (d.angle * 180) / PI;
-        return `translate(${d.x}, ${d.y}) rotate(${rotation})`;
-      });
+      .attr("stroke", "#2d5016") // Dark green outline
+      .attr("stroke-width", 1.5) // Outline thickness
+      .attr("cx", (d) => d.x)
+      .attr("cy", (d) => d.y);
   } //drawProjects()
 
   /***
@@ -1772,30 +1786,19 @@ const createCompetencesMap = (container) => {
       }
     }
 
-    // Check projects - Use bounding circle (simpler and more reliable)
+    //Check projects
     if (delaunay_projects) {
       const projIdx = delaunay_projects.find(mx, my);
       const projNodes = [...project_node_by_id.values()];
 
       if (projIdx >= 0 && projIdx < projNodes.length) {
         const projNode = projNodes[projIdx];
-
-        // Calculate distance from mouse to project center
         const projDist = sqrt((projNode.x - mx) ** 2 + (projNode.y - my) ** 2);
 
-        // Calculate bounding circle radius
-        const rhombus_diagonal = sqrt(maxDiag * maxDiag + minDiag * minDiag);
-        const base_radius = rhombus_diagonal / 2;
+        // Check if within hover threshold
+        const threshold = projNode.radius + HOVER_THRESHOLD_PROJECT;
 
-        //adaptive padding
-        const nearest = findNearestProjectNeighbor(projNode, projNodes);
-        const max_padding = RHOMBUS_HOVER_PADDING;
-        const safe_padding = min(max_padding, nearest / 3);
-
-        const hover_radius = base_radius + safe_padding;
-
-        // Simple distance check
-        if (projDist < hover_radius && projDist < closestDist) {
+        if (projDist < threshold && projDist < closestDist) {
           closestNode = projNode;
           closestDist = projDist;
           closestType = "project";
@@ -2258,10 +2261,10 @@ const createCompetencesMap = (container) => {
   //Handle node hover event
   function onNodeHover(node, type) {
     // Prevent rapid toggling
+    if (hover_debounce_active) return;
     if (hover_active && hovered_node === node && hovered_type === type) {
       return;
     }
-
     // Update state
     hover_active = true;
     hovered_node = node;
@@ -2297,8 +2300,9 @@ const createCompetencesMap = (container) => {
 
   //handle hover when mouse exit
   function onNodeHoverExit() {
-    // GUARD: Check if we're still hovering something
-    if (!hover_active) return;
+    if (!hover_active || hover_debounce_active) return;
+
+    hover_debounce_active = true;
 
     console.log("Hover exit");
 
@@ -2313,6 +2317,11 @@ const createCompetencesMap = (container) => {
     // Reset visual state
     resetHoverVisuals();
     hideTooltip();
+
+    // Release debounce after 50ms
+    setTimeout(() => {
+      hover_debounce_active = false;
+    }, 50);
   } //onNodeHoverExit()
 
   //Update visual state based on hovered node
