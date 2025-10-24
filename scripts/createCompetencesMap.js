@@ -143,7 +143,7 @@ const createCompetencesMap = (container) => {
 
   // Delaunay hover settings
   const HOVER_THRESHOLD_SKILL = 5; // pixels beyond node radius
-  const RHOMBUS_HOVER_PADDING = 8;
+  const RHOMBUS_HOVER_PADDING = 3;
   const HOVER_THRESHOLD_TECH = 30; // pixels beyond node radius
 
   //Node lookups and labels
@@ -186,7 +186,7 @@ const createCompetencesMap = (container) => {
     background: "#f5f5f0",
     ui: "#440EB3",
     skill: "#8F8AEB",
-    //proj:
+    proj: "green",
     capt_tech: "#FFC107",
     rep_tech: "#F44336",
     diss_tech: "#12446dff",
@@ -822,7 +822,7 @@ const createCompetencesMap = (container) => {
     project_ring
       .attr("class", "project-node")
       .attr("d", rhombus)
-      .attr("fill", "green")
+      .attr("fill", COLORS.proj)
       .attr("transform", (d) => {
         const rotation = (d.angle * 180) / PI;
         return `translate(${d.x}, ${d.y}) rotate(${rotation})`;
@@ -1342,10 +1342,6 @@ const createCompetencesMap = (container) => {
       return true;
     });
 
-    console.log(
-      `Rendering ${validEdges.length} valid edges out of ${edges.length}`
-    );
-
     g.append("g")
       .attr("class", className)
       .selectAll("path")
@@ -1544,7 +1540,7 @@ const createCompetencesMap = (container) => {
     let header_text = "";
     let header_color = COLORS.text;
     let show_cta = false;
-    let cta_color = "green";
+    let cta_color = COLORS.proj;
 
     // Configure based on node type
     switch (type) {
@@ -1569,9 +1565,9 @@ const createCompetencesMap = (container) => {
         label_text = "CASE STUDY";
         const proj_data = vizProj.find((p) => p.title === node.id);
         header_text = proj_data ? proj_data.display : node.id;
-        header_color = "green";
+        header_color = COLORS.proj;
         show_cta = true;
-        cta_color = "green";
+        cta_color = COLORS.proj;
         break;
 
       default:
@@ -1678,12 +1674,6 @@ const createCompetencesMap = (container) => {
 
     //create map for donut arc
     donut_arc_by_type = new Map(donutData.data.map((d) => [d.data.type, d]));
-
-    console.log("Built lookup maps:");
-    console.log("  - Skills:", skill_node_by_id.size);
-    console.log("  - Projects:", project_node_by_id.size);
-    console.log("  - Techs:", tech_node_by_id.size);
-    console.log("  - Donut arcs:", donut_arc_by_type.size);
   } //buildNodeLookups()
 
   /////////// DELAUNEY
@@ -1729,52 +1719,24 @@ const createCompetencesMap = (container) => {
     );
   } //rebuildSkillDelaunay()
 
-  //check if the rhombus is rotated
-  function isPointInRotatedRhombus(
-    px,
-    py,
-    cx,
-    cy,
-    angle,
-    maxDiag,
-    minDiag,
-    padding = 0
-  ) {
-    // Apply padding to dimensions
-    const halfHeight = maxDiag / 2 + padding;
-    const halfWidth = minDiag / 2 + padding;
+  //find nearest neighbor projects
+  function findNearestProjectNeighbor(target_proj, all_projects) {
+    let min_dist = Infinity;
 
-    // Translate point to rhombus-centered coordinates
-    const dx = px - cx;
-    const dy = py - cy;
+    for (const other_proj of all_projects) {
+      if (other_proj.id === target_proj.id) continue; // Skip self
 
-    // Apply inverse rotation to get point in rhombus's local space
-    const cos_a = cos(-angle);
-    const sin_a = sin(-angle);
-    const local_x = dx * cos_a - dy * sin_a;
-    const local_y = dx * sin_a + dy * cos_a;
+      const dx = target_proj.x - other_proj.x;
+      const dy = target_proj.y - other_proj.y;
+      const dist = sqrt(dx ** 2 + dy ** 2);
 
-    // Check if point is inside rhombus using cross product method
-    // A point is inside if it's on the correct side of all 4 edges
+      if (dist < min_dist) {
+        min_dist = dist;
+      }
+    }
 
-    // Edge 1: Top to Right
-    const edge1 =
-      local_x * halfHeight + local_y * halfWidth <= halfHeight * halfWidth;
-
-    // Edge 2: Right to Bottom
-    const edge2 =
-      local_x * halfHeight - local_y * halfWidth <= halfHeight * halfWidth;
-
-    // Edge 3: Bottom to Left
-    const edge3 =
-      -local_x * halfHeight - local_y * halfWidth <= halfHeight * halfWidth;
-
-    // Edge 4: Left to Top
-    const edge4 =
-      -local_x * halfHeight + local_y * halfWidth <= halfHeight * halfWidth;
-
-    return edge1 && edge2 && edge3 && edge4;
-  } //isPointInRotatedRhombus()
+    return min_dist;
+  }
 
   /**
    * Find the closest node to mouse position across all node types
@@ -1810,7 +1772,7 @@ const createCompetencesMap = (container) => {
       }
     }
 
-    // Check projects - Use accurate rotated rhombus detection
+    // Check projects - Use bounding circle (simpler and more reliable)
     if (delaunay_projects) {
       const projIdx = delaunay_projects.find(mx, my);
       const projNodes = [...project_node_by_id.values()];
@@ -1818,45 +1780,45 @@ const createCompetencesMap = (container) => {
       if (projIdx >= 0 && projIdx < projNodes.length) {
         const projNode = projNodes[projIdx];
 
-        // Calculate distance for comparison (still needed to find "closest")
+        // Calculate distance from mouse to project center
         const projDist = sqrt((projNode.x - mx) ** 2 + (projNode.y - my) ** 2);
-        const isInside = isPointInRotatedRhombus(
-          mx,
-          my, // Mouse position
-          projNode.x,
-          projNode.y, // Rhombus center
-          projNode.angle, // Rotation angle
-          maxDiag,
-          minDiag, // Rhombus dimensions
-          RHOMBUS_HOVER_PADDING // Hover padding
-        );
 
-        if (isInside && projDist < closestDist) {
+        // Calculate bounding circle radius
+        const rhombus_diagonal = sqrt(maxDiag * maxDiag + minDiag * minDiag);
+        const base_radius = rhombus_diagonal / 2;
+
+        //adaptive padding
+        const nearest = findNearestProjectNeighbor(projNode, projNodes);
+        const max_padding = RHOMBUS_HOVER_PADDING;
+        const safe_padding = min(max_padding, nearest / 3);
+
+        const hover_radius = base_radius + safe_padding;
+
+        // Simple distance check
+        if (projDist < hover_radius && projDist < closestDist) {
           closestNode = projNode;
           closestDist = projDist;
           closestType = "project";
         }
       }
+    }
 
-      // Check techs
-      if (delaunay_techs) {
-        const techIdx = delaunay_techs.find(mx, my);
-        const techNodes = [...tech_node_by_id.values()];
+    // Check techs
+    if (delaunay_techs) {
+      const techIdx = delaunay_techs.find(mx, my);
+      const techNodes = [...tech_node_by_id.values()];
 
-        if (techIdx >= 0 && techIdx < techNodes.length) {
-          const techNode = techNodes[techIdx];
-          const techDist = sqrt(
-            (techNode.x - mx) ** 2 + (techNode.y - my) ** 2
-          );
+      if (techIdx >= 0 && techIdx < techNodes.length) {
+        const techNode = techNodes[techIdx];
+        const techDist = sqrt((techNode.x - mx) ** 2 + (techNode.y - my) ** 2);
 
-          // Check if within hover threshold
-          const threshold = techNode.radius + HOVER_THRESHOLD_TECH;
+        // Check if within hover threshold
+        const threshold = techNode.radius + HOVER_THRESHOLD_TECH;
 
-          if (techDist < threshold && techDist < closestDist) {
-            closestNode = techNode;
-            closestDist = techDist;
-            closestType = "tech";
-          }
+        if (techDist < threshold && techDist < closestDist) {
+          closestNode = techNode;
+          closestDist = techDist;
+          closestType = "tech";
         }
       }
     }
@@ -1998,8 +1960,6 @@ const createCompetencesMap = (container) => {
         }, 100); // Small 100ms grace period
       });
     }
-
-    console.log("✅ Delaunay hover detection setup complete");
   } //setupHoverDetection()
 
   //Visualize donut arc boundaries and angles
@@ -2418,13 +2378,8 @@ const createCompetencesMap = (container) => {
 
   //Reset visual state after hover exit
   function resetHoverVisuals() {
-    console.log("Resetting hover visuals");
-
-    // Hide all edges
-    hideAllEdges();
-
-    // Reset all nodes to full opacity
-    resetAllNodesOpacity();
+    hideAllEdges(); // Hide all edges
+    resetAllNodesOpacity(); // Reset all nodes to full opacity
   } //resetHoverVisuals()
 
   //Get edge color based on hovered node type
@@ -2435,7 +2390,7 @@ const createCompetencesMap = (container) => {
       case "skill_type":
         return COLORS.ui; // Deep purple for skill types
       case "project":
-        return "green"; // Green for projects
+        return COLORS.proj; // Green for projects
       case "tech":
         // Get the tech node color from tech_colors scale
         // Tech nodes have their type in node.type (capt_tech, rep_tech, diss_tech)
@@ -2639,7 +2594,7 @@ const createCompetencesMap = (container) => {
       (BOUNDARY_RADIUS - DONUT_RADIUS - PADDING) / 2
     );
 
-    //check if everythins is correct
+    /*//check if everythins is correct
     console.log("Widht:" + w + ", Height:" + h);
     console.log("SF:" + SF);
     console.log("Donut widht:" + DONUT_WIDTH);
@@ -2648,7 +2603,7 @@ const createCompetencesMap = (container) => {
     console.log("Projects radius:" + PROJECTS_RADIUS);
     console.log("Technology radius:" + TECHNOLOGY_RADIUS);
     console.log("central hole radius:" + CENTRAL_HOLE_RADIUS);
-    console.log("Boundary circle for skill radius:" + SKILL_BOUNDARY_RADIUS);
+    console.log("Boundary circle for skill radius:" + SKILL_BOUNDARY_RADIUS);*/
   } //handleSizes()
 
   //to update all the scales following the handlesize()
@@ -2841,7 +2796,7 @@ const createCompetencesMap = (container) => {
       .attr("class", "hover-debug-layer")
       .style("pointer-events", "none");
 
-    // 1. DONUT HOVER AREA (annulus)
+    //Donut
     const donut_thickness = donutData.thickness;
     const donut_inner = DONUT_RADIUS - donut_thickness / 2;
     const donut_outer = DONUT_RADIUS + donut_thickness / 2;
@@ -2878,7 +2833,7 @@ const createCompetencesMap = (container) => {
       .attr("font-size", 12)
       .attr("font-weight", "bold");
 
-    // 2. SKILL NODE HOVER AREAS
+    // Skill
     const skillNodes = [...skill_node_by_id.values()];
     skillNodes.forEach((node) => {
       const threshold = node.radius + HOVER_THRESHOLD_SKILL;
@@ -2895,17 +2850,20 @@ const createCompetencesMap = (container) => {
         .attr("stroke-dasharray", "3,3");
     });
 
-    // 3. PROJECT NODE HOVER AREAS
+    // Project
     const projNodes = [...project_node_by_id.values()];
 
     projNodes.forEach((node) => {
-      // Define rhombus vertices with padding
-      const halfHeight = maxDiag / 2 + RHOMBUS_HOVER_PADDING;
-      const halfWidth = minDiag / 2 + RHOMBUS_HOVER_PADDING;
+      // Calculate bounding circle radius (same logic as findClosestNode)
+      const rhombus_diagonal = sqrt(maxDiag * maxDiag + minDiag * minDiag);
+      const hover_radius = rhombus_diagonal / 2 + RHOMBUS_HOVER_PADDING;
 
-      // Create rhombus path in local coordinates
+      // Draw the actual rhombus shape (for reference)
+      const halfHeight = maxDiag / 2;
+      const halfWidth = minDiag / 2;
       const rhombus_path = `M 0,${-halfHeight} L ${halfWidth},0 L 0,${halfHeight} L ${-halfWidth},0 Z`;
 
+      // Draw rhombus outline (actual shape - no padding)
       debug_layer
         .append("path")
         .attr("d", rhombus_path)
@@ -2913,14 +2871,37 @@ const createCompetencesMap = (container) => {
           "transform",
           `translate(${node.x}, ${node.y}) rotate(${(node.angle * 180) / PI})`
         )
-        .attr("fill", "green")
+        .attr("fill", "none")
+        .attr("stroke", COLORS.proj)
+        .attr("stroke-width", 1)
+        .attr("opacity", 0.5);
+
+      // Draw hover circle (actual hover area used for detection)
+      debug_layer
+        .append("circle")
+        .attr("cx", node.x)
+        .attr("cy", node.y)
+        .attr("r", hover_radius)
+        .attr("fill", COLORS.proj)
         .attr("opacity", 0.15)
-        .attr("stroke", "green")
+        .attr("stroke", COLORS.proj)
         .attr("stroke-width", 2)
         .attr("stroke-dasharray", "4,4");
+
+      // Optional: Add label with radius value
+      debug_layer
+        .append("text")
+        .attr("x", node.x)
+        .attr("y", node.y - hover_radius - 5)
+        .attr("text-anchor", "middle")
+        .attr("font-size", 10)
+        .attr("font-family", "monospace")
+        .attr("fill", COLORS.proj)
+        .attr("font-weight", "bold")
+        .text(`r: ${hover_radius.toFixed(1)}px`);
     });
 
-    // 4. TECH NODE HOVER AREAS
+    // Tech
     const techNodes = [...tech_node_by_id.values()];
     techNodes.forEach((node) => {
       const threshold = node.radius + HOVER_THRESHOLD_TECH;
