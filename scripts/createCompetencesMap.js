@@ -59,7 +59,7 @@ const createCompetencesMap = (container) => {
   const PADDING = 24; //in scale of 8th
   const MAX_TECH_NODE = 7;
   const MAX_SKILL_NODE = 8;
-  const PROJ_NODE = 4;
+  const PROJ_NODE = 3;
 
   //variables for scaling
   const DEFAULT_SIZE = 1000;
@@ -2509,7 +2509,8 @@ const createCompetencesMap = (container) => {
     // Reset stroke for other projects
     g.selectAll(".project-ring path")
       .filter((d) => d.id !== project_node.id)
-      .attr("stroke", "none");
+      .attr("stroke", COLORS.proj)
+      .attr("stroke-width", 1.5);
 
     // Highlight connected skill nodes
     const skill_ids = new Set(connected.skill_nodes.map((s) => s.id));
@@ -2551,7 +2552,7 @@ const createCompetencesMap = (container) => {
 
     // Highlight connected projects
     const project_ids = new Set(connected.projects.map((p) => p.id));
-    g.selectAll(".project-ring path").attr("opacity", (d) =>
+    g.selectAll(".project-ring circle").attr("opacity", (d) =>
       project_ids.has(d.id) ? 1.0 : 0.4
     );
   } //highlightTechHover()
@@ -2559,7 +2560,7 @@ const createCompetencesMap = (container) => {
   //Fade all nodes to low opacity
   function fadeAllNodes() {
     g.selectAll(".skill-nodes circle").attr("opacity", 0.4);
-    g.selectAll(".project-ring path").attr("opacity", 0.4);
+    g.selectAll(".project-ring circle").attr("opacity", 0.4);
     g.selectAll(".tech-nodes circle").attr("opacity", 0.4);
     g.selectAll(".donut-skill path").attr("opacity", 0.4);
   } //fadeAllNodes()
@@ -2567,9 +2568,10 @@ const createCompetencesMap = (container) => {
   // Reset all nodes to full opacity
   function resetAllNodesOpacity() {
     g.selectAll(".skill-nodes circle").attr("opacity", 1.0);
-    g.selectAll(".project-ring path")
+    g.selectAll(".project-ring circle")
       .attr("opacity", 1.0)
-      .attr("stroke", "none");
+      .attr("stroke", COLORS.proj)
+      .attr("stroke-width", 1.5);
     g.selectAll(".tech-nodes circle")
       .attr("opacity", 1.0)
       .attr("stroke", "none");
@@ -2584,7 +2586,7 @@ const createCompetencesMap = (container) => {
   //Calculate sizes
   function handleSizes(w, h) {
     //set ideal
-    const diameter = min(w, h) - PADDING * 4; //sweet spot
+    const diameter = min(w, h) - PADDING * 6; //sweet spot
     BOUNDARY_RADIUS = diameter / 2; //building block variable
 
     //define donut sizes
@@ -2864,33 +2866,21 @@ const createCompetencesMap = (container) => {
 
     projNodes.forEach((node) => {
       // Calculate bounding circle radius (same logic as findClosestNode)
-      const rhombus_diagonal = sqrt(maxDiag * maxDiag + minDiag * minDiag);
-      const hover_radius = rhombus_diagonal / 2 + RHOMBUS_HOVER_PADDING;
+      const threshold = node.radius + HOVER_THRESHOLD_PROJECT;
 
-      // Draw the actual rhombus shape (for reference)
-      const halfHeight = maxDiag / 2;
-      const halfWidth = minDiag / 2;
-      const rhombus_path = `M 0,${-halfHeight} L ${halfWidth},0 L 0,${halfHeight} L ${-halfWidth},0 Z`;
-
-      // Draw rhombus outline (actual shape - no padding)
+      // Draw hover outline
       debug_layer
-        .append("path")
-        .attr("d", rhombus_path)
-        .attr(
-          "transform",
-          `translate(${node.x}, ${node.y}) rotate(${(node.angle * 180) / PI})`
-        )
-        .attr("fill", "none")
+        .append("circle")
+        .attr("r", node.radius)
         .attr("stroke", COLORS.proj)
-        .attr("stroke-width", 1)
-        .attr("opacity", 0.5);
+        .attr("stroke-width", 2);
 
       // Draw hover circle (actual hover area used for detection)
       debug_layer
         .append("circle")
         .attr("cx", node.x)
         .attr("cy", node.y)
-        .attr("r", hover_radius)
+        .attr("r", threshold)
         .attr("fill", COLORS.proj)
         .attr("opacity", 0.15)
         .attr("stroke", COLORS.proj)
@@ -2901,13 +2891,13 @@ const createCompetencesMap = (container) => {
       debug_layer
         .append("text")
         .attr("x", node.x)
-        .attr("y", node.y - hover_radius - 5)
+        .attr("y", node.y - threshold - 5)
         .attr("text-anchor", "middle")
         .attr("font-size", 10)
         .attr("font-family", "monospace")
         .attr("fill", COLORS.proj)
         .attr("font-weight", "bold")
-        .text(`r: ${hover_radius.toFixed(1)}px`);
+        .text(`r: ${threshold.toFixed(1)}px`);
     });
 
     // Tech
