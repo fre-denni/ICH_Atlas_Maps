@@ -133,7 +133,6 @@ const createCompetencesMap = (container) => {
 
   //Delaunay diagrams for efficient hover detection
   let delaunay_skills;
-  let delaunay_projects;
   let delaunay_techs;
 
   // Delaunay hover settings
@@ -765,27 +764,6 @@ const createCompetencesMap = (container) => {
 
     //Build lookup maps for quick access
     buildNodeLookups(skillnodes, proj_pos, technodes);
-
-    // This happens once per draw, avoiding expensive calculations in mousemove
-    const all_proj_nodes = [...project_node_by_id.values()];
-    for (const proj_node of all_proj_nodes) {
-      let min_dist = Infinity;
-
-      for (const other_proj of all_proj_nodes) {
-        if (other_proj.id === proj_node.id) continue; // Skip self
-
-        const dx = proj_node.x - other_proj.x;
-        const dy = proj_node.y - other_proj.y;
-        const dist = sqrt(dx * dx + dy * dy);
-
-        if (dist < min_dist) {
-          min_dist = dist;
-        }
-      }
-
-      // Store in the node object for later use
-      proj_node.nearest_neighbor_dist = min_dist;
-    }
 
     //Render in desired order
     drawTriad(triadData);
@@ -1836,41 +1814,44 @@ const createCompetencesMap = (container) => {
 
   //Setup hover detection using Delaunay diagrams
   function setupHoverDetection() {
-    // Remove any existing hover listeners
     svg.on("mousemove.hover", null);
     svg.on("mouseleave", null);
 
-    // Add single mousemove listener to SVG
+    // Donut constants (computed once)
+    const donut_inner_radius = donutData.inner;
+    const donut_outer_radius = DONUT_RADIUS + donutData.thickness / 2;
+
+    // Project hover constants (computed once)
+    const proj_inner_r =
+      PROJECTS_RADIUS - PROJ_NODE * SF - HOVER_THRESHOLD_PROJECT;
+    const proj_outer_r =
+      PROJECTS_RADIUS + PROJ_NODE * SF + HOVER_THRESHOLD_PROJECT;
+    const num_projects = proj_pos.length;
+    const padding_angle = PROJECT_ARC_PADDING / PROJECTS_RADIUS;
+    const available_angle = TAU - padding_angle * num_projects;
+    const arc_width = available_angle / num_projects;
+    const half_arc = arc_width / 2;
+
     svg.on("mousemove.hover", function (event) {
-      // Get mouse position relative to SVG
       const [mx, my] = d3.pointer(event);
       const adjusted_x = mx - width / 2;
       const adjusted_y = my - height / 2;
 
-      // FIRST: Check if hovering over a donut arc (skill type)
-      // Calculate polar coordinates from mouse position
       const mouse_angle_raw = atan2(adjusted_y, adjusted_x);
       const mouse_radius = sqrt(adjusted_x ** 2 + adjusted_y ** 2);
 
-      // Normalize angle to 0-2π range (D3 arc angles are in this range)
       let mouse_angle = (mouse_angle_raw + PI / 2) % TAU;
       if (mouse_angle < 0) mouse_angle += TAU;
 
-      // Get donut dimensions from the arc generator or data
-      const donut_inner_radius = donutData.inner;
-      const donut_outer_radius = DONUT_RADIUS + donutData.thickness / 2;
-
-      // Check if mouse is within donut radius range
+      // FIRST: Check donut (usa costanti pre-calcolate)
       if (
         mouse_radius >= donut_inner_radius &&
         mouse_radius <= donut_outer_radius
       ) {
-        // Find which arc the angle corresponds to
         const hoveredArc = donutData.data.find((d) => {
           let startAngle = d.startAngle;
           let endAngle = d.endAngle;
 
-          // Handle wrap-around case (arc crosses 0/2π boundary)
           if (endAngle < startAngle) {
             return mouse_angle >= startAngle || mouse_angle <= endAngle;
           } else {
@@ -1884,20 +1865,8 @@ const createCompetencesMap = (container) => {
         }
       }
 
-      //SECOND: chek if hovering hover a project
-      const proj_inner_r =
-        PROJECTS_RADIUS - PROJ_NODE * SF - HOVER_THRESHOLD_PROJECT;
-      const proj_outer_r =
-        PROJECTS_RADIUS + PROJ_NODE * SF + HOVER_THRESHOLD_PROJECT;
-
+      // SECOND: Check projects (usa costanti pre-calcolate)
       if (mouse_radius >= proj_inner_r && mouse_radius <= proj_outer_r) {
-        const num_projects = proj_pos.length; // proj_pos is in scope
-        const padding_angle = PROJECT_ARC_PADDING / PROJECTS_RADIUS;
-        const available_angle = TAU - padding_angle * num_projects;
-        const arc_width = available_angle / num_projects;
-        const half_arc = arc_width / 2;
-
-        // Find the project arc the mouse is in (using proj_pos)
         const hoveredProject = proj_pos.find((p) => {
           const startAngle = p.d3_angle - half_arc;
           const endAngle = p.d3_angle + half_arc;
@@ -1913,7 +1882,6 @@ const createCompetencesMap = (container) => {
         });
 
         if (hoveredProject) {
-          // Check if we're not already hovering this
           if (
             !hover_active ||
             hovered_node?.id !== hoveredProject.id ||
@@ -1921,16 +1889,14 @@ const createCompetencesMap = (container) => {
           ) {
             onNodeHover(hoveredProject, "project");
           }
-          return; // Found a project, stop here
+          return;
         }
       }
 
-      // THIRD: Check skills and techs using Delaunay
-      // projects are handled by SVG path mouseover events
+      // THIRD: Check skills and techs
       const found = findClosestNode(adjusted_x, adjusted_y);
 
       if (found) {
-        // Node found within threshold - trigger hover
         if (
           !hover_active ||
           hovered_node !== found.node ||
@@ -1943,7 +1909,6 @@ const createCompetencesMap = (container) => {
       }
     });
 
-    // Add mouseleave listener to handle mouse leaving SVG
     svg.on("mouseleave", function () {
       if (hover_active) {
         onNodeHoverExit();
@@ -2092,10 +2057,10 @@ const createCompetencesMap = (container) => {
 
     return sk_edges_curves_global.filter((edge) => {
       // Check if this edge's target_angle matches our project's angle
-      const angle_diff = Math.abs(edge.target_angle - project_angle);
+      const angle_diff = abs(edge.target_angle - project_angle);
 
       // Account for angle wrapping (2π = 0)
-      const angle_diff_wrapped = Math.min(
+      const angle_diff_wrapped = min(
         angle_diff,
         abs(angle_diff - TAU),
         abs(angle_diff + TAU)
@@ -2701,17 +2666,6 @@ const createCompetencesMap = (container) => {
       g.append("path")
         .attr("class", "delaunay-mesh")
         .attr("d", delaunay_skills.render())
-        .attr("fill", "none")
-        .attr("stroke", "red")
-        .attr("stroke-width", 2)
-        .attr("opacity", 0.3);
-    }
-
-    //draw project delaunay
-    if (delaunay_projects) {
-      g.append("path")
-        .attr("class", "delaunay-mesh")
-        .attr("d", delaunay_projects.render())
         .attr("fill", "none")
         .attr("stroke", "red")
         .attr("stroke-width", 2)
