@@ -2399,113 +2399,51 @@ const createCompetencesMap = (container) => {
 
   //Highlight nodes for skill hover
   function highlightSkillHover(skill_node, connected) {
-    // Fade all nodes first
-    fadeAllNodes();
-
-    // Highlight the skill node itself
-    g.selectAll(".skill-nodes circle")
-      .filter((d) => d.id === skill_node.id)
-      .attr("opacity", 1.0);
-
-    // Highlight the skill type arc
-    if (connected.skill_type_arc) {
-      g.selectAll(".donut-skill path")
-        .filter((d) => d.data.type === skill_node.type)
-        .attr("opacity", 1.0);
-    }
-
-    // Highlight connected projects
-    const project_ids = new Set(connected.projects.map((p) => p.id));
-    g.selectAll(".project-ring path").attr("opacity", (d) =>
-      project_ids.has(d.id) ? 1.0 : 0.4
-    );
+    highlightNodes({
+      fade_all: true,
+      skill_ids: [skill_node.id],
+      skill_types: connected.skill_type_arc ? [skill_node.type] : [],
+      project_ids: connected.projects.map((p) => p.id),
+      highlight_target: skill_node,
+      target_type: "skill",
+      filter_mode: true, // Use filter for skill type arc
+    });
   } //highlightSkillHover()
 
   //Highlight nodes for skill type hover
   function highlightSkillTypeHover(donut_arc, connected) {
-    const skill_type = donut_arc.data.type;
-
-    // Fade all nodes first
-    fadeAllNodes();
-
-    // Highlight the donut arc itself
-    g.selectAll(".donut-skill path")
-      .filter((d) => d.data.type === skill_type)
-      .attr("opacity", 1.0);
-
-    // Highlight all skill nodes in this type
-    g.selectAll(".skill-nodes circle")
-      .filter((d) => d.type === skill_type)
-      .attr("opacity", 1.0);
-
-    // Highlight connected projects
-    const project_ids = new Set(connected.projects.map((p) => p.id));
-    g.selectAll(".project-ring path").attr("opacity", (d) =>
-      project_ids.has(d.id) ? 1.0 : 0.4
-    );
+    highlightNodes({
+      fade_all: true,
+      skill_types: [donut_arc.data.type],
+      project_ids: connected.projects.map((p) => p.id),
+      highlight_target: donut_arc,
+      target_type: "skill_type",
+      filter_mode: true, // Use filter for both donut and skills
+    });
   } //highlightSkillTypeHover()
 
   //Highlight nodes for project hover
   function highlightProjectHover(project_node, connected) {
-    // Fade all nodes first
-    fadeAllNodes();
-
-    // Highlight the project node itself
-    g.selectAll(".project-ring circle")
-      .filter((d) => d.id === project_node.id)
-      .attr("opacity", 1.0)
-      .attr("stroke", COLORS.background)
-      .attr("stroke-width", 2 * SF);
-
-    // Reset stroke for other projects
-    g.selectAll(".project-ring circle")
-      .filter((d) => d.id !== project_node.id)
-      .attr("stroke", handleStrokes(COLORS.proj))
-      .attr("stroke-width", 1.5);
-
-    // Highlight connected skill nodes
-    const skill_ids = new Set(connected.skill_nodes.map((s) => s.id));
-    g.selectAll(".skill-nodes circle").attr("opacity", (d) =>
-      skill_ids.has(d.id) ? 1.0 : 0.4
-    );
-
-    // Highlight connected skill type arcs
-    const skill_types = new Set(
-      connected.skill_type_arcs.map((arc) => arc.data.type)
-    );
-    g.selectAll(".donut-skill path").attr("opacity", (d) =>
-      skill_types.has(d.data.type) ? 1.0 : 0.4
-    );
-
-    // Highlight connected tech nodes
-    const tech_ids = new Set(connected.tech_nodes.map((t) => t.id));
-    g.selectAll(".tech-nodes circle").attr("opacity", (d) =>
-      tech_ids.has(d.id) ? 1.0 : 0.4
-    );
+    highlightNodes({
+      fade_all: true,
+      skill_ids: connected.skill_nodes.map((s) => s.id),
+      skill_types: connected.skill_type_arcs.map((arc) => arc.data.type),
+      project_ids: [project_node.id],
+      tech_ids: connected.tech_nodes.map((t) => t.id),
+      highlight_target: project_node,
+      target_type: "project",
+    });
   } //highlightProjectHover()
 
   // Highlight nodes for tech hover
   function highlightTechHover(tech_node, connected) {
-    // Fade all nodes first
-    fadeAllNodes();
-
-    // Highlight the tech node itself
-    g.selectAll(".tech-nodes circle")
-      .filter((d) => d.id === tech_node.id)
-      .attr("opacity", 1.0)
-      .attr("stroke", "gray")
-      .attr("stroke-width", 2 * SF);
-
-    // Reset stroke for other tech nodes
-    g.selectAll(".tech-nodes circle")
-      .filter((d) => d.id !== tech_node.id)
-      .attr("stroke", "none");
-
-    // Highlight connected projects
-    const project_ids = new Set(connected.projects.map((p) => p.id));
-    g.selectAll(".project-ring circle").attr("opacity", (d) =>
-      project_ids.has(d.id) ? 1.0 : 0.4
-    );
+    highlightNodes({
+      fade_all: true,
+      project_ids: connected.projects.map((p) => p.id),
+      tech_ids: [tech_node.id],
+      highlight_target: tech_node,
+      target_type: "tech",
+    });
   } //highlightTechHover()
 
   //Fade all nodes to low opacity
@@ -2515,6 +2453,104 @@ const createCompetencesMap = (container) => {
     g.selectAll(".tech-nodes circle").attr("opacity", 0.4);
     g.selectAll(".donut-skill path").attr("opacity", 0.4);
   } //fadeAllNodes()
+
+  //manage highlights
+  function highlightNodes(config) {
+    const {
+      fade_all = true,
+      skill_ids = [],
+      skill_types = [],
+      project_ids = [],
+      tech_ids = [],
+      highlight_target = null,
+      target_type = null,
+      filter_mode = false,
+    } = config;
+
+    //fade all nodes first if requested
+    if (fade_all) {
+      fadeAllNodes();
+    }
+
+    // Highlight skills
+    if (skill_ids.length > 0) {
+      const ids_set = new Set(skill_ids);
+      g.selectAll(".skill-nodes circle").attr("opacity", (d) =>
+        ids_set.has(d.id) ? 1.0 : 0.4
+      );
+    }
+
+    // Highlight skill types in donut
+    if (skill_types.length > 0) {
+      if (filter_mode) {
+        // For skill_type hover: highlight only matching types
+        const types_set = new Set(skill_types);
+        g.selectAll(".donut-skill path")
+          .filter((d) => types_set.has(d.data.type))
+          .attr("opacity", 1.0);
+      } else {
+        // For other hovers: set opacity for all
+        const types_set = new Set(skill_types);
+        g.selectAll(".donut-skill path").attr("opacity", (d) =>
+          types_set.has(d.data.type) ? 1.0 : 0.4
+        );
+      }
+    }
+
+    // Highlight projects
+    if (project_ids.length > 0) {
+      const ids_set = new Set(project_ids);
+      g.selectAll(".project-ring circle").attr("opacity", (d) =>
+        ids_set.has(d.id) ? 1.0 : 0.4
+      );
+    }
+
+    // Highlight techs
+    if (tech_ids.length > 0) {
+      const ids_set = new Set(tech_ids);
+      g.selectAll(".tech-nodes circle").attr("opacity", (d) =>
+        ids_set.has(d.id) ? 1.0 : 0.4
+      );
+    }
+
+    // Apply special styling to the hovered target node
+    if (highlight_target && target_type === "project") {
+      // Highlight the project with special stroke
+      g.selectAll(".project-ring circle")
+        .filter((d) => d.id === highlight_target.id)
+        .attr("opacity", 1.0)
+        .attr("stroke", COLORS.background)
+        .attr("stroke-width", 2 * SF);
+
+      // Reset stroke for other projects
+      g.selectAll(".project-ring circle")
+        .filter((d) => d.id !== highlight_target.id)
+        .attr("stroke", handleStrokes(COLORS.proj))
+        .attr("stroke-width", 1.5);
+    } else if (highlight_target && target_type === "tech") {
+      // Highlight the tech with special stroke
+      g.selectAll(".tech-nodes circle")
+        .filter((d) => d.id === highlight_target.id)
+        .attr("opacity", 1.0)
+        .attr("stroke", "gray")
+        .attr("stroke-width", 2 * SF);
+
+      // Reset stroke for other techs
+      g.selectAll(".tech-nodes circle")
+        .filter((d) => d.id !== highlight_target.id)
+        .attr("stroke", "none");
+    } else if (highlight_target && target_type === "skill") {
+      // For skill hover, just make sure it's highlighted
+      g.selectAll(".skill-nodes circle")
+        .filter((d) => d.id === highlight_target.id)
+        .attr("opacity", 1.0);
+    } else if (highlight_target && target_type === "skill_type") {
+      // For skill_type hover, filter skills of that type
+      g.selectAll(".skill-nodes circle")
+        .filter((d) => d.type === highlight_target.data.type)
+        .attr("opacity", 1.0);
+    }
+  } //highlightNodes()
 
   // Reset all nodes to full opacity
   function resetAllNodesOpacity() {
