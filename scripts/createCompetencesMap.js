@@ -1,8 +1,5 @@
 /*** *****************************************
- * 
- *
- * 
- * 
+
  ▗▄▄▖ ▗▄▖ ▗▖  ▗▖▗▄▄▖ ▗▄▄▄▖▗▄▄▄▖▗▄▄▄▖▗▖  ▗▖ ▗▄▄▖▗▄▄▄▖ ▗▄▄▖    ▗▖  ▗▖ ▗▄▖ ▗▄▄▖ 
 ▐▌   ▐▌ ▐▌▐▛▚▞▜▌▐▌ ▐▌▐▌     █  ▐▌   ▐▛▚▖▐▌▐▌   ▐▌   ▐▌       ▐▛▚▞▜▌▐▌ ▐▌▐▌ ▐▌
 ▐▌   ▐▌ ▐▌▐▌  ▐▌▐▛▀▘ ▐▛▀▀▘  █  ▐▛▀▀▘▐▌ ▝▜▌▐▌   ▐▛▀▀▘ ▝▀▚▖    ▐▌  ▐▌▐▛▀▜▌▐▛▀▘ 
@@ -13,24 +10,18 @@
     * Coded by Federico Denni for Project TRAMA
     * seen on ichatlas.com
     * Politecnico di Milano - Design Department - Coordinated by Davide Spallazzo
-    * iCoolHunt Spa
- *                                                                               
- *                                                                               
- *                                                                               
+    * iCoolHunt Spa                                                                            
+                                                                             
  ********************************************* ***/
 
 // Thanks to Visual Cinnamon, Observable and Shirley Wu for inspiration
 // This tool is built upon d3.js and bboxCollide libraries, and visualises
 // the mapping of competences and technologies required to different fruitions output of projects
 
-//working variables
+//working variable
 const DEBUG = "hidden";
 
 const createCompetencesMap = (container) => {
-  /***
-   *
-   *
-   */
   //////////////////////////////////////
   ////// Constants & Variables ////////
   /////////////////////////////////////
@@ -131,6 +122,9 @@ const createCompetencesMap = (container) => {
   let hovered_type = null; //skill, skill_type, project, tech
   let hover_debounce_active = false;
 
+  //SVG hover elements for projects
+  let hover_project_paths = null;
+
   //lookup maps
   let skill_node_by_id;
   let project_node_by_id;
@@ -144,8 +138,9 @@ const createCompetencesMap = (container) => {
 
   // Delaunay hover settings
   const HOVER_THRESHOLD_SKILL = 5; // pixels beyond node radius
-  const HOVER_THRESHOLD_PROJECT = 8;
+  const HOVER_THRESHOLD_PROJECT = 10;
   const HOVER_THRESHOLD_TECH = 8; // pixels beyond node radius
+  const PROJECT_ARC_PADDING = 6;
 
   //Node lookups and labels
   let vizProj;
@@ -478,12 +473,15 @@ const createCompetencesMap = (container) => {
   function calculateProjectPositions(radius) {
     const positions = projects.map((p, i) => {
       const angle = (i / projects.length) * TAU - PI / 2;
+      let d3_angle = (angle + PI / 2) % TAU;
+      if (d3_angle < 0) d3_angle += TAU;
 
       return {
         id: p,
         x: radius * cos(angle),
         y: radius * sin(angle),
         angle: angle,
+        d3_angle: d3_angle,
         radius: PROJ_NODE * SF,
       };
     });
@@ -1711,20 +1709,59 @@ const createCompetencesMap = (container) => {
       (d) => d.y
     );
 
-    // Create Delaunay diagram for projects using their x,y positions
-    delaunay_projects = d3.Delaunay.from(
-      pr,
-      (d) => d.x,
-      (d) => d.y
-    );
-
     // Create Delaunay diagram for techs using their x,y positions
     delaunay_techs = d3.Delaunay.from(
       tc,
       (d) => d.x,
       (d) => d.y
     );
+
+    //create projects paths
+    createProjectHoverPaths(pr);
   } //buildDelaunayDiagrams()
+
+  //create svg invisble paths for projects
+  function createProjectHoverPaths(projects) {
+    // Remove existing paths if any
+    if (hover_project_paths) {
+      hover_project_paths.remove();
+    }
+
+    // Calculate arc width for each project
+    // Distribute 360° evenly, accounting for padding
+    const num_projects = projects.length;
+    const padding_angle = PROJECT_ARC_PADDING / PROJECTS_RADIUS; // Convert padding to radians
+    const available_angle = TAU - padding_angle * num_projects;
+    const arc_width = available_angle / num_projects;
+
+    //normalise angles
+    projects.forEach((p) => {
+      let d3_angle = (p.angle + PI / 2) % TAU;
+      if (d3_angle < 0) d3_angle += TAU;
+      p.d3_angle = d3_angle;
+    });
+
+    // Create arc generator for hover areas
+    const arc_hover = d3
+      .arc()
+      .startAngle((d) => d.d3_angle - arc_width / 2)
+      .endAngle((d) => d.d3_angle + arc_width / 2)
+      .innerRadius((d) => PROJECTS_RADIUS - d.radius - HOVER_THRESHOLD_PROJECT)
+      .outerRadius((d) => PROJECTS_RADIUS + d.radius + HOVER_THRESHOLD_PROJECT);
+
+    // Create invisible SVG paths for each project
+    hover_project_paths = g
+      .append("g")
+      .attr("class", "project-hover-paths")
+      .selectAll("path")
+      .data(projects)
+      .join("path")
+      .attr("class", "project-hover-path")
+      .attr("d", arc_hover)
+      .style("fill", "none")
+      .style("stroke", "none")
+      .style("pointer-events", "none");
+  } //createProjectHoverPaths()
 
   //for simulation
   function rebuildSkillDelaunay(skillnodes) {
@@ -1736,25 +1773,6 @@ const createCompetencesMap = (container) => {
       (d) => d.y
     );
   } //rebuildSkillDelaunay()
-
-  //find nearest neighbor projects
-  function findNearestProjectNeighbor(target_proj, all_projects) {
-    let min_dist = Infinity;
-
-    for (const other_proj of all_projects) {
-      if (other_proj.id === target_proj.id) continue; // Skip self
-
-      const dx = target_proj.x - other_proj.x;
-      const dy = target_proj.y - other_proj.y;
-      const dist = sqrt(dx ** 2 + dy ** 2);
-
-      if (dist < min_dist) {
-        min_dist = dist;
-      }
-    }
-
-    return min_dist;
-  }
 
   /**
    * Find the closest node to mouse position across all node types
@@ -1790,26 +1808,6 @@ const createCompetencesMap = (container) => {
       }
     }
 
-    //Check projects
-    if (delaunay_projects) {
-      const projIdx = delaunay_projects.find(mx, my);
-      const projNodes = [...project_node_by_id.values()];
-
-      if (projIdx >= 0 && projIdx < projNodes.length) {
-        const projNode = projNodes[projIdx];
-        const projDist = sqrt((projNode.x - mx) ** 2 + (projNode.y - my) ** 2);
-
-        // Check if within hover threshold
-        const threshold = projNode.radius + HOVER_THRESHOLD_PROJECT;
-
-        if (projDist < threshold && projDist < closestDist) {
-          closestNode = projNode;
-          closestDist = projDist;
-          closestType = "project";
-        }
-      }
-    }
-
     // Check techs
     if (delaunay_techs) {
       const techIdx = delaunay_techs.find(mx, my);
@@ -1839,15 +1837,13 @@ const createCompetencesMap = (container) => {
   //Setup hover detection using Delaunay diagrams
   function setupHoverDetection() {
     // Remove any existing hover listeners
-    svg.on("mousemove", null);
+    svg.on("mousemove.hover", null);
     svg.on("mouseleave", null);
 
     // Add single mousemove listener to SVG
-    svg.on("mousemove", function (event) {
+    svg.on("mousemove.hover", function (event) {
       // Get mouse position relative to SVG
       const [mx, my] = d3.pointer(event);
-
-      // Adjust for SVG transform (centered at width/2, height/2)
       const adjusted_x = mx - width / 2;
       const adjusted_y = my - height / 2;
 
@@ -1861,9 +1857,8 @@ const createCompetencesMap = (container) => {
       if (mouse_angle < 0) mouse_angle += TAU;
 
       // Get donut dimensions from the arc generator or data
-      // IMPORTANT: Use the actual dimensions from your donutData
-      const donut_inner_radius = donutData.inner; // Adjust based on your actual inner radius
-      const donut_outer_radius = DONUT_RADIUS + donutData.thickness / 2; // Your DONUT_RADIUS variable
+      const donut_inner_radius = donutData.inner;
+      const donut_outer_radius = DONUT_RADIUS + donutData.thickness / 2;
 
       // Check if mouse is within donut radius range
       if (
@@ -1877,48 +1872,61 @@ const createCompetencesMap = (container) => {
 
           // Handle wrap-around case (arc crosses 0/2π boundary)
           if (endAngle < startAngle) {
-            // Arc wraps around, check two conditions
             return mouse_angle >= startAngle || mouse_angle <= endAngle;
           } else {
-            // Normal case
             return mouse_angle >= startAngle && mouse_angle <= endAngle;
           }
         });
 
         if (hoveredArc) {
           onNodeHover(hoveredArc, "skill_type");
-          return; // Exit early, don't check other nodes
-        }
-
-        if (window.DEBUG_DONUT) {
-          // Use a flag instead of always logging
-          console.log("Donut hover debug:");
-          console.log(
-            "  Mouse radius:",
-            mouse_radius.toFixed(2),
-            "Expected:",
-            donut_inner_radius.toFixed(2),
-            "-",
-            donut_outer_radius.toFixed(2)
-          );
-          console.log(
-            "  Mouse angle:",
-            mouse_angle.toFixed(4),
-            "rad",
-            "(" + ((mouse_angle * 180) / PI).toFixed(1) + "°)"
-          );
-          console.log(
-            "  Arcs:",
-            donutData.data.map((d) => ({
-              type: d.data.type,
-              start: ((d.startAngle * 180) / PI).toFixed(1) + "°",
-              end: ((d.endAngle * 180) / PI).toFixed(1) + "°",
-            }))
-          );
+          return;
         }
       }
 
-      // SECOND: Check other nodes using Delaunay (only if not hovering donut)
+      //SECOND: chek if hovering hover a project
+      const proj_inner_r =
+        PROJECTS_RADIUS - PROJ_NODE * SF - HOVER_THRESHOLD_PROJECT;
+      const proj_outer_r =
+        PROJECTS_RADIUS + PROJ_NODE * SF + HOVER_THRESHOLD_PROJECT;
+
+      if (mouse_radius >= proj_inner_r && mouse_radius <= proj_outer_r) {
+        const num_projects = proj_pos.length; // proj_pos is in scope
+        const padding_angle = PROJECT_ARC_PADDING / PROJECTS_RADIUS;
+        const available_angle = TAU - padding_angle * num_projects;
+        const arc_width = available_angle / num_projects;
+        const half_arc = arc_width / 2;
+
+        // Find the project arc the mouse is in (using proj_pos)
+        const hoveredProject = proj_pos.find((p) => {
+          const startAngle = p.d3_angle - half_arc;
+          const endAngle = p.d3_angle + half_arc;
+
+          // Handle angle wrap-around
+          if (startAngle < 0) {
+            return mouse_angle >= startAngle + TAU || mouse_angle <= endAngle;
+          } else if (endAngle > TAU) {
+            return mouse_angle >= startAngle || mouse_angle <= endAngle - TAU;
+          } else {
+            return mouse_angle >= startAngle && mouse_angle <= endAngle;
+          }
+        });
+
+        if (hoveredProject) {
+          // Check if we're not already hovering this
+          if (
+            !hover_active ||
+            hovered_node?.id !== hoveredProject.id ||
+            hovered_type !== "project"
+          ) {
+            onNodeHover(hoveredProject, "project");
+          }
+          return; // Found a project, stop here
+        }
+      }
+
+      // THIRD: Check skills and techs using Delaunay
+      // projects are handled by SVG path mouseover events
       const found = findClosestNode(adjusted_x, adjusted_y);
 
       if (found) {
@@ -1931,7 +1939,6 @@ const createCompetencesMap = (container) => {
           onNodeHover(found.node, found.type);
         }
       } else if (hover_active) {
-        // No node nearby but hover is active - exit hover
         onNodeHoverExit();
       }
     });
@@ -1942,31 +1949,6 @@ const createCompetencesMap = (container) => {
         onNodeHoverExit();
       }
     });
-
-    // Also handle mouseleave on tooltip itself (for project tooltips with CTA)
-    if (tooltip) {
-      tooltip.on("mouseleave.cleanup", function () {
-        // Small delay to allow moving between node and tooltip
-        setTimeout(() => {
-          // Check if we're really outside both node and tooltip
-          if (hover_active && hovered_type === "project") {
-            const tooltip_bounds = tooltip.node().getBoundingClientRect();
-            const mouse_x = d3.event ? d3.event.clientX : 0;
-            const mouse_y = d3.event ? d3.event.clientY : 0;
-
-            // If mouse is outside tooltip bounds, exit hover
-            if (
-              mouse_x < tooltip_bounds.left ||
-              mouse_x > tooltip_bounds.right ||
-              mouse_y < tooltip_bounds.top ||
-              mouse_y > tooltip_bounds.bottom
-            ) {
-              onNodeHoverExit();
-            }
-          }
-        }, 100); // Small 100ms grace period
-      });
-    }
   } //setupHoverDetection()
 
   //Visualize donut arc boundaries and angles
@@ -2893,45 +2875,6 @@ const createCompetencesMap = (container) => {
         .attr("stroke-dasharray", "3,3");
     });
 
-    // Project
-    const projNodes = [...project_node_by_id.values()];
-
-    projNodes.forEach((node) => {
-      // Calculate bounding circle radius (same logic as findClosestNode)
-      const threshold = node.radius + HOVER_THRESHOLD_PROJECT;
-
-      // Draw hover outline
-      debug_layer
-        .append("circle")
-        .attr("r", node.radius)
-        .attr("stroke", COLORS.proj)
-        .attr("stroke-width", 2);
-
-      // Draw hover circle (actual hover area used for detection)
-      debug_layer
-        .append("circle")
-        .attr("cx", node.x)
-        .attr("cy", node.y)
-        .attr("r", threshold)
-        .attr("fill", COLORS.proj)
-        .attr("opacity", 0.15)
-        .attr("stroke", COLORS.proj)
-        .attr("stroke-width", 2)
-        .attr("stroke-dasharray", "4,4");
-
-      // Optional: Add label with radius value
-      debug_layer
-        .append("text")
-        .attr("x", node.x)
-        .attr("y", node.y - threshold - 5)
-        .attr("text-anchor", "middle")
-        .attr("font-size", 10)
-        .attr("font-family", "monospace")
-        .attr("fill", COLORS.proj)
-        .attr("font-weight", "bold")
-        .text(`r: ${threshold.toFixed(1)}px`);
-    });
-
     // Tech
     const techNodes = [...tech_node_by_id.values()];
     techNodes.forEach((node) => {
@@ -2948,11 +2891,22 @@ const createCompetencesMap = (container) => {
         .attr("stroke-width", 1)
         .attr("stroke-dasharray", "3,3");
     });
+
+    if (hover_project_paths) {
+      hover_project_paths
+        .style("fill", "rgba(0, 255, 0, 0.15)")
+        .style("stroke", COLORS.proj)
+        .style("stroke-width", 2)
+        .style("stroke-dasharray", "4,4");
+    }
   } //showHoverAreas()
 
   //Hide hover area visualization
   function hideHoverAreas() {
     g.selectAll(".hover-debug-layer").remove();
+    if (hover_project_paths) {
+      hover_project_paths.style("fill", "none").style("stroke", "none");
+    }
   } //hideHoverAreas()
 
   //Toggle hover areas visibility
