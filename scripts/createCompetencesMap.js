@@ -59,7 +59,7 @@ const createCompetencesMap = (container) => {
   const PADDING = 24; //in scale of 8th
   const MAX_TECH_NODE = 7;
   const MAX_SKILL_NODE = 8;
-  const PROJ_NODE = 3;
+  const PROJ_NODE = 4;
 
   //variables for scaling
   const DEFAULT_SIZE = 1000;
@@ -837,7 +837,7 @@ const createCompetencesMap = (container) => {
       .attr("class", "project-node")
       .attr("r", (d) => d.radius)
       .attr("fill", COLORS.proj)
-      .attr("stroke", "#2d5016") // Dark green outline
+      .attr("stroke", handleStrokes(COLORS.proj)) // Dark green outline
       .attr("stroke-width", 1.5) // Outline thickness
       .attr("cx", (d) => d.x)
       .attr("cy", (d) => d.y);
@@ -858,7 +858,9 @@ const createCompetencesMap = (container) => {
       .join("path")
       .attr("class", "slice-type")
       .attr("d", arc)
-      .attr("fill", COLORS.ui);
+      .attr("fill", COLORS.ui)
+      .attr("stroke", handleStrokes(COLORS.ui))
+      .attr("stroke-width", 1.5);
   } //drawDonut()
 
   /***
@@ -881,7 +883,9 @@ const createCompetencesMap = (container) => {
       .join("path")
       .attr("class", "tech-area")
       .attr("d", arc)
-      .attr("fill", "gray");
+      .attr("fill", "gray")
+      .attr("stroke", handleStrokes("gray"))
+      .attr("stroke-width", 1.5);
   } //drawTriad()
 
   /**
@@ -2500,16 +2504,16 @@ const createCompetencesMap = (container) => {
     fadeAllNodes();
 
     // Highlight the project node itself
-    g.selectAll(".project-ring path")
+    g.selectAll(".project-ring circle")
       .filter((d) => d.id === project_node.id)
       .attr("opacity", 1.0)
       .attr("stroke", COLORS.background)
       .attr("stroke-width", 2 * SF);
 
     // Reset stroke for other projects
-    g.selectAll(".project-ring path")
+    g.selectAll(".project-ring circle")
       .filter((d) => d.id !== project_node.id)
-      .attr("stroke", COLORS.proj)
+      .attr("stroke", handleStrokes(COLORS.proj))
       .attr("stroke-width", 1.5);
 
     // Highlight connected skill nodes
@@ -2570,7 +2574,7 @@ const createCompetencesMap = (container) => {
     g.selectAll(".skill-nodes circle").attr("opacity", 1.0);
     g.selectAll(".project-ring circle")
       .attr("opacity", 1.0)
-      .attr("stroke", COLORS.proj)
+      .attr("stroke", handleStrokes(COLORS.proj))
       .attr("stroke-width", 1.5);
     g.selectAll(".tech-nodes circle")
       .attr("opacity", 1.0)
@@ -2626,6 +2630,13 @@ const createCompetencesMap = (container) => {
     //update the range for link stroke widths
     scale_link_width.exponent(0.75 * SF).range([1 * SF, 2 * SF, 40 * SF]); //maybe need to change exponent
   } //handleScale()
+
+  //handle stroke colors
+  function handleStrokes(color) {
+    //Calculate stroke based on fill color
+    let STROKE_COLOR = d3.color(color).darker(0.3);
+    return STROKE_COLOR;
+  } //handleStrokes
 
   chart.width = function (value) {
     if (!arguments.length) return width;
@@ -2705,13 +2716,34 @@ const createCompetencesMap = (container) => {
 
     // Draw skills Delaunay
     if (delaunay_skills) {
-      const skillNodes = [...skill_node_by_id.values()];
       g.append("path")
         .attr("class", "delaunay-mesh")
         .attr("d", delaunay_skills.render())
         .attr("fill", "none")
         .attr("stroke", "red")
-        .attr("stroke-width", 0.5)
+        .attr("stroke-width", 2)
+        .attr("opacity", 0.3);
+    }
+
+    //draw project delaunay
+    if (delaunay_projects) {
+      g.append("path")
+        .attr("class", "delaunay-mesh")
+        .attr("d", delaunay_projects.render())
+        .attr("fill", "none")
+        .attr("stroke", "red")
+        .attr("stroke-width", 2)
+        .attr("opacity", 0.3);
+    }
+
+    //draw project delaunay
+    if (delaunay_techs) {
+      g.append("path")
+        .attr("class", "delaunay-mesh")
+        .attr("d", delaunay_techs.render())
+        .attr("fill", "none")
+        .attr("stroke", "red")
+        .attr("stroke-width", 2)
         .attr("opacity", 0.3);
     }
   } //showDelaunayMesh()
