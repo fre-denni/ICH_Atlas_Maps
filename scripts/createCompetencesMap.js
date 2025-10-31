@@ -47,8 +47,8 @@ const createCompetencesMap = (container) => {
 
   const MIN_WIDTH = 660;
   const MAX_HEIGHT = 1250; //increase if you want really large viz on tall screens
-  const PADDING = 24; //in scale of 8th
-  const MAX_TECH_NODE = 7;
+  const PADDING = 24; //in scale of eights
+  const MAX_TECH_NODE = 6;
   const MAX_SKILL_NODE = 8;
   const PROJ_NODE = 4;
 
@@ -117,9 +117,6 @@ const createCompetencesMap = (container) => {
   let donutData;
 
   //Hover states
-  let hover_active = false;
-  let hovered_node = null;
-  let hovered_type = null; //skill, skill_type, project, tech
   let hover_debounce_active = false;
 
   //SVG hover elements for projects
@@ -140,6 +137,693 @@ const createCompetencesMap = (container) => {
   const HOVER_THRESHOLD_PROJECT = 10;
   const HOVER_THRESHOLD_TECH = 8; // pixels beyond node radius
   const PROJECT_ARC_PADDING = 6;
+
+  //cache d3 selections
+  let cache = null;
+
+  //hover manager tool (manage all the hovering!)
+  const HoverManager = {
+    active: false,
+    node: null,
+    type: null, //types of node
+    debounce: false,
+    constants: {
+      donut_inner_radius: 0,
+      donut_outer_radiuse: 0, //donut
+      proj_inner_r: 0,
+      proj_outer_r: 0,
+      num_projects: 0,
+      padding_angle: 0,
+      arc_width: 0,
+      half_arc: 0,
+    },
+    //initialize hover detection
+    setup() {
+      // Clear previous listeners
+      svg.on("mousemove.hover", null);
+      svg.on("mouseleave", null);
+
+      // Pre-calculate donut constants (computed once)
+      this.constants.donut_inner_radius = donutData.inner;
+      this.constants.donut_outer_radius =
+        DONUT_RADIUS + donutData.thickness / 2;
+
+      // Pre-calculate project hover constants (computed once)
+      this.constants.proj_inner_r =
+        PROJECTS_RADIUS - PROJ_NODE * SF - HOVER_THRESHOLD_PROJECT;
+      this.constants.proj_outer_r =
+        PROJECTS_RADIUS + PROJ_NODE * SF + HOVER_THRESHOLD_PROJECT;
+      this.constants.num_projects = proj_pos.length;
+      this.constants.padding_angle = PROJECT_ARC_PADDING / PROJECTS_RADIUS;
+      this.constants.available_angle =
+        TAU - this.constants.padding_angle * this.constants.num_projects;
+      this.constants.arc_width =
+        this.constants.available_angle / this.constants.num_projects;
+      this.constants.half_arc = this.constants.arc_width / 2;
+
+      // Setup event listeners
+      svg.on("mousemove.hover", (event) => this.handleMouseMove(event));
+      svg.on("mouseleave", () => this.handleMouseLeave());
+    },
+    //mouse handlers
+    handleMouseMove(event) {
+      const [mx, my] = d3.pointer(event);
+      const adjusted_x = mx - width / 2;
+      const adjusted_y = my - height / 2;
+
+      const mouse_angle_raw = atan2(adjusted_y, adjusted_x);
+      const mouse_radius = sqrt(adjusted_x ** 2 + adjusted_y ** 2);
+
+      let mouse_angle = (mouse_angle_raw + PI / 2) % TAU;
+      if (mouse_angle < 0) mouse_angle += TAU;
+
+      // PRIORITY 1: Check donut (skill types)
+      if (
+        mouse_radius >= this.constants.donut_inner_radius &&
+        mouse_radius <= this.constants.donut_outer_radius
+      ) {
+        const hoveredArc = donutData.data.find((d) => {
+          let startAngle = d.startAngle;
+          let endAngle = d.endAngle;
+
+          if (endAngle < startAngle) {
+            return mouse_angle >= startAngle || mouse_angle <= endAngle;
+          } else {
+            return mouse_angle >= startAngle && mouse_angle <= endAngle;
+          }
+        });
+
+        if (hoveredArc) {
+          this.onEnter(hoveredArc, "skill_type");
+          return;
+        }
+      }
+
+      // PRIORITY 2: Check projects
+      if (
+        mouse_radius >= this.constants.proj_inner_r &&
+        mouse_radius <= this.constants.proj_outer_r
+      ) {
+        const hoveredProject = proj_pos.find((p) => {
+          const startAngle = p.d3_angle - this.constants.half_arc;
+          const endAngle = p.d3_angle + this.constants.half_arc;
+
+          // Handle angle wrap-around
+          if (startAngle < 0) {
+            return mouse_angle >= startAngle + TAU || mouse_angle <= endAngle;
+          } else if (endAngle > TAU) {
+            return mouse_angle >= startAngle || mouse_angle <= endAngle - TAU;
+          } else {
+            return mouse_angle >= startAngle && mouse_angle <= endAngle;
+          }
+        });
+
+        if (hoveredProject) {
+          if (
+            !this.active ||
+            this.node?.id !== hoveredProject.id ||
+            this.type !== "project"
+          ) {
+            this.onEnter(hoveredProject, "project");
+          }
+          return;
+        }
+      }
+
+      // PRIORITY 3: Check skills and techs using Delaunay
+      const found = findClosestNode(adjusted_x, adjusted_y);
+
+      if (found) {
+        if (
+          !this.active ||
+          this.node !== found.node ||
+          this.type !== found.type
+        ) {
+          this.onEnter(found.node, found.type);
+        }
+      } else if (this.active) {
+        this.onExit();
+      }
+    },
+    //handle mouseleaves events
+    handleMouseLeave() {
+      if (this.active) {
+        this.onExit();
+      }
+    },
+    //hover enter/exit
+    onEnter(node, type) {
+      if (this.debounce) return;
+      if (this.active && this.node === node && this.type === type) {
+        return;
+      }
+
+      this.active = true;
+      this.node = node;
+      this.type = type;
+
+      console.log(`Hover enter: ${type}`, node);
+
+      if (ClickManager.active) {
+        //check if hovered nodes is connected to clicked node
+        const is_connected = ClickManager.isConnected(node, type);
+        if (is_connected) {
+          //hover on connected node
+          ClickManager.onHoverConnected(node, type);
+        } else {
+          //show only tooltip
+          if (type !== "skill_type") {
+            let node_x, node_y;
+            switch (type) {
+              case "skill":
+                node_x = node.x;
+                node_y = node.y;
+                break;
+              case "project":
+                const proj_node = project_node_by_id.get(node.id);
+                node_x = proj_node.x;
+                node_y = proj_node.y;
+                break;
+              case "tech":
+                node_x = node.x;
+                node_y = node.y;
+                break;
+            }
+
+            showTooltip(node, type, node_x, node_y);
+          }
+        }
+
+        return;
+      }
+
+      //update visual state
+      this.updateVisuals(type, node);
+      if (type !== "skill_type") {
+        //change later to show other than the tooltip
+        let node_x, node_y;
+
+        switch (type) {
+          case "skill":
+            node_x = node.x;
+            node_y = node.y;
+            break;
+          case "project":
+            const proj_node = project_node_by_id.get(node.id);
+            node_x = proj_node.x;
+            node_y = proj_node.y;
+            break;
+          case "tech":
+            node_x = node.x;
+            node_y = node.y;
+            break;
+        }
+
+        showTooltip(node, type, node_x, node_y);
+      }
+    },
+
+    //called when exiting hover state
+    onExit() {
+      if (!this.active || this.debounce) return;
+      this.debounce = true;
+
+      //console.log("Hover exit");
+
+      //Reset state BEFORE calling reset functions
+      this.active = false;
+      const prev_node = this.node;
+      const prev_type = this.type;
+      this.node = null;
+      this.type = null;
+
+      if (ClickManager.active) {
+        ClickManager.onHoverExit();
+      } else {
+        // Reset visual state
+        this.resetVisuals();
+        hideTooltip();
+      }
+
+      // Release debounce after 50ms
+      setTimeout(() => {
+        this.debounce = false;
+      }, 50);
+    },
+    //visual updates
+    updateVisuals(type, node) {
+      // Get edges and connected nodes based on type
+      let edges_to_show = [];
+      let connected_nodes = {};
+
+      switch (type) {
+        case "skill":
+          edges_to_show = getEdgesFromSkill(node.id);
+          connected_nodes = getConnectedToSkill(node);
+          highlightSkillHover(node, connected_nodes);
+          break;
+
+        case "skill_type":
+          const skill_type = node.data.type;
+          edges_to_show = getEdgesFromSkillType(skill_type);
+          connected_nodes = getConnectedToSkillType(skill_type);
+          highlightSkillTypeHover(node, connected_nodes);
+          break;
+
+        case "project":
+          connected_nodes = getConnectedToProject(node);
+          const skill_ids = connected_nodes.skill_nodes.map((s) => s.id);
+          const tech_ids = connected_nodes.tech_nodes.map((t) => t.id);
+          const edges_from_skills = getEdgesBetweenSkillsAndProject(
+            node.id,
+            skill_ids
+          );
+          const edges_to_techs = getEdgesBetweenProjectAndTechs(
+            node.id,
+            tech_ids
+          );
+          edges_to_show = [...edges_from_skills, ...edges_to_techs];
+          highlightProjectHover(node, connected_nodes);
+          break;
+
+        case "tech":
+          connected_nodes = getConnectedToTech(node);
+          const project_ids = connected_nodes.projects.map((p) => p.id);
+          edges_to_show = getEdgesBetweenProjectsAndTech(node.id, project_ids);
+          highlightTechHover(node, connected_nodes);
+          break;
+      }
+
+      // Show edges
+      this.showEdges(edges_to_show, type, node);
+    },
+    //reset visual state after hover
+    resetVisuals() {
+      this.hideAllEdges();
+      resetAllNodesOpacity();
+    },
+    //edge visibility
+    showEdges(edges, hoverType, hoverNode = null) {
+      const edgeSet = new Set(edges);
+      const edgeColor = getEdgeColorForHoverType(hoverType, hoverNode);
+
+      // Update skill-project edges using cached selection
+      cache.skill_edges
+        .attr("opacity", (d) => (edgeSet.has(d) ? 0.8 : 0))
+        .attr("stroke-width", (d) => (edgeSet.has(d) ? 2 * SF : 1.5 * SF))
+        .attr("stroke", (d) => (edgeSet.has(d) ? edgeColor : COLORS.label));
+
+      // Update project-tech edges using cached selection
+      cache.tech_edges
+        .attr("opacity", (d) => (edgeSet.has(d) ? 0.8 : 0))
+        .attr("stroke-width", (d) => (edgeSet.has(d) ? 2 * SF : 1.5 * SF))
+        .attr("stroke", (d) => (edgeSet.has(d) ? edgeColor : COLORS.label));
+    },
+    //hide all edges
+    hideAllEdges() {
+      cache.skill_edges.attr("opacity", 0).attr("stroke-width", 1.5 * SF);
+      cache.tech_edges.attr("opacity", 0).attr("stroke-width", 1.5 * SF);
+    },
+  }; //HoverManager
+
+  const ClickManager = {
+    active: false,
+    node: null,
+    type: null,
+    locked_edges: [],
+    locked_connected: {},
+    onClick(node, type) {
+      //stop event propagation
+      if (d3.event) d3.event.stopPropagation();
+      if (this.active && this.node === node && this.type === type) {
+        this.reset();
+        return;
+      }
+      //console.log(`Click on: ${type}`, node);
+      //set click state
+      this.active = true;
+      this.node = node;
+      this.type = type;
+      //store edges
+      this.calculatedLockedState(node, type);
+      //update visuals
+      this.updateLockedVisuals();
+    },
+    calculatedLockedState(node, type) {
+      let edges_to_show = [];
+      let connected_nodes = {};
+      switch (type) {
+        case "skill":
+          edges_to_show = getEdgesFromSkill(node.id);
+          connected_nodes = getConnectedToSkill(node);
+          break;
+
+        case "skill_type":
+          const skill_type = node.data.type;
+          edges_to_show = getEdgesFromSkillType(skill_type);
+          connected_nodes = getConnectedToSkillType(skill_type);
+          break;
+
+        case "project":
+          connected_nodes = getConnectedToProject(node);
+          const skill_ids = connected_nodes.skill_nodes.map((s) => s.id);
+          const tech_ids = connected_nodes.tech_nodes.map((t) => t.id);
+          const edges_from_skills = getEdgesBetweenSkillsAndProject(
+            node.id,
+            skill_ids
+          );
+          const edges_to_techs = getEdgesBetweenProjectAndTechs(
+            node.id,
+            tech_ids
+          );
+          edges_to_show = [...edges_from_skills, ...edges_to_techs];
+          break;
+
+        case "tech":
+          connected_nodes = getConnectedToTech(node);
+          const project_ids = connected_nodes.projects.map((p) => p.id);
+          edges_to_show = getEdgesBetweenProjectsAndTech(node.id, project_ids);
+          break;
+      }
+      this.locked_edges = edges_to_show;
+      this.locked_connected = connected_nodes;
+    },
+    //update visuals
+    updateLockedVisuals() {
+      const { node, type, locked_connected } = this;
+      // Use highlightNodes to set the visual state
+      switch (type) {
+        case "skill":
+          highlightSkillHover(node, locked_connected);
+          break;
+
+        case "skill_type":
+          highlightSkillTypeHover(node, locked_connected);
+          break;
+
+        case "project":
+          highlightProjectHover(node, locked_connected);
+          break;
+
+        case "tech":
+          highlightTechHover(node, locked_connected);
+          break;
+      }
+      //show locked edges
+      this.showLockedEdges();
+      //show locked tooltip
+      this.showLockedTooltip();
+    },
+    //show edges
+    showLockedEdges() {
+      const edgeSet = new Set(this.locked_edges);
+      const edgeColor = getEdgeColorForHoverType(this.type, this.node);
+      // Update edges
+      cache.skill_edges
+        .attr("opacity", (d) => (edgeSet.has(d) ? 0.8 : 0))
+        .attr("stroke-width", (d) => (edgeSet.has(d) ? 2 * SF : 1.5 * SF))
+        .attr("stroke", (d) => {
+          if (!edgeSet.has(d)) return COLORS.label;
+          return getEdgeColorForHoverType(this.type, this.node);
+        });
+
+      cache.tech_edges
+        .attr("opacity", (d) => (edgeSet.has(d) ? 0.8 : 0))
+        .attr("stroke-width", (d) => (edgeSet.has(d) ? 2 * SF : 1.5 * SF))
+        .attr("stroke", (d) => {
+          if (!edgeSet.has(d)) return COLORS.label;
+          const tech_node = tech_node_by_id.get(d.source_id);
+          if (tech_node) {
+            return tech_colors(tech_node.type);
+          }
+          return getEdgeColorForHoverType(this.type, this.node);
+        });
+    },
+    //show tooltip for locked node
+    showLockedTooltip() {
+      const { node, type } = this;
+      let node_x, node_y;
+      switch (type) {
+        case "skill":
+          node_x = node.x;
+          node_y = node.y;
+          break;
+        case "project":
+          const proj_node = project_node_by_id.get(node.id);
+          node_x = proj_node.x;
+          node_y = proj_node.y;
+          break;
+        case "tech":
+          node_x = node.x;
+          node_y = node.y;
+          break;
+      }
+
+      showTooltip(node, type, node_x, node_y);
+    },
+    //reset click status
+    reset() {
+      //console.log("click reset");
+      this.active = false;
+      this.node = null;
+      this.type = null;
+      this.locked_edges = [];
+      this.locked_connected = {};
+      //Reset visuals
+      resetAllNodesOpacity();
+      this.hideAllEdges();
+      hideTooltip();
+    },
+    //hide all edges
+    hideAllEdges() {
+      cache.skill_edges.attr("opacity", 0).attr("stroke-width", 1.5 * SF);
+      cache.tech_edges.attr("opacity", 0).attr("stroke-width", 1.5 * SF);
+    },
+    //check if node is connceted to clicked node
+    isConnected(node, type) {
+      if (!this.active) return false;
+      const { locked_connected } = this;
+      switch (type) {
+        case "skill":
+          return locked_connected.skill_nodes?.some((n) => n.id === node.id);
+        case "skill_type":
+          return locked_connected.skill_type_arcs?.some(
+            (arc) => arc.data.type === node.data.type
+          );
+        case "project":
+          return locked_connected.projects?.some((p) => p.id === node.id);
+        case "tech":
+          return locked_connected.tech_nodes?.some((n) => n.id === node.id);
+        default:
+          return false;
+      }
+    },
+    //handle hover on click mode
+    onHoverConnected(node, type) {
+      //console.log(`Hover on connected ${type} during click mode`);
+      // Show tooltip for hovered node
+      if (type !== "skill_type") {
+        let node_x, node_y;
+        switch (type) {
+          case "skill":
+            node_x = node.x;
+            node_y = node.y;
+            break;
+          case "project":
+            const proj_node = project_node_by_id.get(node.id);
+            node_x = proj_node.x;
+            node_y = proj_node.y;
+            break;
+          case "tech":
+            node_x = node.x;
+            node_y = node.y;
+            break;
+        }
+        showTooltip(node, type, node_x, node_y);
+      }
+
+      this.highlightHoveredNode(node, type);
+      const ghost_edges = this.calculateGhostEdges(node, type);
+
+      if (ghost_edges.length > 0) {
+        this.showGhostEdges(ghost_edges, type);
+      }
+      if (this.type === "tech" && type === "project") {
+        // Trova gli skill nodes connessi al project hoverato
+        const connected = getConnectedToProject(node);
+        const skill_ids_in_project = connected.skill_nodes.map((s) => s.id);
+
+        // Aumenta opacità degli skill connessi a 0.6 per migliore leggibilità
+        cache.skill_nodes.attr("opacity", function (d) {
+          // Se è uno skill connesso al project hoverato
+          if (skill_ids_in_project.includes(d.id)) {
+            return 0.8; // Opacità aumentata
+          }
+          // Altrimenti mantieni l'opacità attuale
+          const current_opacity = d3.select(this).attr("opacity");
+          return current_opacity || 0.4;
+        });
+      }
+    },
+
+    //highlight hovered nodes
+    highlightHoveredNode(node, type) {
+      switch (type) {
+        case "skill":
+          cache.skill_nodes
+            .filter((d) => d.id === node.id)
+            .attr("opacity", 1.0);
+          break;
+        case "project":
+          cache.project_nodes
+            .filter((d) => d.id === node.id)
+            .attr("opacity", 1.0)
+            .attr("stroke", COLORS.background)
+            .attr("stroke-width", 2 * SF);
+          break;
+        case "tech":
+          cache.tech_nodes
+            .filter((d) => d.id === node.id)
+            .attr("opacity", 1.0)
+            .attr("stroke", "gray") //change with the color tech
+            .attr("stroke-width", 2 * SF);
+          break;
+      }
+    },
+    //calculate ghost edges
+    calculateGhostEdges(hovered_node, hovered_type) {
+      const { node: clicked_node, type: clicked_type } = this;
+      let ghost_edges = [];
+
+      if (clicked_type === "skill" && hovered_type === "project") {
+        // Show tech edges from this project
+        const connected = getConnectedToProject(hovered_node);
+        const tech_ids = connected.tech_nodes.map((t) => t.id);
+        ghost_edges = getEdgesBetweenProjectAndTechs(hovered_node.id, tech_ids);
+      } else if (clicked_type === "tech" && hovered_type === "project") {
+        // Show skill edges to this project
+        const connected = getConnectedToProject(hovered_node);
+        const skill_ids = connected.skill_nodes.map((s) => s.id);
+        ghost_edges = getEdgesBetweenSkillsAndProject(
+          hovered_node.id,
+          skill_ids
+        );
+      } else if (clicked_type === "project" && hovered_type === "skill") {
+        // Show edges to other projects from this skill
+        const all_edges = getEdgesFromSkill(hovered_node.id);
+        // Filter out edges to the clicked project
+        ghost_edges = all_edges.filter((e) => e.target_id !== clicked_node.id);
+      } else if (clicked_type === "project" && hovered_type === "tech") {
+        // Show edges from other projects to this tech
+        const connected = getConnectedToTech(hovered_node);
+        const project_ids = connected.projects
+          .map((p) => p.id)
+          .filter((id) => id !== clicked_node.id);
+        ghost_edges = getEdgesBetweenProjectsAndTech(
+          hovered_node.id,
+          project_ids
+        );
+      } else if (clicked_type === "project" && hovered_type === "skill_type") {
+        // Do nothing - no ghost edges for skill_type
+        ghost_edges = [];
+      } else if (clicked_type === "skill" && hovered_type === "tech") {
+        // Non mostrare ghost edges - mantieni solo locked edges visibili
+        ghost_edges = [];
+      } else if (clicked_type === "tech" && hovered_type === "tech") {
+        // Non mostrare ghost edges - mantieni solo locked edges visibili
+        ghost_edges = [];
+      } else if (clicked_type === "skill" && hovered_type === "skill_type") {
+        // Non mostrare ghost edges - mantieni solo locked edges visibili
+        ghost_edges = [];
+      }
+
+      return ghost_edges;
+    },
+    //show ghost edges
+    showGhostEdges(ghost_edges, hover_type) {
+      const edgeSet = new Set(ghost_edges);
+      const { type: clicked_type } = this;
+
+      // Combine locked edges (full opacity) and ghost edges (0.4 opacity)
+      const locked_set = new Set(this.locked_edges);
+
+      cache.skill_edges
+        .attr("opacity", (d) => {
+          if (locked_set.has(d)) return 0.8; // Locked edges
+          if (edgeSet.has(d)) return 0.4; // Ghost edges
+          return 0; // Hidden
+        })
+        .attr("stroke", (d) => {
+          if (locked_set.has(d)) {
+            return getEdgeColorForHoverType(this.type, this.node);
+          }
+          if (edgeSet.has(d)) {
+            // SCENARIO 3: Click su tech + hover su project → edges skill devono essere COLORS.proj
+            if (clicked_type === "tech" && hover_type === "project") {
+              return COLORS.proj;
+            }
+            // Default per altri casi: COLORS.skill
+            return COLORS.skill;
+          }
+          return COLORS.label;
+        });
+
+      cache.tech_edges
+        .attr("opacity", (d) => {
+          if (locked_set.has(d)) return 0.8; // Locked edges
+          if (edgeSet.has(d)) return 0.4; // Ghost edges
+          return 0; // Hidden
+        })
+        .attr("stroke", (d) => {
+          if (locked_set.has(d)) {
+            // Locked edges: colore del tech node
+            const tech_node = tech_node_by_id.get(d.source_id);
+            if (tech_node) {
+              return tech_colors(tech_node.type);
+            }
+            return getEdgeColorForHoverType(this.type, this.node);
+          }
+          if (edgeSet.has(d)) {
+            // SCENARIO 1: Click su skill + hover su project → edges tech devono essere COLORS.proj
+            if (clicked_type === "skill" && hover_type === "project") {
+              return COLORS.proj;
+            }
+            // SCENARIO 2: Click su project + hover su tech → colore del tech node hoverato
+            // Per gli altri casi: usa il colore del tech node
+            const tech_node = tech_node_by_id.get(d.source_id);
+            if (tech_node) {
+              return tech_colors(tech_node.type);
+            }
+            return COLORS.label;
+          }
+          return COLORS.label;
+        });
+    },
+    //hover exit
+    onHoverExit() {
+      this.showLockedEdges();
+      this.showLockedTooltip();
+      // Reset ALL project nodes stroke (except clicked)
+      cache.project_nodes.each(function (d) {
+        const is_clicked =
+          d.id === ClickManager.node.id && ClickManager.type === "project";
+        if (!is_clicked) {
+          d3.select(this)
+            .attr("stroke", handleStrokes(COLORS.proj))
+            .attr("stroke-width", 1.5);
+        }
+      });
+
+      // Reset ALL tech nodes stroke (except clicked)
+      cache.tech_nodes.each(function (d) {
+        const is_clicked =
+          d.id === ClickManager.node.id && ClickManager.type === "tech";
+        if (!is_clicked) {
+          d3.select(this).attr("stroke", "none");
+        }
+      });
+    },
+  }; //ClickManager
 
   //Node lookups and labels
   let vizProj;
@@ -229,14 +913,7 @@ const createCompetencesMap = (container) => {
   ////// Manage Datasets //////////
   /////////////////////////////////
 
-  /***
-   *
-   * Function to divide the various datasets in useful lists of skills and arrays
-   * @param {Array} s - skills, skill type, related projects
-   * @param {Array} t - projects, dissemination, representation and capturing technologies
-   * @param {Array} p - cleaned titles for projects, projects, links, description, credits, domain, fruition (ignore external links)
-   * @returns {Array} various list
-   ***/
+  //prepare data main function
   function prepareData(s, t, p) {
     //call handle functions
     handleSkillsdata(s);
@@ -245,12 +922,12 @@ const createCompetencesMap = (container) => {
   } //prepareData()
 
   //parse and clean projects string format
-  function parseProjectsString(projects) {
-    if (!projects) {
+  function parseProjectsString(p) {
+    if (!p) {
       return [];
     }
     try {
-      const list = JSON.parse(projects);
+      const list = JSON.parse(p);
       return Array.isArray(list) ? list : [];
     } catch (e) {
       console.error("Failed to parse projects string: ", list, e);
@@ -258,6 +935,7 @@ const createCompetencesMap = (container) => {
     }
   } //parseProjectsString()
 
+  //manage data connection from dataset 1
   function handleSkillsdata(data) {
     //Clean receveing data
     const cleaned = data
@@ -321,6 +999,7 @@ const createCompetencesMap = (container) => {
     typeToSkill = new Map(nodes_skillToproj.map((s) => [s.skill, s.type]));
   } //handleSkillsdata()
 
+  //parse and clean tech string format
   function parseTechString(t) {
     //clean tech data
     if (!t) return [];
@@ -334,6 +1013,7 @@ const createCompetencesMap = (container) => {
     return list.map((d) => d.trim());
   } //parseTechString()
 
+  //manage data connection from dataset 2
   function handleTechdata(data) {
     const tech = data.flatMap((d) => {
       const prj = d.projects;
@@ -441,6 +1121,7 @@ const createCompetencesMap = (container) => {
     return text;
   } //truncate()
 
+  //manage data connection from dataset 3
   function handleProjdata(data) {
     //create the comparison list for showing prettier titles
     vizProj = data.map((d) => ({
@@ -472,7 +1153,7 @@ const createCompetencesMap = (container) => {
   function calculateProjectPositions(radius) {
     const positions = projects.map((p, i) => {
       const angle = (i / projects.length) * TAU - PI / 2;
-      let d3_angle = (angle + PI / 2) % TAU;
+      let d3_angle = (angle + PI / 2) % TAU; // angle for hover
       if (d3_angle < 0) d3_angle += TAU;
 
       return {
@@ -494,7 +1175,7 @@ const createCompetencesMap = (container) => {
    * @returns {Object} Donut data with arc positions
    */
   function calculateDonutPositions(radius) {
-    const thickness = PADDING * SF;
+    const thickness = PADDING * SF; //capire il dimensionamento
     // Create arc generator (for calculations only)
     const arc = d3
       .arc()
@@ -781,7 +1462,18 @@ const createCompetencesMap = (container) => {
 
     //////// HOVER LOGIC
     buildDelaunayDiagrams(skillnodes, proj_pos, technodes);
-    setupHoverDetection();
+    cache = {
+      skill_nodes: g.selectAll(".skill-nodes circle"),
+      project_nodes: g.selectAll(".project-ring circle"),
+      tech_nodes: g.selectAll(".tech-nodes circle"),
+      donut_arcs: g.selectAll(".donut-skill path"),
+      skill_edges: g.selectAll(".skill-project-edges path"),
+      tech_edges: g.selectAll(".proj-tech-edges path"),
+    };
+
+    //Setup hover
+    HoverManager.setup();
+    setupClickHandlers();
   } //draw()
 
   function chart(skillData, techData, projData) {
@@ -1433,9 +2125,7 @@ const createCompetencesMap = (container) => {
         d3.select(this).select("svg").style("color", color);
       })
       .on("click", function () {
-        if (hovered_node && hovered_type === "project") {
-          onProjectClick(hovered_node);
-        }
+        //per ora niente
       });
 
     // CTA SVG icon
@@ -1506,14 +2196,14 @@ const createCompetencesMap = (container) => {
     tooltip
       .on("mouseenter", function () {
         // Keep tooltip visible when mouse enters it
-        if (hovered_type === "project") {
+        if (HoverManager.type === "project") {
           // Only for projects since they have interactive CTA
           d3.select(this).style("opacity", "1");
         }
       })
       .on("mouseleave", function () {
         // Hide when leaving tooltip
-        if (hovered_type === "project") {
+        if (HoverManager.type === "project") {
           onNodeHoverExit();
         }
       });
@@ -1812,110 +2502,6 @@ const createCompetencesMap = (container) => {
       : null;
   } //findClosestNode()
 
-  //Setup hover detection using Delaunay diagrams
-  function setupHoverDetection() {
-    svg.on("mousemove.hover", null);
-    svg.on("mouseleave", null);
-
-    // Donut constants (computed once)
-    const donut_inner_radius = donutData.inner;
-    const donut_outer_radius = DONUT_RADIUS + donutData.thickness / 2;
-
-    // Project hover constants (computed once)
-    const proj_inner_r =
-      PROJECTS_RADIUS - PROJ_NODE * SF - HOVER_THRESHOLD_PROJECT;
-    const proj_outer_r =
-      PROJECTS_RADIUS + PROJ_NODE * SF + HOVER_THRESHOLD_PROJECT;
-    const num_projects = proj_pos.length;
-    const padding_angle = PROJECT_ARC_PADDING / PROJECTS_RADIUS;
-    const available_angle = TAU - padding_angle * num_projects;
-    const arc_width = available_angle / num_projects;
-    const half_arc = arc_width / 2;
-
-    svg.on("mousemove.hover", function (event) {
-      const [mx, my] = d3.pointer(event);
-      const adjusted_x = mx - width / 2;
-      const adjusted_y = my - height / 2;
-
-      const mouse_angle_raw = atan2(adjusted_y, adjusted_x);
-      const mouse_radius = sqrt(adjusted_x ** 2 + adjusted_y ** 2);
-
-      let mouse_angle = (mouse_angle_raw + PI / 2) % TAU;
-      if (mouse_angle < 0) mouse_angle += TAU;
-
-      // FIRST: Check donut (usa costanti pre-calcolate)
-      if (
-        mouse_radius >= donut_inner_radius &&
-        mouse_radius <= donut_outer_radius
-      ) {
-        const hoveredArc = donutData.data.find((d) => {
-          let startAngle = d.startAngle;
-          let endAngle = d.endAngle;
-
-          if (endAngle < startAngle) {
-            return mouse_angle >= startAngle || mouse_angle <= endAngle;
-          } else {
-            return mouse_angle >= startAngle && mouse_angle <= endAngle;
-          }
-        });
-
-        if (hoveredArc) {
-          onNodeHover(hoveredArc, "skill_type");
-          return;
-        }
-      }
-
-      // SECOND: Check projects (usa costanti pre-calcolate)
-      if (mouse_radius >= proj_inner_r && mouse_radius <= proj_outer_r) {
-        const hoveredProject = proj_pos.find((p) => {
-          const startAngle = p.d3_angle - half_arc;
-          const endAngle = p.d3_angle + half_arc;
-
-          // Handle angle wrap-around
-          if (startAngle < 0) {
-            return mouse_angle >= startAngle + TAU || mouse_angle <= endAngle;
-          } else if (endAngle > TAU) {
-            return mouse_angle >= startAngle || mouse_angle <= endAngle - TAU;
-          } else {
-            return mouse_angle >= startAngle && mouse_angle <= endAngle;
-          }
-        });
-
-        if (hoveredProject) {
-          if (
-            !hover_active ||
-            hovered_node?.id !== hoveredProject.id ||
-            hovered_type !== "project"
-          ) {
-            onNodeHover(hoveredProject, "project");
-          }
-          return;
-        }
-      }
-
-      // THIRD: Check skills and techs
-      const found = findClosestNode(adjusted_x, adjusted_y);
-
-      if (found) {
-        if (
-          !hover_active ||
-          hovered_node !== found.node ||
-          hovered_type !== found.type
-        ) {
-          onNodeHover(found.node, found.type);
-        }
-      } else if (hover_active) {
-        onNodeHoverExit();
-      }
-    });
-
-    svg.on("mouseleave", function () {
-      if (hover_active) {
-        onNodeHoverExit();
-      }
-    });
-  } //setupHoverDetection()
-
   //Visualize donut arc boundaries and angles
   function showDonutArcs() {
     // Remove existing
@@ -2209,139 +2795,6 @@ const createCompetencesMap = (container) => {
 
   ///////// HELPERS
 
-  //Handle node hover event
-  function onNodeHover(node, type) {
-    // Prevent rapid toggling
-    if (hover_debounce_active) return;
-    if (hover_active && hovered_node === node && hovered_type === type) {
-      return;
-    }
-    // Update state
-    hover_active = true;
-    hovered_node = node;
-    hovered_type = type;
-
-    // Update visual state
-    updateHoverVisuals(type, node);
-
-    // Show tooltip at node position
-    let node_x, node_y;
-
-    switch (type) {
-      case "skill":
-        node_x = node.x;
-        node_y = node.y;
-        break;
-      case "project":
-        const proj_node = project_node_by_id.get(node.id);
-        node_x = proj_node.x;
-        node_y = proj_node.y;
-        break;
-      case "tech":
-        node_x = node.x;
-        node_y = node.y;
-        break;
-      case "skill_type":
-        // Don't show tooltip for skill_type
-        return;
-    }
-
-    showTooltip(node, type, node_x, node_y);
-  } //onNodeHover()
-
-  //handle hover when mouse exit
-  function onNodeHoverExit() {
-    if (!hover_active || hover_debounce_active) return;
-
-    hover_debounce_active = true;
-
-    console.log("Hover exit");
-
-    // Reset state BEFORE calling reset functions
-    // This prevents re-entry if resetHoverVisuals triggers events
-    hover_active = false;
-    const prev_node = hovered_node;
-    const prev_type = hovered_type;
-    hovered_node = null;
-    hovered_type = null;
-
-    // Reset visual state
-    resetHoverVisuals();
-    hideTooltip();
-
-    // Release debounce after 50ms
-    setTimeout(() => {
-      hover_debounce_active = false;
-    }, 50);
-  } //onNodeHoverExit()
-
-  //Update visual state based on hovered node
-  function updateHoverVisuals(type, node) {
-    // Get edges and connected nodes based on type
-    let edges_to_show = [];
-    let connected_nodes = {};
-
-    switch (type) {
-      case "skill":
-        // CASE 1: Hover on skill node
-        edges_to_show = getEdgesFromSkill(node.id);
-        connected_nodes = getConnectedToSkill(node);
-        // Highlight: skill node, skill type arc, connected projects
-        highlightSkillHover(node, connected_nodes);
-        break;
-
-      case "skill_type":
-        // CASE 1b: Hover on skill type (donut arc)
-        const skill_type = node.data.type;
-        edges_to_show = getEdgesFromSkillType(skill_type);
-        connected_nodes = getConnectedToSkillType(skill_type);
-        // Highlight: skill type arc, all skills in type, connected projects
-        highlightSkillTypeHover(node, connected_nodes);
-        break;
-
-      case "project":
-        // CASE 2: Hover on project node
-        connected_nodes = getConnectedToProject(node);
-        // Get skill IDs and tech IDs
-        const skill_ids = connected_nodes.skill_nodes.map((s) => s.id);
-        const tech_ids = connected_nodes.tech_nodes.map((t) => t.id);
-        // Get ONLY edges between these specific skills and THIS project
-        const edges_from_skills = getEdgesBetweenSkillsAndProject(
-          node.id,
-          skill_ids
-        );
-        // Get ONLY edges between THIS project and these specific techs
-        const edges_to_techs = getEdgesBetweenProjectAndTechs(
-          node.id,
-          tech_ids
-        );
-        edges_to_show = [...edges_from_skills, ...edges_to_techs];
-        // Highlight: project, connected skills, skill types, techs
-        highlightProjectHover(node, connected_nodes);
-        break;
-
-      case "tech":
-        // CASE 3: Hover on tech node
-        connected_nodes = getConnectedToTech(node);
-        // Get project IDs
-        const project_ids = connected_nodes.projects.map((p) => p.id);
-        // Get ONLY edges between these specific projects and THIS tech
-        edges_to_show = getEdgesBetweenProjectsAndTech(node.id, project_ids);
-        // Highlight: tech node, connected projects
-        highlightTechHover(node, connected_nodes);
-        break;
-    }
-
-    // Show edges
-    showEdges(edges_to_show, type, node);
-  } //updateHoverVisuals()
-
-  //Reset visual state after hover exit
-  function resetHoverVisuals() {
-    hideAllEdges(); // Hide all edges
-    resetAllNodesOpacity(); // Reset all nodes to full opacity
-  } //resetHoverVisuals()
-
   //Get edge color based on hovered node type
   function getEdgeColorForHoverType(type, node = null) {
     switch (type) {
@@ -2363,39 +2816,6 @@ const createCompetencesMap = (container) => {
         return COLORS.label; // Default grey
     }
   } //getEdgeColorForHoverType()
-
-  ////// EDGE VISIBILITY CONTROL
-  //Show specific edges with full opacity
-  function showEdges(edges, hoverType, hoverNode = null) {
-    // Create Set of edges for O(1) lookup
-    const edgeSet = new Set(edges);
-
-    // Get color for this hover type
-    const edgeColor = getEdgeColorForHoverType(hoverType, hoverNode);
-
-    // Update skill-project edges
-    g.selectAll(".skill-project-edges path")
-      .attr("opacity", (d) => (edgeSet.has(d) ? 0.8 : 0))
-      .attr("stroke-width", (d) => (edgeSet.has(d) ? 2 * SF : 1.5 * SF))
-      .attr("stroke", (d) => (edgeSet.has(d) ? edgeColor : COLORS.label));
-
-    // Update project-tech edges
-    g.selectAll(".proj-tech-edges path")
-      .attr("opacity", (d) => (edgeSet.has(d) ? 0.8 : 0))
-      .attr("stroke-width", (d) => (edgeSet.has(d) ? 2 * SF : 1.5 * SF))
-      .attr("stroke", (d) => (edgeSet.has(d) ? edgeColor : COLORS.label));
-  } //showEdges()
-
-  //Hide all edges
-  function hideAllEdges() {
-    g.selectAll(".skill-project-edges path")
-      .attr("opacity", 0)
-      .attr("stroke-width", 1.5 * SF);
-
-    g.selectAll(".proj-tech-edges path")
-      .attr("opacity", 0)
-      .attr("stroke-width", 1.5 * SF);
-  } //hideAllEdges()
 
   //Highlight nodes for skill hover
   function highlightSkillHover(skill_node, connected) {
@@ -2448,10 +2868,10 @@ const createCompetencesMap = (container) => {
 
   //Fade all nodes to low opacity
   function fadeAllNodes() {
-    g.selectAll(".skill-nodes circle").attr("opacity", 0.4);
-    g.selectAll(".project-ring circle").attr("opacity", 0.4);
-    g.selectAll(".tech-nodes circle").attr("opacity", 0.4);
-    g.selectAll(".donut-skill path").attr("opacity", 0.4);
+    cache.skill_nodes.attr("opacity", 0.4);
+    cache.project_nodes.attr("opacity", 0.4);
+    cache.tech_nodes.attr("opacity", 0.4);
+    cache.donut_arcs.attr("opacity", 0.4);
   } //fadeAllNodes()
 
   //manage highlights
@@ -2475,9 +2895,7 @@ const createCompetencesMap = (container) => {
     // Highlight skills
     if (skill_ids.length > 0) {
       const ids_set = new Set(skill_ids);
-      g.selectAll(".skill-nodes circle").attr("opacity", (d) =>
-        ids_set.has(d.id) ? 1.0 : 0.4
-      );
+      cache.skill_nodes.attr("opacity", (d) => (ids_set.has(d.id) ? 1.0 : 0.4));
     }
 
     // Highlight skill types in donut
@@ -2491,7 +2909,7 @@ const createCompetencesMap = (container) => {
       } else {
         // For other hovers: set opacity for all
         const types_set = new Set(skill_types);
-        g.selectAll(".donut-skill path").attr("opacity", (d) =>
+        cache.donut_arcs.attr("opacity", (d) =>
           types_set.has(d.data.type) ? 1.0 : 0.4
         );
       }
@@ -2500,7 +2918,7 @@ const createCompetencesMap = (container) => {
     // Highlight projects
     if (project_ids.length > 0) {
       const ids_set = new Set(project_ids);
-      g.selectAll(".project-ring circle").attr("opacity", (d) =>
+      cache.project_nodes.attr("opacity", (d) =>
         ids_set.has(d.id) ? 1.0 : 0.4
       );
     }
@@ -2508,45 +2926,43 @@ const createCompetencesMap = (container) => {
     // Highlight techs
     if (tech_ids.length > 0) {
       const ids_set = new Set(tech_ids);
-      g.selectAll(".tech-nodes circle").attr("opacity", (d) =>
-        ids_set.has(d.id) ? 1.0 : 0.4
-      );
+      cache.tech_nodes.attr("opacity", (d) => (ids_set.has(d.id) ? 1.0 : 0.4));
     }
 
     // Apply special styling to the hovered target node
     if (highlight_target && target_type === "project") {
       // Highlight the project with special stroke
-      g.selectAll(".project-ring circle")
+      cache.project_nodes
         .filter((d) => d.id === highlight_target.id)
         .attr("opacity", 1.0)
         .attr("stroke", COLORS.background)
         .attr("stroke-width", 2 * SF);
 
       // Reset stroke for other projects
-      g.selectAll(".project-ring circle")
+      cache.project_nodes
         .filter((d) => d.id !== highlight_target.id)
         .attr("stroke", handleStrokes(COLORS.proj))
         .attr("stroke-width", 1.5);
     } else if (highlight_target && target_type === "tech") {
       // Highlight the tech with special stroke
-      g.selectAll(".tech-nodes circle")
+      cache.tech_nodes
         .filter((d) => d.id === highlight_target.id)
         .attr("opacity", 1.0)
         .attr("stroke", "gray")
         .attr("stroke-width", 2 * SF);
 
       // Reset stroke for other techs
-      g.selectAll(".tech-nodes circle")
+      cache.tech_nodes
         .filter((d) => d.id !== highlight_target.id)
         .attr("stroke", "none");
     } else if (highlight_target && target_type === "skill") {
       // For skill hover, just make sure it's highlighted
-      g.selectAll(".skill-nodes circle")
+      cache.skill_nodes
         .filter((d) => d.id === highlight_target.id)
         .attr("opacity", 1.0);
     } else if (highlight_target && target_type === "skill_type") {
       // For skill_type hover, filter skills of that type
-      g.selectAll(".skill-nodes circle")
+      cache.skill_nodes
         .filter((d) => d.type === highlight_target.data.type)
         .attr("opacity", 1.0);
     }
@@ -2554,17 +2970,51 @@ const createCompetencesMap = (container) => {
 
   // Reset all nodes to full opacity
   function resetAllNodesOpacity() {
-    g.selectAll(".skill-nodes circle").attr("opacity", 1.0);
-    g.selectAll(".project-ring circle")
+    cache.skill_nodes.attr("opacity", 1.0);
+    cache.project_nodes
       .attr("opacity", 1.0)
       .attr("stroke", handleStrokes(COLORS.proj))
       .attr("stroke-width", 1.5);
-    g.selectAll(".tech-nodes circle")
-      .attr("opacity", 1.0)
-      .attr("stroke", "none");
+    cache.tech_nodes.attr("opacity", 1.0).attr("stroke", "none");
 
-    g.selectAll(".donut-skill path").attr("opacity", 1.0);
+    cache.donut_arcs.attr("opacity", 1.0);
   } //resetAllNodesOpacity()
+
+  /**
+   * Setup click handlers for all interactive nodes
+   * Called once after rendering
+   */
+  function setupClickHandlers() {
+    // Click on skill nodes
+    cache.skill_nodes.on("click", function (event, d) {
+      ClickManager.onClick(d, "skill");
+    });
+
+    // Click on project nodes
+    cache.project_nodes.on("click", function (event, d) {
+      ClickManager.onClick(d, "project");
+    });
+
+    // Click on tech nodes
+    cache.tech_nodes.on("click", function (event, d) {
+      ClickManager.onClick(d, "tech");
+    });
+
+    // Click on donut arcs (skill types) - optional
+    cache.donut_arcs.on("click", function (event, d) {
+      ClickManager.onClick(d, "skill_type");
+    });
+
+    // Click on SVG background to reset
+    svg.on("click", function (event) {
+      // Only reset if clicking on background (not on nodes)
+      if (event.target === this || event.target.tagName === "svg") {
+        if (ClickManager.active) {
+          ClickManager.reset();
+        }
+      }
+    });
+  } //setupClickHandlers()
 
   //////////////////////////////////
   ////// Sizing functions /////////
@@ -2587,21 +3037,10 @@ const createCompetencesMap = (container) => {
     TECHNOLOGY_RADIUS = round(PROJECTS_RADIUS * 0.67); //Tech circles domains
 
     //constructor circles
-    CENTRAL_HOLE_RADIUS = round(BOUNDARY_RADIUS * 0.1); //empty central space
+    CENTRAL_HOLE_RADIUS = round(BOUNDARY_RADIUS * 0.15); //empty central space
     SKILL_BOUNDARY_RADIUS = round(
       (BOUNDARY_RADIUS - DONUT_RADIUS - PADDING) / 2
     );
-
-    /*//check if everythins is correct
-    console.log("Widht:" + w + ", Height:" + h);
-    console.log("SF:" + SF);
-    console.log("Donut widht:" + DONUT_WIDTH);
-    console.log("Donut radius:" + DONUT_RADIUS);
-    console.log("Boundary radius:" + BOUNDARY_RADIUS);
-    console.log("Projects radius:" + PROJECTS_RADIUS);
-    console.log("Technology radius:" + TECHNOLOGY_RADIUS);
-    console.log("central hole radius:" + CENTRAL_HOLE_RADIUS);
-    console.log("Boundary circle for skill radius:" + SKILL_BOUNDARY_RADIUS);*/
   } //handleSizes()
 
   //to update all the scales following the handlesize()
@@ -2908,47 +3347,6 @@ const createCompetencesMap = (container) => {
       showHoverAreas();
     }
   } //toggleHoverAreas()
-
-  function techBugs(master) {
-    // Boundary circles
-    const boundaryCircles = g
-      .append("g")
-      .attr("class", "debug-boundary-circles")
-      .attr("visibility", DEBUG);
-
-    boundaryCircles
-      .append("circle")
-      .attr("cx", 0)
-      .attr("cy", 0)
-      .attr("r", TECHNOLOGY_RADIUS - PADDING / 2)
-      .attr("fill", "none")
-      .attr("stroke", "black")
-      .attr("stroke-width", 1)
-      .attr("stroke-dasharray", "4,4");
-
-    boundaryCircles
-      .append("circle")
-      .attr("cx", 0)
-      .attr("cy", 0)
-      .attr("r", CENTRAL_HOLE_RADIUS + PADDING / 2)
-      .attr("fill", "none")
-      .attr("stroke", "black")
-      .attr("stroke-width", 1)
-      .attr("stroke-dasharray", "4,4");
-
-    // Phyllotaxis grid
-    g.append("g")
-      .attr("class", "debug-phyllotaxis-grid")
-      .selectAll("circle")
-      .data(master)
-      .join("circle")
-      .attr("cx", (d) => d.x)
-      .attr("cy", (d) => d.y)
-      .attr("r", 1.5)
-      .attr("fill", "black")
-      .attr("opacity", 0.5)
-      .attr("visibility", DEBUG);
-  } //techBugs
 
   // Expose to window
   if (typeof window !== "undefined") {
