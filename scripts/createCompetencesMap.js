@@ -278,6 +278,17 @@ const createCompetencesMap = (container) => {
         return;
       }
 
+      if (this.active) {
+        if (ClickManager.active) {
+          // Reset to the "locked" click state
+          ClickManager.onHoverExit();
+        } else {
+          // Reset to the "no hover" state
+          this.resetVisuals();
+          hideTooltip();
+        }
+      }
+
       this.active = true;
       this.node = node;
       this.type = type;
@@ -291,6 +302,7 @@ const createCompetencesMap = (container) => {
           //hover on connected node
           ClickManager.onHoverConnected(node, type);
         } else {
+          this.highlightExternalNodes(node, type);
           //show only tooltip
           if (type !== "skill_type") {
             let node_x, node_y;
@@ -443,6 +455,28 @@ const createCompetencesMap = (container) => {
     hideAllEdges() {
       cache.skill_edges.attr("opacity", 0).attr("stroke-width", 1.5 * SF);
       cache.tech_edges.attr("opacity", 0).attr("stroke-width", 1.5 * SF);
+    },
+    highlightExternalNodes(node, type) {
+      switch (type) {
+        case "skill":
+          cache.skill_nodes
+            .filter((d) => d.id === node.id)
+            .attr("opacity", 1.0);
+          break;
+        case "project":
+          cache.project_nodes
+            .filter((d) => d.id === node.id)
+            .attr("opacity", 1.0);
+          break;
+        case "tech":
+          cache.tech_nodes.filter((d) => d.id === node.id).attr("opacity", 1.0);
+          break;
+        case "skill_type":
+          cache.donut_arcs
+            .filter((d) => d.data.type === node.data.type)
+            .attr("opacity", 1.0);
+          break;
+      }
     },
   }; //HoverManager
 
@@ -870,6 +904,13 @@ const createCompetencesMap = (container) => {
             .attr("stroke-width", 1.5);
         }
       });
+      //reset all skill types
+      const locked_skill_type_ids = new Set(
+        (locked_connected.skill_type_arcs || []).map((arc) => arc.data.type)
+      );
+      cache.donut_arcs.attr("opacity", (d) =>
+        locked_skill_type_ids.has(d.data.type) ? 1.0 : 0.4
+      );
     },
   }; //ClickManager
 
