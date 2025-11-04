@@ -995,7 +995,7 @@ const createCompetencesMap = (container) => {
     .scaleOrdinal()
     .domain(["capt_tech", "rep_tech", "diss_tech"])
     .range([COLORS.capt_tech, COLORS.rep_tech, COLORS.diss_tech]);
-  const DARK_VALUE = 0.6;
+  const DARK_VALUE = 0.8;
 
   const techTypeToSector = {
     //map tech sector to tech type
