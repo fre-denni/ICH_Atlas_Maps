@@ -981,8 +981,8 @@ const createCompetencesMap = (container) => {
   const COLORS = {
     background: "#f5f5f0",
     ui: "#440EB3",
-    skill: "#648ad6", //"#A783E8", //"#00A4B5", //"#65d6d3",
-    type: "#4d69a1", //"#6f579cff", //"rgba(51, 109, 108, 1)",
+    skill: "#BDBDF8", //"#00A4B5", //"#65d6d3",
+    type: "#A783E8", //"#6f579cff", //"rgba(51, 109, 108, 1)",
     proj: "#440EB3", //"#A783E8",
     capt_tech: "#f2a900",
     rep_tech: "#F44336",
