@@ -141,6 +141,9 @@ const createCompetencesMap = (container) => {
   //cache d3 selections
   let cache = null;
 
+  //micro-interactions
+  let clicked_node_stroke = null;
+
   //hover manager tool (manage all the hovering!)
   const HoverManager = {
     active: false,
@@ -502,6 +505,10 @@ const createCompetencesMap = (container) => {
       this.calculatedLockedState(node, type);
       //update visuals
       this.updateLockedVisuals();
+      //add dashed-array
+      if (type !== "skill_type") {
+        showClickedNodeStroke(node, type);
+      }
     },
     calculatedLockedState(node, type) {
       let edges_to_show = [];
@@ -628,6 +635,8 @@ const createCompetencesMap = (container) => {
       resetAllNodesOpacity();
       this.hideAllEdges();
       hideTooltip();
+      // Hide the rotating dashed stroke
+      hideClickedNodeStroke();
     },
     //hide all edges
     hideAllEdges() {
@@ -874,11 +883,22 @@ const createCompetencesMap = (container) => {
       const locked_project_ids = new Set(
         (locked_connected.projects || []).map((p) => p.id)
       );
+      const locked_skill_type_ids = new Set(
+        (locked_connected.skill_type_arcs || []).map((arc) => arc.data.type)
+      );
 
       // Reset ALL skill nodes: locked to 1.0, others to 0.4
-      cache.skill_nodes.attr("opacity", (d) =>
-        locked_skill_ids.has(d.id) ? 1.0 : 0.4
-      );
+      cache.skill_nodes.each(function (d) {
+        const is_clicked =
+          d.id === ClickManager.node.id && ClickManager.type === "skill";
+
+        if (!is_clicked) {
+          d3.select(this).attr(
+            "opacity",
+            locked_skill_ids.has(d.id) ? 1.0 : 0.4
+          );
+        }
+      });
 
       // Reset ALL tech nodes: locked to 1.0, others to 0.4
       cache.tech_nodes.each(function (d) {
@@ -904,13 +924,19 @@ const createCompetencesMap = (container) => {
             .attr("stroke-width", 1.5);
         }
       });
+
       //reset all skill types
-      const locked_skill_type_ids = new Set(
-        (locked_connected.skill_type_arcs || []).map((arc) => arc.data.type)
-      );
-      cache.donut_arcs.attr("opacity", (d) =>
-        locked_skill_type_ids.has(d.data.type) ? 1.0 : 0.4
-      );
+      cache.donut_arcs.each(function (d) {
+        const is_clicked =
+          d.data.type === ClickManager.node.data?.type &&
+          ClickManager.type === "skill_type";
+        if (!is_clicked) {
+          d3.select(this).attr(
+            "opacity",
+            locked_skill_type_ids.has(d.data.type) ? 1.0 : 0.4
+          );
+        }
+      });
     },
   }; //ClickManager
 
@@ -996,7 +1022,10 @@ const createCompetencesMap = (container) => {
     .style("background-color", COLORS.background)
     .style("margin", "0");
 
-  let g = svg.append("g"); //define widht & height?
+  let g = svg.append("g");
+
+  //Group for the rotating dashed stroke around clicked nodes
+  let g_clicked_stroke;
 
   //////////////////////////////////
   ////// Manage Datasets //////////
@@ -1264,7 +1293,7 @@ const createCompetencesMap = (container) => {
    * @returns {Object} Donut data with arc positions
    */
   function calculateDonutPositions(radius) {
-    const thickness = PADDING * SF; //capire il dimensionamento
+    const thickness = PADDING * SF * 0.1; //capire il dimensionamento
     // Create arc generator (for calculations only)
     const arc = d3
       .arc()
@@ -1281,8 +1310,8 @@ const createCompetencesMap = (container) => {
     const data = pie(skillType);
 
     // Calculate boundary positions
-    const inner = radius - (thickness - thickness / 4);
-    const outer = radius + thickness * 1.5 + SKILL_BOUNDARY_RADIUS;
+    const inner = radius - thickness * 2;
+    const outer = radius + PADDING + SKILL_BOUNDARY_RADIUS;
     const frequency = d3.extent(data, (d) => d.data.frequency);
 
     // Update scale
@@ -1563,6 +1592,12 @@ const createCompetencesMap = (container) => {
     //Setup hover
     HoverManager.setup();
     setupClickHandlers();
+
+    //set-up micro interactions
+    g_clicked_stroke = g
+      .append("g")
+      .attr("class", "clicked-node-stroke-group")
+      .style("pointer-events", "none");
   } //draw()
 
   function chart(skillData, techData, projData) {
@@ -2449,7 +2484,122 @@ const createCompetencesMap = (container) => {
     donut_arc_by_type = new Map(donutData.data.map((d) => [d.data.type, d]));
   } //buildNodeLookups()
 
-  /////////// DELAUNEY
+  /////////// MICRO_INTERACTIONS
+  //show stroke around clicked node
+  function showClickedNodeStroke(node, type) {
+    let color;
+    let radius;
+    let nodeX, nodeY;
+
+    switch (type) {
+      case "skill":
+        color = COLORS.skill;
+        radius = node.radius;
+        nodeX = node.x;
+        nodeY = node.y;
+        break;
+      case "project":
+        color = COLORS.proj;
+        const proj_node = project_node_by_id.get(node.id);
+        radius = proj_node.radius;
+        nodeX = proj_node.x;
+        nodeY = proj_node.y;
+        break;
+      case "tech":
+        console.log("🔧 Tech node data:", {
+          nodeType: node.type,
+          nodeRadius: node.radius,
+          nodeX: node.x,
+          nodeY: node.y,
+          fullNode: node,
+        });
+        color = tech_colors(node.type);
+        radius = node.radius;
+        nodeX = node.x;
+        nodeY = node.y;
+        break;
+      default:
+        return;
+    }
+
+    const strokeColor = handleStrokes(color);
+    const offsetRadius = radius + 2 * SF;
+    const circumference = 2 * PI * offsetRadius;
+    const dashes = 20;
+    const pattern = circumference / dashes;
+    const dash = pattern * 0.2;
+    const gap = pattern * 0.9;
+    //remove existing strokes
+    if (clicked_node_stroke) {
+      clicked_node_stroke.remove();
+    }
+
+    clicked_node_stroke = g_clicked_stroke
+      .append("circle")
+      .attr("class", "clicked-node-stroke")
+      .attr("cx", nodeX)
+      .attr("cy", nodeY)
+      .attr("r", offsetRadius)
+      .style("fill", "none")
+      .style("stroke", strokeColor)
+      .style("stroke-width", 1.5 * SF)
+      .style("stroke-dasharray", `${dash}, ${gap}`)
+      .style("stroke-linecap", "round");
+
+    animateStrokeRotation();
+  } //showClickedNodeStroke()
+
+  //animate the rotation of clicked stroke node
+  function animateStrokeRotation() {
+    if (!clicked_node_stroke) return;
+    const radius = parseFloat(clicked_node_stroke.attr("r"));
+    const circumference = 2 * PI * radius;
+
+    let currentOffset = 0; //keep track where we are
+    function rotate() {
+      const nextOffset = currentOffset - circumference;
+
+      clicked_node_stroke
+        .transition()
+        .duration(8000)
+        .ease(d3.easeLinear)
+        .attrTween("stroke-dashoffset", function () {
+          return d3.interpolate(currentOffset, nextOffset);
+        })
+        .on("end", function () {
+          currentOffset = nextOffset;
+          //invisible reset
+          if (currentOffset < -circumference * 10) {
+            currentOffset = 0;
+            d3.select(this).attr("stroke-dashoffset", 0);
+          }
+          rotate();
+        });
+    }
+    rotate();
+  } //animateStrokeRotation
+
+  //hide stroked node
+  function hideClickedNodeStroke() {
+    if (clicked_node_stroke) {
+      clicked_node_stroke
+        .transition()
+        .duration(200)
+        .style("opacity", 0)
+        .remove();
+      clicked_node_stroke = null;
+    }
+  } //hideClickedNodeStroke
+
+  //handle stroke colors
+  function handleStrokes(color) {
+    //Calculate stroke based on fill color
+    let STROKE_COLOR = d3.color(color).darker(0.3);
+    return STROKE_COLOR;
+  } //handleStrokes
+
+  /////////// CALCULATIONS
+  //////// DELAUNAY
   /**
    * Build Delaunay diagrams for efficient hover detection
    * Creates spatial indices for O(log n) nearest-neighbor lookup
@@ -3142,13 +3292,6 @@ const createCompetencesMap = (container) => {
     //update the range for link stroke widths
     scale_link_width.exponent(0.75 * SF).range([1 * SF, 2 * SF, 40 * SF]); //maybe need to change exponent
   } //handleScale()
-
-  //handle stroke colors
-  function handleStrokes(color) {
-    //Calculate stroke based on fill color
-    let STROKE_COLOR = d3.color(color).darker(0.3);
-    return STROKE_COLOR;
-  } //handleStrokes
 
   chart.width = function (value) {
     if (!arguments.length) return width;
