@@ -296,7 +296,7 @@ const createCompetencesMap = (container) => {
       this.node = node;
       this.type = type;
 
-      console.log(`Hover enter: ${type}`, node);
+      //console.log(`Hover enter: ${type}`, node);
 
       if (ClickManager.active) {
         //check if hovered nodes is connected to clicked node
@@ -979,9 +979,10 @@ const createCompetencesMap = (container) => {
   const COLORS = {
     background: "#f5f5f0",
     ui: "#440EB3",
-    skill: "#8F8AEB",
-    proj: "green",
-    capt_tech: "#FFC107",
+    skill: "#65d6d3",
+    type: "#4DA3A1",
+    proj: "#eb9df4",
+    capt_tech: "#f2a900",
     rep_tech: "#F44336",
     diss_tech: "#12446dff",
     label: "#A3A3A3",
@@ -1180,9 +1181,9 @@ const createCompetencesMap = (container) => {
       if (entry.type === "diss_tech") dissTech.push(entry);
     });
 
-    console.log(capTech);
-    console.log(dissTech);
-    console.log(repTech);
+    //console.log(capTech);
+    //console.log(dissTech);
+    //console.log(repTech);
 
     //create a local list of unique projects and tech
     const prj = new Set(tech.map((d) => d.projects));
@@ -1569,8 +1570,8 @@ const createCompetencesMap = (container) => {
     drawDonut(donutData);
 
     // draw default state
-    renderEdges(sk_edges_curves, "skill-project-edges", 1.5, 0);
-    renderEdges(tc_edges_curves, "proj-tech-edges", 1.5, 0);
+    renderEdges(sk_edges_curves, "skill-project-edges", 15, 0);
+    renderEdges(tc_edges_curves, "proj-tech-edges", 15, 0);
 
     //draw in order
     defineBoundaries(donutData);
@@ -1650,8 +1651,8 @@ const createCompetencesMap = (container) => {
       .join("path")
       .attr("class", "slice-type")
       .attr("d", arc)
-      .attr("fill", COLORS.ui)
-      .attr("stroke", handleStrokes(COLORS.ui))
+      .attr("fill", COLORS.type)
+      .attr("stroke", handleStrokes(COLORS.type))
       .attr("stroke-width", 1.5);
   } //drawDonut()
 
@@ -2506,13 +2507,6 @@ const createCompetencesMap = (container) => {
         nodeY = proj_node.y;
         break;
       case "tech":
-        console.log("🔧 Tech node data:", {
-          nodeType: node.type,
-          nodeRadius: node.radius,
-          nodeX: node.x,
-          nodeY: node.y,
-          fullNode: node,
-        });
         color = tech_colors(node.type);
         radius = node.radius;
         nodeX = node.x;
@@ -3040,7 +3034,7 @@ const createCompetencesMap = (container) => {
       case "skill":
         return COLORS.skill; // Purple/lilac for skills
       case "skill_type":
-        return COLORS.ui; // Deep purple for skill types
+        return COLORS.type; // Deep purple for skill types
       case "project":
         return COLORS.proj; // Green for projects
       case "tech":
