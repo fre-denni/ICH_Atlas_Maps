@@ -981,12 +981,12 @@ const createCompetencesMap = (container) => {
   const COLORS = {
     background: "#f5f5f0",
     ui: "#440EB3",
-    skill: "#A783E8", //"#00A4B5", //"#65d6d3",
-    type: "#6f579cff", //"rgba(51, 109, 108, 1)",
+    skill: "#648ad6", //"#A783E8", //"#00A4B5", //"#65d6d3",
+    type: "#4d69a1", //"#6f579cff", //"rgba(51, 109, 108, 1)",
     proj: "#440EB3", //"#A783E8",
     capt_tech: "#f2a900",
     rep_tech: "#F44336",
-    diss_tech: "#658BD6",
+    diss_tech: "#00A4B5", //"#658BD6",
     label: "#A3A3A3",
     text: "#121212",
   };
@@ -1297,7 +1297,7 @@ const createCompetencesMap = (container) => {
    * @returns {Object} Donut data with arc positions
    */
   function calculateDonutPositions(radius) {
-    const thickness = PADDING * SF * 0.1; //capire il dimensionamento
+    const thickness = PADDING * SF * 0.3; //capire il dimensionamento
     // Create arc generator (for calculations only)
     const arc = d3
       .arc()
@@ -1314,7 +1314,7 @@ const createCompetencesMap = (container) => {
     const data = pie(skillType);
 
     // Calculate boundary positions
-    const inner = radius - thickness * 2;
+    const inner = radius - thickness;
     const outer = radius + PADDING + SKILL_BOUNDARY_RADIUS;
     const frequency = d3.extent(data, (d) => d.data.frequency);
 
