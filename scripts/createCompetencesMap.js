@@ -66,7 +66,6 @@ const createCompetencesMap = (container) => {
     SKILL_BOUNDARY_RADIUS;
 
   //////set scales
-  const opacity_scale = d3.scaleLinear().range([0.4, 1.0]);
   const skill_radius_scale = d3
     .scaleSqrt()
     .range([MAX_SKILL_NODE / 2, MAX_SKILL_NODE]);
@@ -982,9 +981,9 @@ const createCompetencesMap = (container) => {
   const COLORS = {
     background: "#f5f5f0",
     ui: "#440EB3",
-    skill: "#65d6d3",
-    type: "#4DA3A1",
-    proj: "#A783E8",
+    skill: "#A783E8", //"#00A4B5", //"#65d6d3",
+    type: "#6f579cff", //"rgba(51, 109, 108, 1)",
+    proj: "#440EB3", //"#A783E8",
     capt_tech: "#f2a900",
     rep_tech: "#F44336",
     diss_tech: "#658BD6",
@@ -1659,9 +1658,7 @@ const createCompetencesMap = (container) => {
       .join("path")
       .attr("class", "slice-type")
       .attr("d", arc)
-      .attr("fill", COLORS.type)
-      .attr("stroke", handleStrokes(COLORS.type))
-      .attr("stroke-width", 1.5);
+      .attr("fill", COLORS.type); //COLORS.skill
   } //drawDonut()
 
   /***
@@ -1687,7 +1684,8 @@ const createCompetencesMap = (container) => {
       .attr("fill", (d) => {
         const type = d.data.type;
         const baseColor = tech_colors(type);
-        return d3.color(baseColor).darker(DARK_VALUE);
+        return baseColor;
+        //return d3.color(baseColor).darker(DARK_VALUE);
       });
   } //drawTriad()
 
@@ -1702,7 +1700,7 @@ const createCompetencesMap = (container) => {
       .data(nodes)
       .join("circle")
       .attr("r", (d) => d.radius)
-      .attr("fill", (d) => tech_colors(d.type))
+      .attr("fill", (d) => d3.color(tech_colors(d.type)).darker(DARK_VALUE))
       .attr("cx", (d) => d.x)
       .attr("cy", (d) => d.y)
       .attr("cx", 0)
@@ -2971,11 +2969,11 @@ const createCompetencesMap = (container) => {
   function getEdgeColorForHoverType(type, node = null) {
     switch (type) {
       case "skill":
-        return COLORS.skill; // Purple/lilac for skills
+        return COLORS.skill;
       case "skill_type":
-        return COLORS.type; // Deep purple for skill types
+        return COLORS.type; //COLORS.skill
       case "project":
-        return COLORS.proj; // Green for projects
+        return COLORS.proj;
       case "tech":
         // Get the tech node color from tech_colors scale
         // Tech nodes have their type in node.type (capt_tech, rep_tech, diss_tech)
