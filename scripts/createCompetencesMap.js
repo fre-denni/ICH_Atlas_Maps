@@ -739,10 +739,11 @@ const createCompetencesMap = (container) => {
             .attr("stroke-width", 2 * SF);
           break;
         case "tech":
+          const techStrokeColor = d3.color(tech_colors(node.type)).darker(1);
           cache.tech_nodes
             .filter((d) => d.id === node.id)
             .attr("opacity", 1.0)
-            .attr("stroke", "gray") //change with the color tech
+            .attr("stroke", techStrokeColor)
             .attr("stroke-width", 2 * SF);
           break;
       }
@@ -981,10 +982,10 @@ const createCompetencesMap = (container) => {
     ui: "#440EB3",
     skill: "#65d6d3",
     type: "#4DA3A1",
-    proj: "#eb9df4",
+    proj: "#A783E8",
     capt_tech: "#f2a900",
     rep_tech: "#F44336",
-    diss_tech: "#12446dff",
+    diss_tech: "#658BD6",
     label: "#A3A3A3",
     text: "#121212",
   };
@@ -1345,13 +1346,19 @@ const createCompetencesMap = (container) => {
   function calcTriad(radius, hole) {
     const pie = d3
       .pie()
+      .value((d) => d.frequency)
       .sort(null)
       .padAngle(0.02)
       .startAngle(-PI / 2)
       .endAngle((3 * PI) / 2);
 
-    const frequencies = [capTech.length, repTech.length, dissTech.length];
-    const slices = pie(frequencies); //dimensions depending on number of tech
+    const techData = [
+      { type: "capt_tech", frequency: capTech.length },
+      { type: "rep_tech", frequency: repTech.length },
+      { type: "diss_tech", frequency: dissTech.length },
+    ];
+
+    const slices = pie(techData); //dimensions depending on number of tech
 
     return { slices, innerRadius: hole, outerRadius: radius };
   } //calcTriad()
@@ -1676,9 +1683,11 @@ const createCompetencesMap = (container) => {
       .join("path")
       .attr("class", "tech-area")
       .attr("d", arc)
-      .attr("fill", "gray")
-      .attr("stroke", handleStrokes("gray"))
-      .attr("stroke-width", 1.5);
+      .attr("fill", (d) => {
+        const type = d.data.type;
+        const baseColor = tech_colors(type);
+        return d3.color(baseColor).darker(0.8);
+      });
   } //drawTriad()
 
   /**
@@ -3179,10 +3188,13 @@ const createCompetencesMap = (container) => {
         .attr("stroke-width", 1.5);
     } else if (highlight_target && target_type === "tech") {
       // Highlight the tech with special stroke
+      const stroke_color = d3
+        .color(tech_colors(highlight_target.type))
+        .darker(1);
       cache.tech_nodes
         .filter((d) => d.id === highlight_target.id)
         .attr("opacity", 1.0)
-        .attr("stroke", "gray")
+        .attr("stroke", stroke_color)
         .attr("stroke-width", 2 * SF);
 
       // Reset stroke for other techs
