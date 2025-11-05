@@ -287,7 +287,6 @@ const createCompetencesMap = (container) => {
         } else {
           // Reset to the "no hover" state
           this.resetVisuals();
-          hideTooltip();
         }
       }
 
@@ -305,7 +304,6 @@ const createCompetencesMap = (container) => {
           ClickManager.onHoverConnected(node, type);
         } else {
           this.highlightExternalNodes(node, type);
-          //show only tooltip
           if (type !== "skill_type") {
             let node_x, node_y;
             switch (type) {
@@ -323,8 +321,6 @@ const createCompetencesMap = (container) => {
                 node_y = node.y;
                 break;
             }
-
-            showTooltip(node, type, node_x, node_y);
           }
         }
 
@@ -334,7 +330,6 @@ const createCompetencesMap = (container) => {
       //update visual state
       this.updateVisuals(type, node);
       if (type !== "skill_type") {
-        //change later to show other than the tooltip
         let node_x, node_y;
 
         switch (type) {
@@ -352,8 +347,6 @@ const createCompetencesMap = (container) => {
             node_y = node.y;
             break;
         }
-
-        showTooltip(node, type, node_x, node_y);
       }
     },
 
@@ -376,7 +369,6 @@ const createCompetencesMap = (container) => {
       } else {
         // Reset visual state
         this.resetVisuals();
-        hideTooltip();
       }
 
       // Release debounce after 50ms
@@ -482,6 +474,7 @@ const createCompetencesMap = (container) => {
     },
   }; //HoverManager
 
+  //click manager tool (manage all clicks!)
   const ClickManager = {
     active: false,
     node: null,
@@ -571,8 +564,6 @@ const createCompetencesMap = (container) => {
       }
       //show locked edges
       this.showLockedEdges();
-      //show locked tooltip
-      this.showLockedTooltip();
     },
     //show edges
     showLockedEdges() {
@@ -600,28 +591,6 @@ const createCompetencesMap = (container) => {
           return edgeColor;
         });
     },
-    //show tooltip for locked node
-    showLockedTooltip() {
-      const { node, type } = this;
-      let node_x, node_y;
-      switch (type) {
-        case "skill":
-          node_x = node.x;
-          node_y = node.y;
-          break;
-        case "project":
-          const proj_node = project_node_by_id.get(node.id);
-          node_x = proj_node.x;
-          node_y = proj_node.y;
-          break;
-        case "tech":
-          node_x = node.x;
-          node_y = node.y;
-          break;
-      }
-
-      showTooltip(node, type, node_x, node_y);
-    },
     //reset click status
     reset() {
       //console.log("click reset");
@@ -633,7 +602,6 @@ const createCompetencesMap = (container) => {
       //Reset visuals
       resetAllNodesOpacity();
       this.hideAllEdges();
-      hideTooltip();
       // Hide the rotating dashed stroke
       hideClickedNodeStroke();
     },
@@ -664,7 +632,6 @@ const createCompetencesMap = (container) => {
     //handle hover on click mode
     onHoverConnected(node, type) {
       //console.log(`Hover on connected ${type} during click mode`);
-      // Show tooltip for hovered node
       if (type !== "skill_type") {
         let node_x, node_y;
         switch (type) {
@@ -682,7 +649,6 @@ const createCompetencesMap = (container) => {
             node_y = node.y;
             break;
         }
-        showTooltip(node, type, node_x, node_y);
       }
 
       this.highlightHoveredNode(node, type);
@@ -870,7 +836,6 @@ const createCompetencesMap = (container) => {
     //hover exit
     onHoverExit() {
       this.showLockedEdges();
-      this.showLockedTooltip();
 
       // Reset nodes opacity to locked state
       const { locked_connected } = this;
@@ -945,24 +910,9 @@ const createCompetencesMap = (container) => {
   //Node lookups and labels
   let vizProj;
 
-  //tooltips
-  let tooltip;
-  let tooltip_content;
+  //central hole labels
   let header, label;
-  let cta;
-
-  //Tooltip dimensions (SF = 1)
-  const TOOLTIP_BASE = {
-    width: 80, // max width
-    padding_v: 8, // Vertical padding
-    padding_h: 10, // Horizontal padding
-    label_size: 7, // Label font size
-    header_size: 10, // Header font size
-    label_margin: 2, // Space between label and header
-    cta_size: 18, // CTA button size
-    cta_offset: 40, // CTA vertical offset from bottom
-    offset_y: 18, // Distance from node
-  };
+  let cta = null;
 
   //modals
   let title,
@@ -1611,8 +1561,6 @@ const createCompetencesMap = (container) => {
   } //draw()
 
   function chart(skillData, techData, projData) {
-    // Initialize tooltip
-    initTooltip();
     //data logic
     prepareData(skillData, techData, projData);
     //call resizing (first draw)
@@ -2176,305 +2124,6 @@ const createCompetencesMap = (container) => {
   ///////////////////////////////////
   //////// HOVER AND CLICK //////////
   //////////////////////////////////
-
-  //////////// TOOLTIPS
-  function initTooltip() {
-    // Select or create container
-    const container = d3.select("#tooltips-container");
-
-    // Create single tooltip
-    tooltip = container
-      .append("div")
-      .attr("class", "competences-tooltip")
-      .style("position", "fixed")
-      .style("pointer-events", "none")
-      .style("z-index", "1000")
-      .style("opacity", "0")
-      .style("display", "none")
-      .style("transition", "opacity 0.15s ease");
-
-    // Content wrapper
-    tooltip_content = tooltip
-      .append("div")
-      .attr("class", "tooltip-content")
-      .style("position", "relative")
-      .style("background", COLORS.background)
-      .style("box-shadow", "0px 4px 16px rgba(0, 0, 0, 0.15)");
-
-    // Label (uppercase text)
-    label = tooltip_content
-      .append("p")
-      .attr("class", "tooltip-label")
-      .style("margin", "0")
-      .style("padding", "0")
-      .style("text-align", "center")
-      .style("font-family", "'Inter', sans-serif")
-      .style("font-weight", "600")
-      .style("text-transform", "uppercase")
-      .style("letter-spacing", "0.05em")
-      .style("line-height", "1");
-
-    // Header (main text)
-    header = tooltip_content
-      .append("h3")
-      .attr("class", "tooltip-header")
-      .style("margin", "0")
-      .style("padding", "0")
-      .style("text-align", "center")
-      .style("font-family", "'IBM Plex Serif', serif")
-      .style("font-weight", "400")
-      .style("line-height", "1.1")
-      .style("word-wrap", "break-word")
-      .style("overflow-wrap", "break-word");
-
-    // CTA wrapper (only for projects)
-    cta = tooltip
-      .append("button")
-      .attr("class", "tooltip-cta")
-      .style("position", "absolute")
-      .style("left", "50%")
-      .style("transform", "translateX(-50%)")
-      .style("display", "none")
-      .style("align-items", "center")
-      .style("justify-content", "center")
-      .style("border-radius", "50%")
-      .style("background", "transparent")
-      .style("cursor", "pointer")
-      .style("transition", "all 0.2s ease")
-      .style("padding", "0")
-      .style("pointer-events", "all")
-      .on("mouseenter", function () {
-        const color = d3.select(this).attr("data-color");
-        d3.select(this)
-          .style("background", color)
-          .style("border", `${2 * SF}px solid ${color}`);
-        d3.select(this).select("svg").style("color", COLORS.background);
-      })
-      .on("mouseleave", function () {
-        const color = d3.select(this).attr("data-color");
-        d3.select(this)
-          .style("background", "transparent")
-          .style("border", `${2 * SF}px solid ${color}`);
-        d3.select(this).select("svg").style("color", color);
-      })
-      .on("click", function () {
-        //per ora niente
-      });
-
-    // CTA SVG icon
-    const cta_svg = cta
-      .append("svg")
-      .attr("viewBox", "0 0 20 20")
-      .attr("fill", "none")
-      .style("pointer-events", "none")
-      .style("display", "block");
-
-    cta_svg
-      .append("circle")
-      .attr("cx", "10")
-      .attr("cy", "10")
-      .attr("r", "9")
-      .attr("stroke", "currentColor")
-      .attr("stroke-width", "2")
-      .attr("fill", "none");
-
-    cta_svg
-      .append("path")
-      .attr("d", "M10 6V14M6 10H14")
-      .attr("stroke", "currentColor")
-      .attr("stroke-width", "2")
-      .attr("stroke-linecap", "round");
-  } //initTooltip()
-
-  //update tooltips based on SF
-  function updateTooltipSizes() {
-    if (!tooltip) return;
-
-    // Calculate scaled dimensions
-    const width = TOOLTIP_BASE.width * SF;
-    const padding_v = TOOLTIP_BASE.padding_v * SF;
-    const padding_h = TOOLTIP_BASE.padding_h * SF;
-    const label_size = TOOLTIP_BASE.label_size * SF;
-    const header_size = TOOLTIP_BASE.header_size * SF;
-    const label_margin = TOOLTIP_BASE.label_margin * SF;
-    const border_radius = 4 * SF;
-    const cta_size = TOOLTIP_BASE.cta_size * SF;
-
-    // Update content padding and border radius
-    tooltip_content
-      .style("max-width", `${width}px`)
-      .style("padding", `${padding_v}px ${padding_h}px`)
-      .style("border-radius", `${border_radius}px`);
-
-    // Update label
-    label.style("font-size", `${label_size}px`);
-
-    // Update header
-    header
-      .style("font-size", `${header_size}px`)
-      .style("margin-top", `${label_margin}px`);
-
-    // Update CTA
-    cta
-      .style("width", `${cta_size}px`)
-      .style("height", `${cta_size}px`)
-      .style("border", `${2 * SF}px solid currentColor`);
-
-    cta
-      .select("svg")
-      .attr("width", cta_size * 0.65)
-      .attr("height", cta_size * 0.65);
-
-    // Add mouse events to tooltip itself to prevent flickering
-    tooltip
-      .on("mouseenter", function () {
-        // Keep tooltip visible when mouse enters it
-        if (HoverManager.type === "project") {
-          // Only for projects since they have interactive CTA
-          d3.select(this).style("opacity", "1");
-        }
-      })
-      .on("mouseleave", function () {
-        // Hide when leaving tooltip
-        if (HoverManager.type === "project") {
-          onNodeHoverExit();
-        }
-      });
-  } //updateTooltipSizes()
-
-  /**
-   * Show tooltip for any node type
-   * Unified function that handles all cases
-   * @param {Object} node - Node data
-   * @param {string} type - 'skill' | 'tech' | 'project' | 'skill_type'
-   * @param {number} x - SVG x coordinate of node
-   * @param {number} y - SVG y coordinate of node
-   */
-  function showTooltip(node, type, x, y) {
-    if (!tooltip) return;
-
-    let label_text = "";
-    let header_text = "";
-    let header_color = COLORS.text;
-    let show_cta = false;
-    let cta_color = COLORS.proj;
-
-    // Configure based on node type
-    switch (type) {
-      case "skill":
-        label_text = "SKILL";
-        header_text = node.id;
-        header_color = COLORS.skill;
-        break;
-
-      case "tech":
-        const tech_labels = {
-          capt_tech: "CAPTURING TECHNOLOGY",
-          rep_tech: "REPRESENTATION TECHNOLOGY",
-          diss_tech: "DISSEMINATION TECHNOLOGY",
-        };
-        label_text = tech_labels[node.type] || "TECHNOLOGY";
-        header_text = node.id;
-        header_color = tech_colors(node.type);
-        break;
-
-      case "project":
-        label_text = "CASE STUDY";
-        const proj_data = vizProj.find((p) => p.title === node.id);
-        header_text = proj_data ? proj_data.display : node.id;
-        header_color = COLORS.proj;
-        show_cta = true;
-        cta_color = COLORS.proj;
-        break;
-
-      default:
-        return;
-    }
-
-    // Update content
-    label.text(label_text).style("color", COLORS.text);
-
-    header.text(header_text).style("color", header_color);
-
-    // Update background and arrow color
-    tooltip_content.style("background", COLORS.background);
-
-    if (show_cta) {
-      cta
-        .style("display", "flex")
-        .style("color", cta_color)
-        .style("border-color", cta_color)
-        .attr("data-color", cta_color);
-      cta.select("svg").style("color", cta_color);
-    } else {
-      cta.style("display", "none");
-    }
-
-    // Make tooltip visible but transparent to measure it
-    tooltip
-      .style("display", "block")
-      .style("visibility", "hidden")
-      .style("opacity", "0");
-
-    // Get dimensions after content is set
-    const content_rect = tooltip_content.node().getBoundingClientRect();
-    const content_height = content_rect.height;
-    const content_width = content_rect.width;
-    tooltip.style("visibility", "visible");
-
-    // Convert SVG coordinates to page coordinates
-    const svg_element = svg.node();
-    const svg_rect = svg_element.getBoundingClientRect();
-    const svg_center_x = svg_rect.left + svg_rect.width / 2;
-    const svg_center_y = svg_rect.top + svg_rect.height / 2;
-
-    const page_x = svg_center_x + x;
-    const page_y = svg_center_y + y;
-
-    // Calculate positions
-    const offset_y = TOOLTIP_BASE.offset_y * SF;
-    const cta_offset = TOOLTIP_BASE.cta_offset * SF;
-
-    // Total height including arrow
-    const total_height = content_height;
-
-    // Position tooltip centered horizontally, above node
-    const tooltip_x = page_x - content_width / 2;
-    const tooltip_y = page_y - total_height - offset_y;
-
-    // Position CTA button if visible
-    if (show_cta) {
-      const cta_y = content_height + cta_offset;
-      cta.style("top", `${cta_y}px`);
-    }
-
-    // Allow pointer events only for projects (to click CTA)
-    tooltip.style("pointer-events", show_cta ? "all" : "none");
-
-    // Set final position and show
-    tooltip
-      .style("left", `${tooltip_x}px`)
-      .style("top", `${tooltip_y}px`)
-      .transition()
-      .duration(150)
-      .style("opacity", "1");
-  } //showTooltip()
-
-  /**
-   * Hide tooltip
-   */
-  function hideTooltip() {
-    if (!tooltip) return;
-
-    tooltip
-      .style("pointer-events", "none")
-      .transition()
-      .duration(150)
-      .style("opacity", "0")
-      .on("end", function () {
-        d3.select(this).style("display", "none");
-      });
-  } //hideTooltip()
 
   /***
    * Build node lookups for quick node access during hover
@@ -3240,8 +2889,6 @@ const createCompetencesMap = (container) => {
     g.attr("transform", `translate(${width / 2}, ${height / 2})`);
     handleSizes(width, height);
     handleScales();
-    // Update tooltip sizes
-    updateTooltipSizes();
     draw();
   }; //handle resizes
 
