@@ -175,6 +175,8 @@ const createCompetencesMap = (container) => {
     max_header_width: 0.85, // % of radius for text wrapping
     max_label_width: 0.85, // % of radius for text wrapping
     line_height_multiplier: 1.3, //multiplier for line height
+    label_y_offset: -40, //fixed y value from center for label
+    cta_y_offset: 35, //fixed y value from center for cta
   };
 
   let central_label_radius;
@@ -198,7 +200,7 @@ const createCompetencesMap = (container) => {
     debounce: false,
     constants: {
       donut_inner_radius: 0,
-      donut_outer_radiuse: 0, //donut
+      donut_outer_radius: 0, //donut
       proj_inner_r: 0,
       proj_outer_r: 0,
       num_projects: 0,
@@ -351,6 +353,7 @@ const createCompetencesMap = (container) => {
           ClickManager.onHoverConnected(node, type);
         } else {
           this.highlightExternalNodes(node, type);
+          showNodeLabel(node, type);
           if (type !== "skill_type") {
             let node_x, node_y;
             switch (type) {
@@ -744,7 +747,6 @@ const createCompetencesMap = (container) => {
         });
       }
     },
-
     //highlight hovered nodes
     highlightHoveredNode(node, type) {
       switch (type) {
@@ -895,12 +897,9 @@ const createCompetencesMap = (container) => {
       // Restore locked edges immediately
       this.showLockedEdges();
 
-      // IMPORTANTE: Restore label DOPO un breve delay per evitare flickering
-      setTimeout(() => {
-        if (this.active && this.node && this.type) {
-          showNodeLabel(this.node, this.type);
-        }
-      }, 50);
+      if (this.active && this.node && this.type) {
+        showNodeLabel(this.node, this.type);
+      }
 
       // Reset nodes opacity to locked state
       const { locked_connected } = this;
@@ -981,9 +980,9 @@ const createCompetencesMap = (container) => {
     skill: "#BDBDF8", //"#00A4B5", //"#65d6d3",
     type: "#A783E8", //"#6f579cff", //"rgba(51, 109, 108, 1)",
     proj: "#440EB3", //"#A783E8",
-    capt_tech: "#26dee1ff", //"#f2a900",
-    rep_tech: "#576fe7ff", //"#F44336",
-    diss_tech: "#ca27bcff", //"#00A4B5", //"#658BD6",
+    capt_tech: "#83E7C6", //"#f2a900",
+    rep_tech: "#83E7E7", //"#F44336",
+    diss_tech: "#E783D6", //"#00A4B5", //"#658BD6",
     label: "#A3A3A3",
     text: "#121212",
   };
@@ -2289,10 +2288,9 @@ const createCompetencesMap = (container) => {
     });
   }
 
-  //defaul Label
+  //default Label
   function showDefaultLabel() {
     if (!central_label_group) return;
-    //reset background
 
     //hide labels
     central_circle.transition().duration(200).attr("fill", COLORS.background);
@@ -2309,7 +2307,7 @@ const createCompetencesMap = (container) => {
     wrapTextSVG(header, default_text, max_width, HEADER_FONT_SIZE);
 
     header
-      .attr("y", 0)
+      .attr("y", 0) // Centro fisso
       .style("fill", COLORS.ui)
       .transition()
       .duration(200)
@@ -2373,7 +2371,8 @@ const createCompetencesMap = (container) => {
 
     //update background color
     central_circle.transition().duration(200).attr("fill", bg_color);
-    //setup header
+
+    //Fix header to center
     const max_width_header =
       central_label_radius * CENTRAL_LABEL_BASE.max_header_width;
 
@@ -2387,27 +2386,23 @@ const createCompetencesMap = (container) => {
     wrapTextSVG(header, header_text, max_width_header, HEADER_FONT_SIZE);
     header.attr("y", 0);
 
-    //setup label
+    //Fix Label position
     const max_width_label =
       central_label_radius * CENTRAL_LABEL_BASE.max_label_width;
+
     label
-      .style("font-size", `${LABEL_FONT_SIZE}px`)
       .style("fill", text_color)
       .style("opacity", 0)
-      .text(label_text);
+      .text("")
+      .selectAll("tspan")
+      .remove();
 
     wrapLabelSVG(label, label_text, max_width_label, LABEL_FONT_SIZE);
 
-    // Posiziona label sopra l'header a distanza fissa
-    const label_bbox = label.node().getBBox();
-    const header_bbox = header.node().getBBox();
-
-    // Label sopra: parte dall'alto dell'header, sale di margin + altezza label
-    const label_y =
-      -header_bbox.height / 2 - LABEL_MARGIN_SIZE - label_bbox.height / 2;
+    const label_y = CENTRAL_LABEL_BASE.label_y_offset * SF;
     label.attr("y", label_y);
 
-    //Setup cta
+    // Fix CTA position
     if (show_cta) {
       cta
         .style("font-size", `${CTA_FONT_SIZE}px`)
@@ -2415,15 +2410,11 @@ const createCompetencesMap = (container) => {
         .style("opacity", 0)
         .text(CTA_TEXT);
 
-      const cta_bbox = cta.node().getBBox();
-
-      //cta under
-      const cta_y =
-        header_bbox.height / 2 + HEADER_MARGIN_SIZE + cta_bbox.height / 2;
+      const cta_y = CENTRAL_LABEL_BASE.cta_y_offset * SF;
       cta.attr("y", cta_y);
     }
 
-    //Animate
+    // Animate
     label.transition().duration(150).style("opacity", 1);
     header.transition().duration(200).style("opacity", 1);
 
@@ -2432,7 +2423,7 @@ const createCompetencesMap = (container) => {
     } else {
       cta.transition().duration(150).style("opacity", 0);
     }
-  }
+  } //showNodeLabel
 
   //wrap text using tspan
   function wrapTextSVG(textElement, text, maxWidth, fontSize) {
