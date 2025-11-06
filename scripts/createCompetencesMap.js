@@ -113,10 +113,10 @@ const createCompetencesMap = (container) => {
     cta_size: 9, // CTA font size
     label_margin: 6, // Space between label and header
     header_margin: 8, // Space between header and CTA
-    max_header_width: 0.85, // % of radius for text wrapping
+    max_header_width: 0.99, // % of radius for text wrapping
     max_label_width: 0.85, // % of radius for text wrapping
-    line_height_multiplier: 1.3, //multiplier for line height
-    label_y_offset: -40, //fixed y value from center for label
+    line_height_multiplier: 1.8, //multiplier for line height
+    label_y_offset: -45, //fixed y value from center for label
     cta_y_offset: 35, //fixed y value from center for cta
   };
 
