@@ -79,9 +79,9 @@ Made with best intentions and open-source code :heart:
   - [ ] Capire come visualizzare (sketch e prove di viz)
   - [ ] Impostazione sheet, excel, data e lettura
   - [ ] Impostazione preliminare e visiva dei data
-- [ ] Competences Map
-  - [ ] Impostazione base (importare e pulire sheet)
-  - [ ] Impostazione preliminare e visiva dei data
+- [x] Competences Map
+  - [x] Impostazione base (importare e pulire sheet)
+  - [x] Impostazione preliminare e visiva dei data
 - [ ] Digitalisation Map
   - [ ] Impostazione base (fake dataset)
   - [ ] Impostazione preliminare e visiva dei data
@@ -91,9 +91,9 @@ Made with best intentions and open-source code :heart:
 - [ ] Connettere e visualizzare le visualizzazioni
   - [ ] Comparison Tool
   - [ ] Creative Map
-  - [ ] Competences Map
+  - [x] Competences Map
   - [ ] Digitalisation Map
-- [ ] Responsive resizing (fino a min-width 660px)
+- [x] Responsive resizing (fino a min-width 660px)
 - [ ] Finire menu di navigazione
   - [ ] impostare modale search e codice (lunr.js)
     - [ ] zooming su nodi id
