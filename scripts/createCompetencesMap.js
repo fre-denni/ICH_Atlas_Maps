@@ -22,10 +22,6 @@
 const DEBUG = "hidden";
 
 const createCompetencesMap = (container) => {
-  //////////////////////////////////////
-  ////// Constants & Variables ////////
-  /////////////////////////////////////
-
   /////////define math variables
   const PI = Math.PI;
   const TAU = PI * 2;
@@ -55,6 +51,7 @@ const createCompetencesMap = (container) => {
   //variables for scaling
   const DEFAULT_SIZE = 1000;
   let SF;
+  let LABEL_SF;
 
   //proportional scaling
   let DONUT_WIDTH,
@@ -63,7 +60,15 @@ const createCompetencesMap = (container) => {
     PROJECTS_RADIUS,
     TECHNOLOGY_RADIUS,
     CENTRAL_HOLE_RADIUS,
-    SKILL_BOUNDARY_RADIUS;
+    SKILL_BOUNDARY_RADIUS,
+    CENTRAL_LABEL_RADIUS;
+
+  //labels
+  let LABEL_FONT_SIZE,
+    HEADER_FONT_SIZE,
+    CTA_FONT_SIZE,
+    LABEL_MARGIN_SIZE,
+    HEADER_MARGIN_SIZE;
 
   //////set scales
   const skill_radius_scale = d3
@@ -84,6 +89,17 @@ const createCompetencesMap = (container) => {
   const scale_curve_depth = d3.scaleLinear();
   const scale_fan_width = d3.scaleLinear().clamp(true);
 
+  /////////// LABELS
+  const DATAVIZ_NAME = "Map of Technologies and Skills in ICH projects";
+  const TECHNOLOGY_NAMES = {
+    diss: "Dissemination technologies",
+    capt: "Capturing technologies",
+    rep: "Representation technologies",
+  };
+  const SKILL_NAME = "Skills in type of Skill";
+  const PROJECT_RING_NAME = "Case Studies";
+  const CTA_TEXT = "see more...";
+
   /////////////////////DATASETS///////////////////////
 
   //unique lists
@@ -97,7 +113,7 @@ const createCompetencesMap = (container) => {
   //collect the project positions
   let proj_pos = [];
 
-  //for simulations (una lista da e per progetti?) (distinta da tipo?)
+  //for simulations
   let skills_in_skillType,
     edges_types = [];
   let tech_in_techType,
@@ -142,6 +158,37 @@ const createCompetencesMap = (container) => {
 
   //micro-interactions
   let clicked_node_stroke = null;
+
+  //Node lookups and labels
+  let vizProj;
+
+  //central hole labels
+  let central_label_group, central_circle, label, header, cta;
+
+  //Central label dimensions (base values at SF=1)
+  const CENTRAL_LABEL_BASE = {
+    label_size: 7, // Label font size
+    header_size: 14, // Header font size
+    cta_size: 9, // CTA font size
+    label_margin: 6, // Space between label and header
+    header_margin: 8, // Space between header and CTA
+    max_header_width: 0.85, // % of radius for text wrapping
+    max_label_width: 0.85, // % of radius for text wrapping
+    line_height_multiplier: 1.3, //multiplier for line height
+  };
+
+  let central_label_radius;
+
+  //modals
+  let title,
+    date,
+    description,
+    credits,
+    fruition_label,
+    domain_label,
+    hyperlink = [];
+
+  const DESCRIPTION_WORDS = 25; //to change if needed
 
   //hover manager tool (manage all the hovering!)
   const HoverManager = {
@@ -329,6 +376,9 @@ const createCompetencesMap = (container) => {
 
       //update visual state
       this.updateVisuals(type, node);
+      //show node label
+      showNodeLabel(node, type);
+
       if (type !== "skill_type") {
         let node_x, node_y;
 
@@ -369,6 +419,8 @@ const createCompetencesMap = (container) => {
       } else {
         // Reset visual state
         this.resetVisuals();
+        //show default label
+        showDefaultLabel();
       }
 
       // Release debounce after 50ms
@@ -564,6 +616,8 @@ const createCompetencesMap = (container) => {
       }
       //show locked edges
       this.showLockedEdges();
+      //show locked label
+      showNodeLabel(this.node, this.type);
     },
     //show edges
     showLockedEdges() {
@@ -604,6 +658,8 @@ const createCompetencesMap = (container) => {
       this.hideAllEdges();
       // Hide the rotating dashed stroke
       hideClickedNodeStroke();
+      // show default label
+      showDefaultLabel();
     },
     //hide all edges
     hideAllEdges() {
@@ -650,7 +706,8 @@ const createCompetencesMap = (container) => {
             break;
         }
       }
-
+      //temporaly label
+      showNodeLabel(node, type);
       this.highlightHoveredNode(node, type);
 
       if (this.type === "skill" && type === "project") {
@@ -835,7 +892,15 @@ const createCompetencesMap = (container) => {
     },
     //hover exit
     onHoverExit() {
+      // Restore locked edges immediately
       this.showLockedEdges();
+
+      // IMPORTANTE: Restore label DOPO un breve delay per evitare flickering
+      setTimeout(() => {
+        if (this.active && this.node && this.type) {
+          showNodeLabel(this.node, this.type);
+        }
+      }, 50);
 
       // Reset nodes opacity to locked state
       const { locked_connected } = this;
@@ -907,24 +972,6 @@ const createCompetencesMap = (container) => {
     },
   }; //ClickManager
 
-  //Node lookups and labels
-  let vizProj;
-
-  //central hole labels
-  let header, label;
-  let cta = null;
-
-  //modals
-  let title,
-    date,
-    description,
-    credits,
-    fruition_label,
-    domain_label,
-    hyperlink = [];
-
-  const DESCRIPTION_WORDS = 25; //to change if needed
-
   /////////////////////GEOMETRY & VISUALS///////////////////////
 
   //colors
@@ -934,9 +981,9 @@ const createCompetencesMap = (container) => {
     skill: "#BDBDF8", //"#00A4B5", //"#65d6d3",
     type: "#A783E8", //"#6f579cff", //"rgba(51, 109, 108, 1)",
     proj: "#440EB3", //"#A783E8",
-    capt_tech: "#f2a900",
-    rep_tech: "#F44336",
-    diss_tech: "#00A4B5", //"#658BD6",
+    capt_tech: "#26dee1ff", //"#f2a900",
+    rep_tech: "#576fe7ff", //"#F44336",
+    diss_tech: "#ca27bcff", //"#00A4B5", //"#658BD6",
     label: "#A3A3A3",
     text: "#121212",
   };
@@ -1524,6 +1571,7 @@ const createCompetencesMap = (container) => {
     //Build lookup maps for quick access
     buildNodeLookups(skillnodes, proj_pos, technodes);
 
+    //////////// DRAWINGS & RENDERINGS
     //Render in desired order
     drawTriad(triadData);
     drawDonut(donutData);
@@ -1537,6 +1585,9 @@ const createCompetencesMap = (container) => {
     drawProjects(proj_pos);
     drawTechNodes(technodes);
     renderSkillNodes(skillnodes, true);
+
+    //////// CENTRAL LABEL
+    initCentralLabel();
 
     //////// HOVER LOGIC
     buildDelaunayDiagrams(skillnodes, proj_pos, technodes);
@@ -1571,10 +1622,7 @@ const createCompetencesMap = (container) => {
   ////// Drawing functions ////////
   /////////////////////////////////
 
-  /***
-   * Render projects nodes as SVG
-   * @param {Array} positions
-   */
+  // Render projects nodes as SVG
   function drawProjects(positions) {
     let project_ring = g
       .append("g")
@@ -1591,10 +1639,7 @@ const createCompetencesMap = (container) => {
       .attr("cy", (d) => d.y);
   } //drawProjects()
 
-  /***
-   * Render donut arcs and boundaries
-   * @param {Object} - precalculated donut positions
-   */
+  //Render donut arcs and boundaries
   function drawDonut(donutData) {
     const { data, arc } = donutData;
 
@@ -1609,10 +1654,7 @@ const createCompetencesMap = (container) => {
       .attr("fill", COLORS.type); //COLORS.skill
   } //drawDonut()
 
-  /***
-   * Calculate and draw triad slices
-   * @param {Object} - precalcualted data
-   */
+  // Calculate and draw triad slices
   function drawTriad(triadData) {
     const { slices, innerRadius, outerRadius } = triadData;
 
@@ -1637,10 +1679,7 @@ const createCompetencesMap = (container) => {
       });
   } //drawTriad()
 
-  /**
-   * @param {Object}  - coordinates of the slice
-   * @returns {Object} - x,y and polar coordinates of the nodes
-   */
+  //draw the tech nodes
   function drawTechNodes(nodes) {
     g.append("g")
       .attr("class", "tech-nodes")
@@ -2120,6 +2159,337 @@ const createCompetencesMap = (container) => {
       .attr("stroke-width", strokeWidth * SF)
       .attr("opacity", opacity);
   } //renderEdges()
+
+  ////// CENTRAL LABEL
+  //initialize central label
+  function initCentralLabel() {
+    //calculate radius
+    central_label_radius = CENTRAL_LABEL_RADIUS;
+
+    //create main group
+    central_label_group = g
+      .append("g")
+      .attr("class", "central-label-group")
+      .style("pointer-events", "none");
+
+    //background circle
+    central_circle = central_label_group
+      .append("circle")
+      .attr("class", "central-circle")
+      .attr("r", central_label_radius)
+      .attr("cx", 0)
+      .attr("cy", 0)
+      .attr("fill", COLORS.background)
+      .style("transition", "fill 0.2s ease");
+
+    //label type text
+    label = central_label_group
+      .append("text")
+      .attr("class", "label-type")
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .style("font-family", "'Inter', sans-serif")
+      .style("font-weight", "600")
+      .style("text-transform", "uppercase")
+      .style("letter-spacing", "0.05em")
+      .style("fill", COLORS.text)
+      .style("opacity", 0);
+
+    //header text
+    header = central_label_group
+      .append("text")
+      .attr("class", "header-text")
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .style("font-family", "'IBM Plex Serif', serif")
+      .style("font-weight", "400")
+      .style("fill", COLORS.text)
+      .style("opacity", 0);
+
+    //cta text
+    cta = central_label_group
+      .append("text")
+      .attr("class", "cta-text")
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .style("font-family", "'Inter', sans-serif")
+      .style("font-weight", "400")
+      .style("text-decoration", "underline")
+      .style("fill", COLORS.text)
+      .style("opacity", 0)
+      .style("cursor", "pointer")
+      .style("pointer-events", "all");
+
+    /////// DEFAULT STATE
+    showDefaultLabel();
+  } //initCentralLabel();
+
+  //wrap label text (smaller, uppercase)
+  function wrapLabelSVG(textElement, text, maxWidth, fontSize) {
+    // Imposta font-size PRIMA di misurare
+    textElement.style("font-size", `${fontSize}px`);
+
+    const words = text.split(/\s+/);
+    let line = [];
+    let lineNumber = 0;
+    const x = textElement.attr("x");
+    const y = textElement.attr("y");
+
+    // Line height più compatta per label
+    const lineHeight = fontSize * 1.1;
+
+    // Misura testo
+    textElement.text(text);
+    const textLength = textElement.node().getComputedTextLength();
+
+    // Se sta in una riga, ritorna
+    if (textLength <= maxWidth) {
+      return;
+    }
+
+    // Altrimenti wrap
+    textElement.text("");
+
+    let tspan = textElement
+      .append("tspan")
+      .attr("x", x)
+      .attr("y", y)
+      .attr("dy", 0);
+
+    for (let i = 0; i < words.length; i++) {
+      line.push(words[i]);
+      tspan.text(line.join(" "));
+      if (tspan.node().getComputedTextLength() > maxWidth && line.length > 1) {
+        line.pop();
+        tspan.text(line.join(" "));
+        line = [words[i]];
+        lineNumber++;
+
+        tspan = textElement
+          .append("tspan")
+          .attr("x", x)
+          .attr("y", y)
+          .attr("dy", lineNumber * lineHeight)
+          .text(words[i]);
+      }
+    }
+
+    // Centra verticalmente
+    const numLines = textElement.selectAll("tspan").size();
+    const offset = -((numLines - 1) * lineHeight) / 2;
+
+    textElement.selectAll("tspan").attr("dy", function (d, i) {
+      return i * lineHeight + offset;
+    });
+  }
+
+  //defaul Label
+  function showDefaultLabel() {
+    if (!central_label_group) return;
+    //reset background
+
+    //hide labels
+    central_circle.transition().duration(200).attr("fill", COLORS.background);
+    label.transition().duration(150).style("opacity", 0);
+    cta.transition().duration(150).style("opacity", 0);
+
+    //default text
+    const max_width =
+      central_label_radius * CENTRAL_LABEL_BASE.max_header_width;
+
+    header.style("opacity", 0).text("").selectAll("tspan").remove();
+
+    const default_text = DATAVIZ_NAME;
+    wrapTextSVG(header, default_text, max_width, HEADER_FONT_SIZE);
+
+    header
+      .attr("y", 0)
+      .style("fill", COLORS.ui)
+      .transition()
+      .duration(200)
+      .style("opacity", 1);
+  } //showDefaultLabel
+
+  //Show node in central label
+  function showNodeLabel(node, type) {
+    if (!central_label_group) return;
+    label.interrupt();
+    header.interrupt();
+    cta.interrupt();
+    central_circle.interrupt();
+
+    let label_text = "";
+    let header_text = "";
+    let bg_color = COLORS.background;
+    let text_color = COLORS.text;
+    let show_cta = false;
+
+    //configure based on node type
+    switch (type) {
+      case "skill":
+        label_text = "SKILL";
+        header_text = node.id;
+        bg_color = COLORS.skill;
+        text_color = COLORS.text;
+        break;
+
+      case "tech":
+        const tech_labels = {
+          capt_tech: "CAPTURING TECHNOLOGY",
+          rep_tech: "REPRESENTATION TECHNOLOGY",
+          diss_tech: "DISSEMINATION TECHNOLOGY",
+        };
+        label_text = tech_labels[node.type] || "TECHNOLOGY";
+        header_text = node.id;
+        bg_color = tech_colors(node.type);
+        text_color = COLORS.background;
+        break;
+
+      case "project":
+        label_text = "CASE STUDY";
+        const proj_data = vizProj.find((p) => p.title === node.id);
+        header_text = proj_data ? proj_data.display : node.id;
+        bg_color = COLORS.proj;
+        text_color = COLORS.background;
+        show_cta = true;
+        break;
+
+      case "skill_type":
+        label_text = "SKILL TYPE";
+        header_text = node.data.type;
+        bg_color = COLORS.type;
+        text_color = COLORS.background;
+        break;
+
+      default:
+        return;
+    }
+
+    //update background color
+    central_circle.transition().duration(200).attr("fill", bg_color);
+    //setup header
+    const max_width_header =
+      central_label_radius * CENTRAL_LABEL_BASE.max_header_width;
+
+    header
+      .style("fill", text_color)
+      .style("opacity", 0)
+      .text("")
+      .selectAll("tspan")
+      .remove();
+
+    wrapTextSVG(header, header_text, max_width_header, HEADER_FONT_SIZE);
+    header.attr("y", 0);
+
+    //setup label
+    const max_width_label =
+      central_label_radius * CENTRAL_LABEL_BASE.max_label_width;
+    label
+      .style("font-size", `${LABEL_FONT_SIZE}px`)
+      .style("fill", text_color)
+      .style("opacity", 0)
+      .text(label_text);
+
+    wrapLabelSVG(label, label_text, max_width_label, LABEL_FONT_SIZE);
+
+    // Posiziona label sopra l'header a distanza fissa
+    const label_bbox = label.node().getBBox();
+    const header_bbox = header.node().getBBox();
+
+    // Label sopra: parte dall'alto dell'header, sale di margin + altezza label
+    const label_y =
+      -header_bbox.height / 2 - LABEL_MARGIN_SIZE - label_bbox.height / 2;
+    label.attr("y", label_y);
+
+    //Setup cta
+    if (show_cta) {
+      cta
+        .style("font-size", `${CTA_FONT_SIZE}px`)
+        .style("fill", text_color)
+        .style("opacity", 0)
+        .text(CTA_TEXT);
+
+      const cta_bbox = cta.node().getBBox();
+
+      //cta under
+      const cta_y =
+        header_bbox.height / 2 + HEADER_MARGIN_SIZE + cta_bbox.height / 2;
+      cta.attr("y", cta_y);
+    }
+
+    //Animate
+    label.transition().duration(150).style("opacity", 1);
+    header.transition().duration(200).style("opacity", 1);
+
+    if (show_cta) {
+      cta.transition().duration(200).style("opacity", 0.8);
+    } else {
+      cta.transition().duration(150).style("opacity", 0);
+    }
+  }
+
+  //wrap text using tspan
+  function wrapTextSVG(textElement, text, maxWidth, fontSize) {
+    textElement.style("font-size", `${fontSize}px`);
+    const words = text.split(/\s+/);
+    let line = [];
+    let lineNumber = 0;
+    const x = textElement.attr("x");
+    const y = textElement.attr("y");
+
+    //apply line height multiplier
+    const lh = fontSize * CENTRAL_LABEL_BASE.line_height_multiplier;
+    //create temporary text to measure
+    textElement.text(text);
+    const textLength = textElement.node().getComputedTextLength();
+
+    //if it fits, return single line
+    if (textLength <= maxWidth) {
+      return;
+    }
+
+    //Otherwise wrap text
+    textElement.text("");
+
+    let tspan = textElement
+      .append("tspan")
+      .attr("x", x)
+      .attr("y", y)
+      .attr("dy", 0);
+
+    for (let i = 0; i < words.length; i++) {
+      line.push(words[i]);
+      tspan.text(line.join(" "));
+      if (tspan.node().getComputedTextLength() > maxWidth && line.length > 1) {
+        //remove last word and create new line
+        line.pop();
+        tspan.text(line.join(" "));
+        line = [words[i]];
+        lineNumber++;
+
+        tspan = textElement
+          .append("tspan")
+          .attr("x", x)
+          .attr("y", y)
+          .attr("dy", lineNumber * fontSize)
+          .text(words[i]);
+      }
+    }
+
+    //center text vertically
+    const numLines = textElement.selectAll("tspan").size();
+    const offset = -((numLines - 1) * fontSize) / 2;
+
+    textElement.selectAll("tspan").attr("dy", function (d, i) {
+      return i * fontSize + offset;
+    });
+  } //wrapTextSVG()
 
   ///////////////////////////////////
   //////// HOVER AND CLICK //////////
@@ -2860,7 +3230,32 @@ const createCompetencesMap = (container) => {
     SKILL_BOUNDARY_RADIUS = round(
       (BOUNDARY_RADIUS - DONUT_RADIUS - PADDING) / 2
     );
+
+    CENTRAL_LABEL_RADIUS = CENTRAL_HOLE_RADIUS - (PADDING / 8) * SF;
+
+    //central radius label
+    LABEL_FONT_SIZE = CENTRAL_LABEL_BASE.label_size * SF;
+    HEADER_FONT_SIZE = CENTRAL_LABEL_BASE.header_size * SF;
+    CTA_FONT_SIZE = CENTRAL_LABEL_BASE.cta_size * SF;
+    LABEL_MARGIN_SIZE = CENTRAL_LABEL_BASE.label_margin * SF;
+    HEADER_MARGIN_SIZE = CENTRAL_LABEL_BASE.header_margin * SF;
+    updateLabels();
   } //handleSizes()
+
+  //update labels
+  function updateLabels() {
+    if (!central_circle || !label || !header || !cta) return;
+
+    //update central label radius
+    central_label_radius = CENTRAL_LABEL_RADIUS;
+    central_circle.attr("r", central_label_radius);
+
+    //update font sizes
+    label.style("font-size", `${LABEL_FONT_SIZE}px`);
+    header.style("font-size", `${HEADER_FONT_SIZE}px`);
+    cta.style("font-size", `${CTA_FONT_SIZE}px`);
+    //add others...
+  } //updateLabels()
 
   //to update all the scales following the handlesize()
   function handleScales() {
