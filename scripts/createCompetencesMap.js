@@ -100,6 +100,28 @@ const createCompetencesMap = (container) => {
   const PROJECT_RING_NAME = "Case Studies";
   const CTA_TEXT = "Dive in...";
 
+  let project_ring_label_group, project_ring_circle, project_ring_text;
+  let PROJECT_RING_LABEL_RADIUS;
+
+  //central hole labels
+  let central_label_group, central_circle, label, header, cta;
+
+  //Central label dimensions (base values at SF=1)
+  const CENTRAL_LABEL_BASE = {
+    label_size: 7, // Label font size
+    header_size: 14, // Header font size
+    cta_size: 9, // CTA font size
+    label_margin: 6, // Space between label and header
+    header_margin: 8, // Space between header and CTA
+    max_header_width: 0.85, // % of radius for text wrapping
+    max_label_width: 0.85, // % of radius for text wrapping
+    line_height_multiplier: 1.3, //multiplier for line height
+    label_y_offset: -40, //fixed y value from center for label
+    cta_y_offset: 35, //fixed y value from center for cta
+  };
+
+  let central_label_radius;
+
   /////////////////////DATASETS///////////////////////
 
   //unique lists
@@ -161,25 +183,6 @@ const createCompetencesMap = (container) => {
 
   //Node lookups and labels
   let vizProj;
-
-  //central hole labels
-  let central_label_group, central_circle, label, header, cta;
-
-  //Central label dimensions (base values at SF=1)
-  const CENTRAL_LABEL_BASE = {
-    label_size: 7, // Label font size
-    header_size: 14, // Header font size
-    cta_size: 9, // CTA font size
-    label_margin: 6, // Space between label and header
-    header_margin: 8, // Space between header and CTA
-    max_header_width: 0.85, // % of radius for text wrapping
-    max_label_width: 0.85, // % of radius for text wrapping
-    line_height_multiplier: 1.3, //multiplier for line height
-    label_y_offset: -40, //fixed y value from center for label
-    cta_y_offset: 35, //fixed y value from center for cta
-  };
-
-  let central_label_radius;
 
   //modals
   let title,
@@ -343,6 +346,9 @@ const createCompetencesMap = (container) => {
       this.node = node;
       this.type = type;
 
+      //hide labels
+      hideProjectRingLabel();
+
       //console.log(`Hover enter: ${type}`, node);
 
       if (ClickManager.active) {
@@ -422,8 +428,9 @@ const createCompetencesMap = (container) => {
       } else {
         // Reset visual state
         this.resetVisuals();
-        //show default label
+        //show labels
         showDefaultLabel();
+        showProjectRingLabel();
       }
 
       // Release debounce after 50ms
@@ -548,6 +555,10 @@ const createCompetencesMap = (container) => {
       this.active = true;
       this.node = node;
       this.type = type;
+
+      //hide labels
+      hideProjectRingLabel();
+
       //store edges
       this.calculatedLockedState(node, type);
       //update visuals
@@ -663,8 +674,9 @@ const createCompetencesMap = (container) => {
       this.hideAllEdges();
       // Hide the rotating dashed stroke
       hideClickedNodeStroke();
-      // show default label
+      // show labels
       showDefaultLabel();
+      showProjectRingLabel();
     },
     //hide all edges
     hideAllEdges() {
@@ -1573,6 +1585,11 @@ const createCompetencesMap = (container) => {
     buildNodeLookups(skillnodes, proj_pos, technodes);
 
     //////////// DRAWINGS & RENDERINGS
+
+    //////// LABELS
+    initCentralLabel();
+    initProjectRingLabel();
+
     //Render in desired order
     drawTriad(triadData);
     drawDonut(donutData);
@@ -1586,9 +1603,6 @@ const createCompetencesMap = (container) => {
     drawProjects(proj_pos);
     drawTechNodes(technodes);
     renderSkillNodes(skillnodes, true);
-
-    //////// CENTRAL LABEL
-    initCentralLabel();
 
     //////// HOVER LOGIC
     buildDelaunayDiagrams(skillnodes, proj_pos, technodes);
@@ -2231,6 +2245,169 @@ const createCompetencesMap = (container) => {
     showDefaultLabel();
   } //initCentralLabel();
 
+  //initialize project ring label
+  function initProjectRingLabel() {
+    // Calcola il raggio per il cerchio e il testo
+    const ring_radius = PROJECT_RING_LABEL_RADIUS;
+
+    // Crea il gruppo principale
+    project_ring_label_group = g
+      .append("g")
+      .attr("class", "project-ring-label-group")
+      .style("pointer-events", "none");
+
+    // Cerchio di contorno (stroke only)
+    project_ring_circle = project_ring_label_group
+      .append("circle")
+      .attr("class", "project-ring-circle")
+      .attr("r", ring_radius)
+      .attr("cx", 0)
+      .attr("cy", 0)
+      .attr("fill", "none")
+      .attr("stroke", COLORS.proj)
+      .attr("stroke-width", 1.5 * SF)
+      .attr("opacity", 1.0);
+
+    // Crea un path circolare per il testo
+    const textPathD = describeArc(0, 0, ring_radius, 90, -90);
+
+    // Crea il path invisibile per il testo
+    project_ring_label_group
+      .append("path")
+      .attr("id", "project-ring-path")
+      .attr("d", textPathD)
+      .style("fill", "none")
+      .style("stroke", "none");
+
+    // Font size scalato
+    const ringLabelFontSize = 11 * SF;
+
+    // PRIMA: Crea un gruppo per il testo con sfondo
+    const textGroup = project_ring_label_group
+      .append("g")
+      .attr("class", "project-ring-text-group");
+
+    // Crea il testo "fantasma" per misurare le dimensioni
+    const tempText = textGroup
+      .append("text")
+      .style("font-family", "'Inter', sans-serif")
+      .style("font-weight", "600")
+      .style("font-size", `${ringLabelFontSize}px`)
+      .style("text-transform", "uppercase")
+      .style("letter-spacing", "0.15em")
+      .style("opacity", 0)
+      .text(PROJECT_RING_NAME);
+
+    // Misura il testo
+    const textBBox = tempText.node().getBBox();
+    const textWidth = textBBox.width;
+    const textHeight = textBBox.height;
+
+    // Rimuovi il testo temporaneo
+    tempText.remove();
+
+    // Calcola la posizione del rettangolo di sfondo
+    // Il rettangolo sarà centrato sul path, quindi dobbiamo calcolare
+    // dove si trova il punto medio del semicerchio superiore
+    const bgPadding = 3 * SF; // Padding attorno al testo
+    const bgWidth = textWidth + bgPadding * 2;
+    const bgHeight = textHeight + bgPadding * 2;
+
+    // Posizione Y del rettangolo (spostato verso l'alto perché siamo sulla parte alta del cerchio)
+    // Questo valore controlla l'allineamento verticale
+    const bgY = -ring_radius - bgHeight / 2 + 3 * SF; // <-- MODIFICA QUESTO VALORE per spostare su/giù
+
+    // Crea il rettangolo di sfondo BIANCO
+    textGroup
+      .append("rect")
+      .attr("class", "project-ring-text-bg")
+      .attr("x", -bgWidth / 2)
+      .attr("y", bgY)
+      .attr("width", bgWidth)
+      .attr("height", bgHeight)
+      .attr("rx", 3 * SF) // Angoli arrotondati
+      .attr("ry", 3 * SF)
+      .attr("fill", COLORS.background)
+      .attr("opacity", 1.0);
+
+    // Crea il testo che segue il path
+    project_ring_text = textGroup
+      .append("text")
+      .attr("class", "project-ring-text")
+      .style("font-family", "'Inter', sans-serif")
+      .style("font-weight", "600")
+      .style("font-size", `${ringLabelFontSize}px`)
+      .style("text-transform", "uppercase")
+      .style("letter-spacing", "0.15em")
+      .style("fill", COLORS.proj)
+      .style("opacity", 1.0);
+
+    // Aggiungi textPath con controllo della posizione verticale
+    project_ring_text
+      .append("textPath")
+      .attr("href", "#project-ring-path")
+      .attr("startOffset", "50%")
+      .attr("dy", 2 * SF)
+      .style("text-anchor", "middle")
+      .text(PROJECT_RING_NAME);
+
+    // Mostra la label inizialmente
+    showProjectRingLabel();
+  } //initProjectRingLabel()
+
+  // Helper function per creare un arco SVG pulito
+  function describeArc(x, y, radius, startAngle, endAngle) {
+    const start = polarToCartesian(x, y, radius, endAngle);
+    const end = polarToCartesian(x, y, radius, startAngle);
+    const angleDiff = endAngle - startAngle;
+    const largeArcFlag = abs(angleDiff) <= 180 ? "0" : "1";
+    // sweep-flag = 1 per senso orario, 0 per antiorario
+    const sweepFlag = angleDiff > 0 ? "0" : "1";
+
+    const d = [
+      "M",
+      start.x,
+      start.y,
+      "A",
+      radius,
+      radius,
+      0,
+      largeArcFlag,
+      sweepFlag,
+      end.x,
+      end.y,
+    ].join(" ");
+
+    return d;
+  } //describeArc
+
+  // Helper function per convertire coordinate polari in cartesiane
+  function polarToCartesian(centerX, centerY, radius, angleInDegrees) {
+    const angleInRadians = ((angleInDegrees - 90) * PI) / 180.0;
+    return {
+      x: centerX + radius * cos(angleInRadians),
+      y: centerY + radius * sin(angleInRadians),
+    };
+  }
+
+  //show project ring label
+  function showProjectRingLabel() {
+    if (!project_ring_label_group) return;
+
+    project_ring_circle.transition().duration(300).attr("opacity", 1.0);
+
+    project_ring_text.transition().duration(300).style("opacity", 1.0);
+  } //showProjectRingLabel()
+
+  //hide project ring label
+  function hideProjectRingLabel() {
+    if (!project_ring_label_group) return;
+
+    project_ring_circle.transition().duration(200).attr("opacity", 0);
+
+    project_ring_text.transition().duration(200).style("opacity", 0);
+  } //hideProjectRingLabel()
+
   //wrap label text (smaller, uppercase)
   function wrapLabelSVG(textElement, text, maxWidth, fontSize) {
     // Imposta font-size PRIMA di misurare
@@ -2571,6 +2748,9 @@ const createCompetencesMap = (container) => {
 
     let currentOffset = 0; //keep track where we are
     function rotate() {
+      // AGGIUNGI QUESTO CHECK ALL'INIZIO: se clicked_node_stroke è null, ferma l'animazione
+      if (!clicked_node_stroke) return;
+
       const nextOffset = currentOffset - circumference;
 
       clicked_node_stroke
@@ -2617,7 +2797,7 @@ const createCompetencesMap = (container) => {
   /**
    * Build Delaunay diagrams for efficient hover detection
    * Creates spatial indices for O(log n) nearest-neighbor lookup
-   * Called once after all nodes are calculated in draw()
+   * Called once after all nodes are calculated in drawing
    * @param {Array} sk - Array of skill nodes
    * @param {Array} pr - Array of project positions
    * @param {Array} tc - Array of tech nodes
@@ -3224,7 +3404,9 @@ const createCompetencesMap = (container) => {
       (BOUNDARY_RADIUS - DONUT_RADIUS - PADDING) / 2
     );
 
+    //Labels
     CENTRAL_LABEL_RADIUS = CENTRAL_HOLE_RADIUS - (PADDING / 8) * SF;
+    PROJECT_RING_LABEL_RADIUS = PROJECTS_RADIUS + (PADDING / 1.5) * SF; //credo troppo
 
     //central radius label
     LABEL_FONT_SIZE = CENTRAL_LABEL_BASE.label_size * SF;
@@ -3247,6 +3429,15 @@ const createCompetencesMap = (container) => {
     label.style("font-size", `${LABEL_FONT_SIZE}px`);
     header.style("font-size", `${HEADER_FONT_SIZE}px`);
     cta.style("font-size", `${CTA_FONT_SIZE}px`);
+
+    //project ring label
+    if (project_ring_circle && project_ring_text) {
+      project_ring_circle.attr("r", PROJECT_RING_LABEL_RADIUS);
+      // Il font size per la ring label sarà calcolato in base a SF
+      const ringLabelFontSize = 11 * SF; // Dimensione base scalata
+      project_ring_text.style("font-size", `${ringLabelFontSize}px`);
+    }
+
     //add others...
   } //updateLabels()
 
