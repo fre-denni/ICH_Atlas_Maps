@@ -555,6 +555,8 @@ const createCompetencesMap = (container) => {
       //add dashed-array
       if (type !== "skill_type") {
         showClickedNodeStroke(node, type);
+      } else {
+        hideClickedNodeStroke();
       }
     },
     calculatedLockedState(node, type) {
