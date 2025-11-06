@@ -120,6 +120,8 @@
       </div>
     </div>
 
+    <button id="download-btn">Scarica SVG</button>
+
     <!-- tooltips & project modals-->
     <div id="tooltips-container"></div>
 
@@ -157,6 +159,10 @@
 
         //...call the chart object with the data to draw
         drawMap(skillData, techData, projData);
+      });
+
+      document.getElementById("download-btn").addEventListener("click", () => {
+        drawMap.downloadSVG(); // Chiama la funzione che abbiamo creato
       });
 
       //handle responsiviness

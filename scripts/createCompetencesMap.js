@@ -98,7 +98,7 @@ const createCompetencesMap = (container) => {
   };
   const SKILL_NAME = "Skills in type of Skill";
   const PROJECT_RING_NAME = "Case Studies";
-  const CTA_TEXT = "see more...";
+  const CTA_TEXT = "Dive in...";
 
   /////////////////////DATASETS///////////////////////
 
@@ -3324,6 +3324,57 @@ const createCompetencesMap = (container) => {
       .attr("stroke-dasharray", "4,4")
       .attr("visibility", DEBUG);
   } //renderBoundaries()
+
+  /***
+   * Funzione per scaricare l'SVG corrente
+   * Aggiungila dove preferisci, ad esempio dopo chart.resize
+   */
+  chart.downloadSVG = function () {
+    // 1. Definiamo i font da includere, se vuoi essere sicuro
+    const fontStyles = `
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=IBM+Plex+Serif:wght@400&display=swap');
+    `;
+
+    // 2. Prendiamo l'elemento SVG
+    const svgNode = svg.node();
+
+    // 3. Creiamo un clone per non sporcare la visualizzazione live
+    const clonedSvgNode = svgNode.cloneNode(true);
+
+    // 4. Inseriamo gli stili dei font in un tag <style> nel clone
+    // Questo aiuta i programmi (tipo Illustrator) a trovare i font giusti
+    const styleEl = document.createElement("style");
+    styleEl.innerHTML = fontStyles;
+    clonedSvgNode.querySelector("g").prepend(styleEl); // Inseriscilo all'inizio
+
+    // 5. Serializziamo il clone in una stringa di testo
+    const serializer = new XMLSerializer();
+    let svgString = serializer.serializeToString(clonedSvgNode);
+
+    // 6. Aggiungiamo il namespace XML, fondamentale per la compatibilità
+    if (
+      !svgString.match(/^<svg[^>]+xmlns="http:\/\/www\.w3\.org\/2000\/svg"/)
+    ) {
+      svgString = svgString.replace(
+        /^<svg/,
+        '<svg xmlns="http://www.w3.org/2000/svg"'
+      );
+    }
+
+    // 7. Creiamo un "file" in memoria (Blob)
+    const blob = new Blob([svgString], {
+      type: "image/svg+xml;charset=utf-8",
+    });
+
+    // 8. Usiamo un trucco per il download: creiamo un link invisibile e lo clicchiamo
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "mappa-competenze-tecnologie.svg"; // Il nome del file
+
+    document.body.appendChild(link); // Aggiungilo
+    link.click(); // Cliccalo
+    document.body.removeChild(link); // Rimuovilo
+  }; // fine chart.downloadSVG
 
   return chart;
 };

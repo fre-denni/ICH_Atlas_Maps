@@ -45,4 +45,5 @@ if (checkIframe()) {
   //element to not display when in <iframe>
   document.getElementById("label-more").style.display = "none";
   document.getElementById("label-search").style.display = "none";
+  document.getElementById("download-btn").style.display = "none";
 }
