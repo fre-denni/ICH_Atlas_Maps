@@ -190,7 +190,7 @@ const createCompetencesMap = (container) => {
   let clicked_node_stroke = null;
 
   //Node lookups and labels
-  let vizProj;
+  let vizProj, fruition_outputs, ich_domains;
 
   //modals
   let title,
@@ -1015,7 +1015,7 @@ const createCompetencesMap = (container) => {
     diss_tech: "#E783D6", //"#00A4B5", //"#658BD6",
     label: "#A3A3A3",
     text: "#121212",
-    donut: "#eeeef1",
+    donut: "#eeeef1", //10% skill -> automatize?
   };
 
   const tech_colors = d3
@@ -1282,12 +1282,51 @@ const createCompetencesMap = (container) => {
     title = data.map((d) => d.title);
     date = data.map((d) => d.date);
     credits = data.map((d) => d.credits);
+
+    fruition_label = data.map((d) => {
+      if (!d.fruitionOutputs) return [];
+      try {
+        return JSON.parse(d.fruitionOutputs);
+      } catch (e) {
+        console.warn("Error parsing fruition for:", d.title, e);
+        return [];
+      }
+    });
+
+    domain_label = data.map((d) => {
+      if (!d.ichDomains) return [];
+      try {
+        return JSON.parse(d.ichDomains);
+      } catch (e) {
+        console.warn("Error parsing domain for:", d.title, e);
+        return [];
+      }
+    });
+
+    const all_fruitions = new Set();
+    fruition_label.forEach((arr) => {
+      arr.forEach((item) => all_fruitions.add(item));
+    });
+    fruition_outputs = Array.from(all_fruitions).sort();
+
+    const all_domains = new Set();
+    domain_label.forEach((arr) => {
+      arr.forEach((item) => all_domains.add(item));
+    });
+    ich_domains = Array.from(all_domains).sort();
+    /*
     fruition_label = data.map((d) => d.fruitionOutputs);
-    domain_label = data.map((d) => d.ichDomains);
+    domain_label = data.map((d) => d.ichDomains);*/
     hyperlink = data.map((d) => d.links_slug);
 
     //truncate the text
     description = data.map((d) => truncate(d.description, DESCRIPTION_WORDS));
+
+    console.log("Total projects:", data.length);
+    console.log("Unique Fruition Outputs:", fruition_outputs);
+    console.log("Unique ICH Domains:", ich_domains);
+    console.log("Example project 0 fruitions:", fruition_label[0]);
+    console.log("Example project 0 domains:", domain_label[0]);
   } //handleProjdata()
 
   //////////////////////////////////
@@ -1609,6 +1648,9 @@ const createCompetencesMap = (container) => {
     initProjectRingLabel();
     initTechSectorLabels(triadData);
     initSkillBoundaryLabel();
+
+    ////// MODAL
+    initProjectModal();
 
     //Render in desired order
     drawTriad(triadData);
@@ -2259,7 +2301,21 @@ const createCompetencesMap = (container) => {
       .style("fill", COLORS.text)
       .style("opacity", 0)
       .style("cursor", "pointer")
-      .style("pointer-events", "all");
+      .style("pointer-events", "all")
+      //MODALS
+      .on("click", function (event, d) {
+        event.stopPropagation();
+        const currentProject = getCurrentProjectIndex();
+        if (currentProject !== null) {
+          openProjectModal(currentProject);
+        }
+      })
+      .on("mouseenter", function () {
+        d3.select(this).style("font-weight", "600");
+      })
+      .on("mouseleave", function () {
+        d3.select(this).style("font-weight", "400");
+      });
 
     /////// DEFAULT STATE
     showDefaultLabel();
@@ -2932,6 +2988,232 @@ const createCompetencesMap = (container) => {
       return i * fontSize + offset;
     });
   } //wrapTextSVG()
+
+  ////////// MODAL
+
+  function initProjectModal() {
+    // Crea il container della modale - OVERLAY FULL SCREEN con classe specifica
+    const modal = d3
+      .select("body")
+      .append("div")
+      .attr("id", "project-modal")
+      .attr("class", "viz-modal-overlay") // CLASSE SPECIFICA
+      .style("display", "none")
+      .style("position", "fixed")
+      .style("z-index", "1000")
+      .style("left", "0")
+      .style("top", "0")
+      .style("right", "0")
+      .style("bottom", "0")
+      .style("width", "100vw")
+      .style("height", "100vh")
+      .style("max-width", "none !important") // OVERRIDE max-width
+      .style("margin", "0 !important") // OVERRIDE margin
+      .style("padding", "0 !important") // OVERRIDE padding
+      .style("overflow", "auto")
+      .style("background-color", "rgba(163, 163, 163, 0.75)")
+      .style("animation", "fadeIn 0.4s");
+
+    // Crea il contenuto della modale - CENTRATO
+    const modalContent = modal
+      .append("div")
+      .attr("class", "viz-modal-content") // CLASSE SPECIFICA
+      .style("position", "absolute")
+      .style("top", "50%")
+      .style("left", "50%")
+      .style("transform", "translate(-50%, -50%)")
+      .style("max-width", "700px !important") // MAX-WIDTH SPECIFICO per il contenuto
+      .style("margin", "0 !important") // OVERRIDE margin
+      .style("padding", "40px !important") // PADDING SPECIFICO per il contenuto
+      .style("width", "90%")
+      .style("max-height", "80vh")
+      .style("overflow-y", "auto")
+      .style("background-color", COLORS.background)
+      .style("box-shadow", "0 0 8px 0 rgba(0, 0, 0, 0.15)")
+      .style("border-radius", "1rem")
+      .style("animation", "fadeIn 0.4s");
+
+    // Bottone di chiusura (X)
+    modalContent
+      .append("span")
+      .attr("class", "project-modal-close")
+      .html("&times;")
+      .style("position", "absolute")
+      .style("top", "12px")
+      .style("right", "12px")
+      .style("color", COLORS.label)
+      .style("font-size", "32px")
+      .style("font-weight", "200")
+      .style("line-height", "1")
+      .style("cursor", "pointer")
+      .style("font-family", "'Inter', sans-serif")
+      .on("click", closeProjectModal)
+      .on("mouseenter", function () {
+        d3.select(this).style("color", COLORS.ui).style("font-weight", "300");
+      })
+      .on("mouseleave", function () {
+        d3.select(this)
+          .style("color", COLORS.label)
+          .style("font-weight", "200");
+      });
+
+    // Header container
+    modalContent
+      .append("div")
+      .attr("id", "project-modal-header")
+      .attr("class", "viz-modal-header") // CLASSE SPECIFICA
+      .style("margin", "0 0 20px 0 !important")
+      .style("padding", "0 !important")
+      .style("max-width", "none !important");
+
+    // Body container
+    modalContent
+      .append("div")
+      .attr("id", "project-modal-body")
+      .attr("class", "viz-modal-body") // CLASSE SPECIFICA
+      .style("margin", "0 !important")
+      .style("padding", "0 !important")
+      .style("max-width", "none !important");
+
+    // Chiudi modale cliccando fuori
+    modal.on("click", function (event) {
+      if (event.target.id === "project-modal") {
+        closeProjectModal();
+      }
+    });
+
+    // Aggiungi stili CSS con !important per sovrascrivere regole globali
+    if (!document.getElementById("modal-animation-styles")) {
+      const style = document.createElement("style");
+      style.id = "modal-animation-styles";
+      style.textContent = `
+      /* Override CSS globale per i div della modale */
+      .viz-modal-overlay {
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      
+      .viz-modal-content {
+        max-width: 700px !important;
+        margin: 0 !important;
+        padding: 40px !important;
+      }
+      
+      .viz-modal-header,
+      .viz-modal-body {
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      
+      /* Animazione fadeIn */
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+    `;
+      document.head.appendChild(style);
+    }
+  } //initProjectModal()
+
+  // Update project modal dimensions on resize
+  function updateProjectModalSize() {
+    const modal = d3.select("#project-modal");
+    if (!modal.empty()) {
+      modal.style("width", `${width}px`).style("height", `${height}px`);
+    }
+  } //updateProjectModalSize()
+
+  // Open project modal with data
+  function openProjectModal(projectIndex) {
+    const modal = d3.select("#project-modal");
+
+    if (modal.empty()) {
+      console.error("Modal not initialized");
+      return;
+    }
+
+    // Mostra la modale
+    modal.style("display", "block");
+
+    // Popola il contenuto
+    const header = d3.select("#project-modal-header");
+    const body = d3.select("#project-modal-body");
+
+    // Header con titolo
+    header.html(`
+    <h2 style="font-size: 24px; font-weight: 400; margin: 16px 0 0 0; color: ${COLORS.ui}; font-family: 'IBM Plex Serif', serif;">
+      ${title[projectIndex]}
+    </h2>
+  `);
+
+    // Body con descrizione
+    body.html(`
+    <p style="font-size: 16px; font-family: 'IBM Plex Serif', serif; color: ${COLORS.label}; line-height: 1.6;">
+      ${description[projectIndex]}
+    </p>
+    <p style="font-size: 14px; font-family: 'Inter', sans-serif; color: ${COLORS.label}; margin-top: 12px;">
+      Date: ${date[projectIndex]}
+    </p>
+  `);
+
+    // Aggiungi link "Discover more"
+    if (hyperlink[projectIndex]) {
+      body
+        .append("a")
+        .attr("href", hyperlink[projectIndex])
+        .attr("target", "_blank")
+        .attr("rel", "noopener noreferrer")
+        .style("display", "inline-block")
+        .style("margin-top", "20px")
+        .style("font-family", "'Inter', sans-serif")
+        .style("font-size", "16px")
+        .style("font-weight", "400")
+        .style("color", COLORS.ui)
+        .style("text-decoration", "underline")
+        .style("cursor", "pointer")
+        .text("Discover more")
+        .on("mouseenter", function () {
+          d3.select(this).style("color", d3.color(COLORS.ui).darker(0.5));
+        })
+        .on("mouseleave", function () {
+          d3.select(this).style("color", COLORS.ui);
+        });
+    }
+
+    console.log("Opening modal for project:", projectIndex);
+  } //openProjectModal()
+
+  // Close project modal
+  function closeProjectModal() {
+    const modal = d3.select("#project-modal");
+    modal.style("display", "none");
+
+    console.log("Modal closed");
+  } //closeProjectModal()
+
+  // Get current project index from central label
+  function getCurrentProjectIndex() {
+    // Controlla se c'è un nodo cliccato
+    if (
+      ClickManager.active &&
+      ClickManager.type === "project" &&
+      ClickManager.node
+    ) {
+      const projectId = ClickManager.node.id;
+      const index = title.indexOf(projectId);
+      return index;
+    }
+
+    // Controlla se c'è un nodo in hover
+    if (HoverManager.hovered_node && HoverManager.hovered_type === "project") {
+      const projectId = HoverManager.hovered_node.id;
+      const index = title.indexOf(projectId);
+      return index;
+    }
+    return null;
+  } //getCurrentProjectIndex()
 
   ///////////////////////////////////
   //////// HOVER AND CLICK //////////
@@ -3773,6 +4055,7 @@ const createCompetencesMap = (container) => {
     handleSizes(width, height);
     handleScales();
     draw();
+    updateProjectModalSize();
   }; //handle resizes
 
   //Render boundary circles and anchor points
