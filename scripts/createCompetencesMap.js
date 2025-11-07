@@ -102,7 +102,14 @@ const createCompetencesMap = (container) => {
 
   let project_ring_label_group, project_ring_circle, project_ring_text;
   let tech_sector_labels_group;
-  let PROJECT_RING_LABEL_RADIUS, TECH_SECTOR_LABEL_RADIUS;
+  let skill_boundary_donut_group, skill_boundary_donut;
+  let skill_boundary_label_group, skill_boundary_circle, skill_boundary_text;
+
+  //dimensions
+  let PROJECT_RING_LABEL_RADIUS,
+    TECH_SECTOR_LABEL_RADIUS,
+    SKILL_LABEL_RADIUS,
+    SKILL_BOUNDARY_LABEL_RADIUS;
 
   //central hole labels
   let central_label_group, central_circle, label, header, cta;
@@ -350,6 +357,7 @@ const createCompetencesMap = (container) => {
       //hide labels
       hideProjectRingLabel();
       hideTechSectorLabels();
+      hideSkillBoundaryLabel();
 
       //console.log(`Hover enter: ${type}`, node);
 
@@ -434,6 +442,7 @@ const createCompetencesMap = (container) => {
         showDefaultLabel();
         showProjectRingLabel();
         showTechSectorLabels();
+        showSkillBoundaryLabel();
       }
 
       // Release debounce after 50ms
@@ -562,6 +571,7 @@ const createCompetencesMap = (container) => {
       //hide labels
       hideProjectRingLabel();
       hideTechSectorLabels();
+      hideSkillBoundaryLabel();
 
       //store edges
       this.calculatedLockedState(node, type);
@@ -682,6 +692,7 @@ const createCompetencesMap = (container) => {
       showDefaultLabel();
       showProjectRingLabel();
       showTechSectorLabels();
+      showSkillBoundaryLabel();
     },
     //hide all edges
     hideAllEdges() {
@@ -1004,6 +1015,7 @@ const createCompetencesMap = (container) => {
     diss_tech: "#E783D6", //"#00A4B5", //"#658BD6",
     label: "#A3A3A3",
     text: "#121212",
+    donut: "#eeeef1",
   };
 
   const tech_colors = d3
@@ -1590,11 +1602,13 @@ const createCompetencesMap = (container) => {
     buildNodeLookups(skillnodes, proj_pos, technodes);
 
     //////////// DRAWINGS & RENDERINGS
+    drawSkillBoundaryDonut();
 
     //////// LABELS
     initCentralLabel();
     initProjectRingLabel();
     initTechSectorLabels(triadData);
+    initSkillBoundaryLabel();
 
     //Render in desired order
     drawTriad(triadData);
@@ -2450,6 +2464,131 @@ const createCompetencesMap = (container) => {
     showTechSectorLabels();
   } //initTechSectorLabels()
 
+  // Initialize skill boundary donut (always visible)
+  function drawSkillBoundaryDonut() {
+    // Crea il gruppo per la ciambella
+    skill_boundary_donut_group = g
+      .append("g")
+      .attr("class", "skill-boundary-donut-group")
+      .style("pointer-events", "none");
+
+    // Ciambella di sfondo con raggio BOUNDARY_RADIUS
+    const donutArc = d3
+      .arc()
+      .innerRadius(DONUT_RADIUS)
+      .outerRadius(SKILL_LABEL_RADIUS)
+      .startAngle(0)
+      .endAngle(TAU);
+
+    skill_boundary_donut = skill_boundary_donut_group
+      .append("path")
+      .attr("class", "skill-boundary-donut")
+      .attr("d", donutArc)
+      .attr("fill", COLORS.donut)
+      .attr("opacity", 1.0);
+  } //initSkillBoundaryDonut()
+
+  // Initialize skill boundary label
+  function initSkillBoundaryLabel() {
+    const ring_radius = SKILL_BOUNDARY_LABEL_RADIUS;
+    const labelFontSize = 11 * SF;
+
+    // Crea il gruppo principale
+    skill_boundary_label_group = g
+      .append("g")
+      .attr("class", "skill-boundary-label-group")
+      .style("pointer-events", "none");
+
+    // 2. CERCHIO DI CONTORNO (stroke only)
+    skill_boundary_circle = skill_boundary_label_group
+      .append("circle")
+      .attr("class", "skill-boundary-circle")
+      .attr("r", ring_radius)
+      .attr("cx", 0)
+      .attr("cy", 0)
+      .attr("fill", "none")
+      .attr("stroke", COLORS.type)
+      .attr("stroke-width", 1.5 * SF)
+      .attr("opacity", 1.0);
+
+    // 3. CREA PATH CIRCOLARE PER IL TESTO
+    // Posiziona il testo in alto, come "CASE STUDIES"
+    const textPathD = describeArc(0, 0, ring_radius, 90, -90);
+
+    skill_boundary_label_group
+      .append("path")
+      .attr("id", "skill-boundary-path")
+      .attr("d", textPathD)
+      .style("fill", "none")
+      .style("stroke", "none");
+
+    // 4. CREA TESTO TEMPORANEO PER MISURARE
+    const textGroup = skill_boundary_label_group
+      .append("g")
+      .attr("class", "skill-boundary-text-group");
+
+    const tempText = textGroup
+      .append("text")
+      .style("font-family", "'Inter', sans-serif")
+      .style("font-weight", "600")
+      .style("font-size", `${labelFontSize}px`)
+      .style("text-transform", "uppercase")
+      .style("letter-spacing", "0.15em")
+      .style("opacity", 0)
+      .text(SKILL_NAME);
+
+    // Misura il testo
+    const textBBox = tempText.node().getBBox();
+    const textWidth = textBBox.width;
+    const textHeight = textBBox.height;
+
+    // Rimuovi il testo temporaneo
+    tempText.remove();
+
+    // 5. CREA RETTANGOLO DI SFONDO BIANCO
+    const bgPadding = 3 * SF;
+    const bgWidth = textWidth + bgPadding * 2;
+    const bgHeight = textHeight + bgPadding;
+    const bgY = -ring_radius - bgHeight / 2 + 3 * SF;
+
+    textGroup
+      .append("rect")
+      .attr("class", "skill-boundary-text-bg")
+      .attr("x", -bgWidth / 2)
+      .attr("y", bgY)
+      .attr("width", bgWidth)
+      .attr("height", bgHeight)
+      .attr("rx", 3 * SF)
+      .attr("ry", 3 * SF)
+      .attr("fill", COLORS.donut)
+      .attr("opacity", 1.0);
+
+    // 6. CREA IL TESTO CHE SEGUE IL PATH
+    skill_boundary_text = textGroup
+      .append("text")
+      .attr("class", "skill-boundary-text")
+      .style("font-family", "'Inter', sans-serif")
+      .style("font-weight", "600")
+      .style("font-size", `${labelFontSize}px`)
+      .style("text-transform", "uppercase")
+      .style("letter-spacing", "0.15em")
+      .style("fill", COLORS.type)
+      .style("opacity", 1.0);
+
+    // Aggiungi textPath
+    skill_boundary_text
+      .append("textPath")
+      .attr("href", "#skill-boundary-path")
+      .attr("startOffset", "50%")
+      .style("text-anchor", "middle")
+      .text(SKILL_NAME);
+
+    skill_boundary_text.attr("dy", 4 * SF);
+
+    // Mostra la label inizialmente
+    showSkillBoundaryLabel();
+  } //initSkillBoundaryLabel()
+
   // Helper function per creare un arco SVG pulito
   function describeArc(x, y, radius, startAngle, endAngle) {
     const start = polarToCartesian(x, y, radius, endAngle);
@@ -2524,6 +2663,22 @@ const createCompetencesMap = (container) => {
       .duration(200)
       .style("opacity", 0);
   } //hideTechSectorLabels()
+
+  // Show skill boundary label
+  function showSkillBoundaryLabel() {
+    if (!skill_boundary_label_group) return;
+
+    skill_boundary_circle.transition().duration(300).attr("opacity", 1.0);
+    skill_boundary_text.transition().duration(300).style("opacity", 1.0);
+  } //showSkillBoundaryLabel()
+
+  // Hide skill boundary label (NOT the donut)
+  function hideSkillBoundaryLabel() {
+    if (!skill_boundary_label_group) return;
+
+    skill_boundary_circle.transition().duration(200).attr("opacity", 0);
+    skill_boundary_text.transition().duration(200).style("opacity", 0);
+  } //hideSkillBoundaryLabel()
 
   //wrap label text (smaller, uppercase)
   function wrapLabelSVG(textElement, text, maxWidth, fontSize) {
@@ -2911,14 +3066,14 @@ const createCompetencesMap = (container) => {
 
   /////////// CALCULATIONS
   //////// DELAUNAY
-  /**
+
+  /***
    * Build Delaunay diagrams for efficient hover detection
    * Creates spatial indices for O(log n) nearest-neighbor lookup
    * Called once after all nodes are calculated in drawing
    * @param {Array} sk - Array of skill nodes
    * @param {Array} pr - Array of project positions
-   * @param {Array} tc - Array of tech nodes
-   */
+   * @param {Array} tc - Array of tech nodes ***/
   function buildDelaunayDiagrams(sk, pr, tc) {
     // Create Delaunay diagram for skills using their x,y positions
     delaunay_skills = d3.Delaunay.from(
@@ -2992,13 +3147,12 @@ const createCompetencesMap = (container) => {
     );
   } //rebuildSkillDelaunay()
 
-  /**
+  /***
    * Find the closest node to mouse position across all node types
    * Uses Delaunay diagrams for O(log n) lookup performance
    * @param {number} mx - Mouse x position (adjusted for SVG transform)
    * @param {number} my - Mouse y position (adjusted for SVG transform)
-   * @returns {Object|null} { node, type, distance } or null if no node within threshold
-   */
+   * @returns {Object|null} { node, type, distance } or null if no node within threshold */
   function findClosestNode(mx, my) {
     let closestNode = null;
     let closestDist = Infinity;
@@ -3523,8 +3677,10 @@ const createCompetencesMap = (container) => {
 
     //Labels
     CENTRAL_LABEL_RADIUS = CENTRAL_HOLE_RADIUS - (PADDING / 8) * SF;
-    PROJECT_RING_LABEL_RADIUS = PROJECTS_RADIUS + (PADDING / 2) * SF;
-    TECH_SECTOR_LABEL_RADIUS = TECHNOLOGY_RADIUS + (PADDING / 2) * SF;
+    PROJECT_RING_LABEL_RADIUS = PROJECTS_RADIUS + DONUT_RADIUS * 0.05;
+    TECH_SECTOR_LABEL_RADIUS = TECHNOLOGY_RADIUS + DONUT_RADIUS * 0.05;
+    SKILL_LABEL_RADIUS = BOUNDARY_RADIUS + DONUT_RADIUS * 0.15;
+    SKILL_BOUNDARY_LABEL_RADIUS = BOUNDARY_RADIUS + DONUT_RADIUS * 0.1;
 
     //central radius label
     LABEL_FONT_SIZE = CENTRAL_LABEL_BASE.label_size * SF;
@@ -3561,7 +3717,32 @@ const createCompetencesMap = (container) => {
       tech_sector_labels_group = null;
       initTechSectorLabels(triadData);
     }
-    //add others...
+
+    // Update tech sector labels
+    if (tech_sector_labels_group && triadData) {
+      tech_sector_labels_group.remove();
+      tech_sector_labels_group = null;
+      initTechSectorLabels(triadData);
+    }
+    // Update skill boundary label
+    if (skill_boundary_label_group) {
+      // Update radius
+      skill_boundary_circle.attr("r", SKILL_LABEL_RADIUS);
+
+      // Update font size
+      const labelFontSize = 11 * SF;
+      skill_boundary_text.style("font-size", `${labelFontSize}px`);
+
+      // Update donut arc
+      const donutArc = d3
+        .arc()
+        .innerRadius(DONUT_RADIUS)
+        .outerRadius(BOUNDARY_RADIUS)
+        .startAngle(0)
+        .endAngle(TAU);
+
+      skill_boundary_donut.attr("d", donutArc);
+    }
   } //updateLabels()
 
   //to update all the scales following the handlesize()
@@ -3643,8 +3824,7 @@ const createCompetencesMap = (container) => {
 
   /***
    * Funzione per scaricare l'SVG corrente
-   * Aggiungila dove preferisci, ad esempio dopo chart.resize
-   */
+   * Aggiungila dove preferisci, ad esempio dopo chart.resize ***/
   chart.downloadSVG = function () {
     // 1. Definiamo i font da includere, se vuoi essere sicuro
     const fontStyles = `
@@ -3690,7 +3870,7 @@ const createCompetencesMap = (container) => {
     document.body.appendChild(link); // Aggiungilo
     link.click(); // Cliccalo
     document.body.removeChild(link); // Rimuovilo
-  }; // fine chart.downloadSVG
+  }; //define function to donwload chart
 
   return chart;
 };
