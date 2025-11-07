@@ -92,16 +92,17 @@ const createCompetencesMap = (container) => {
   /////////// LABELS
   const DATAVIZ_NAME = "Map of Technologies and Skills in ICH projects";
   const TECHNOLOGY_NAMES = {
-    diss: "Dissemination technologies",
-    capt: "Capturing technologies",
-    rep: "Representation technologies",
+    diss_tech: "Dissemination technologies",
+    capt_tech: "Capturing technologies",
+    rep_tech: "Representation technologies",
   };
   const SKILL_NAME = "Skills in type of Skill";
   const PROJECT_RING_NAME = "Case Studies";
   const CTA_TEXT = "Dive in...";
 
   let project_ring_label_group, project_ring_circle, project_ring_text;
-  let PROJECT_RING_LABEL_RADIUS;
+  let tech_sector_labels_group;
+  let PROJECT_RING_LABEL_RADIUS, TECH_SECTOR_LABEL_RADIUS;
 
   //central hole labels
   let central_label_group, central_circle, label, header, cta;
@@ -151,7 +152,7 @@ const createCompetencesMap = (container) => {
   // global scope variables
   let sk_edges_curves_global;
   let tc_edges_curves_global;
-  let donutData;
+  let donutData, triadData;
 
   //Hover states
   let hover_debounce_active = false;
@@ -348,6 +349,7 @@ const createCompetencesMap = (container) => {
 
       //hide labels
       hideProjectRingLabel();
+      hideTechSectorLabels();
 
       //console.log(`Hover enter: ${type}`, node);
 
@@ -431,6 +433,7 @@ const createCompetencesMap = (container) => {
         //show labels
         showDefaultLabel();
         showProjectRingLabel();
+        showTechSectorLabels();
       }
 
       // Release debounce after 50ms
@@ -558,6 +561,7 @@ const createCompetencesMap = (container) => {
 
       //hide labels
       hideProjectRingLabel();
+      hideTechSectorLabels();
 
       //store edges
       this.calculatedLockedState(node, type);
@@ -677,6 +681,7 @@ const createCompetencesMap = (container) => {
       // show labels
       showDefaultLabel();
       showProjectRingLabel();
+      showTechSectorLabels();
     },
     //hide all edges
     hideAllEdges() {
@@ -1557,7 +1562,7 @@ const createCompetencesMap = (container) => {
     ///////// CALCULATE ALL POSITIONS
     proj_pos = calculateProjectPositions(PROJECTS_RADIUS);
     donutData = calculateDonutPositions(DONUT_RADIUS);
-    const triadData = calcTriad(CENTRAL_HOLE_RADIUS, TECHNOLOGY_RADIUS);
+    triadData = calcTriad(CENTRAL_HOLE_RADIUS, TECHNOLOGY_RADIUS);
     const technodes = calcTechNodePosition(triadData);
     const skillnodes = calcSimSkills(donutData.data);
 
@@ -1589,6 +1594,7 @@ const createCompetencesMap = (container) => {
     //////// LABELS
     initCentralLabel();
     initProjectRingLabel();
+    initTechSectorLabels(triadData);
 
     //Render in desired order
     drawTriad(triadData);
@@ -2347,13 +2353,102 @@ const createCompetencesMap = (container) => {
       .append("textPath")
       .attr("href", "#project-ring-path")
       .attr("startOffset", "50%")
-      .attr("dy", 2 * SF)
       .style("text-anchor", "middle")
       .text(PROJECT_RING_NAME);
+
+    project_ring_text.attr("dy", 4 * SF);
 
     // Mostra la label inizialmente
     showProjectRingLabel();
   } //initProjectRingLabel()
+
+  //Initialise tech sector labels
+  function initTechSectorLabels(triadData) {
+    const { slices } = triadData;
+    const ring_radius = TECH_SECTOR_LABEL_RADIUS;
+
+    //font size as project ring
+    const labelFontSize = 11 * SF;
+
+    //create principale group
+    tech_sector_labels_group = g
+      .append("g")
+      .attr("class", "tech-sector-labels-group")
+      .style("pointer-events", "none");
+
+    //For each slice of the triad
+    slices.forEach((slice, i) => {
+      const techType = slice.data.type;
+      const label = TECHNOLOGY_NAMES[techType];
+      const color = tech_colors(techType);
+
+      // Calcola l'angolo centrale del settore (in radianti)
+      const midAngle = (slice.startAngle + slice.endAngle) / 2;
+
+      // Converti in gradi per describeArc
+      const midAngleDeg = (midAngle * 180) / PI;
+
+      // Normalizza l'angolo tra 0 e 360
+      let normalizedMidAngle = midAngleDeg % 360;
+      if (normalizedMidAngle < 0) normalizedMidAngle += 360;
+
+      // CRITICO: Crea un arco LUNGO sulla circonferenza
+      const arcLength = 160; // gradi - abbastanza lungo per il testo
+      let startAngleDeg = midAngleDeg - arcLength / 2;
+      let endAngleDeg = midAngleDeg + arcLength / 2;
+
+      // INVERSIONE: Se l'angolo è tra 90° e 270° (parte sinistra/superiore),
+      // inverti start e end per far leggere il testo nel verso corretto
+      // Questo segue il pattern di text-on-arc.html
+      let pathStart = startAngleDeg;
+      let pathEnd = endAngleDeg;
+
+      if (normalizedMidAngle <= 90 || normalizedMidAngle >= 270) {
+        // Inverti la direzione del path
+        pathStart = endAngleDeg;
+        pathEnd = startAngleDeg;
+      }
+
+      // Crea il path circolare con gli angoli (potenzialmente invertiti)
+      const textPathD = describeArc(0, 0, ring_radius, pathStart, pathEnd);
+
+      //create path invisibile
+      const pathId = `tech-sector-path-${i}`;
+      tech_sector_labels_group
+        .append("path")
+        .attr("id", pathId)
+        .attr("d", textPathD)
+        .style("fill", "none")
+        .style("stroke", "none");
+
+      //create text
+      const text = tech_sector_labels_group
+        .append("text")
+        .attr("class", `tech-sector-text tech-sector-${techType}`)
+        .style("font-family", "'Inter', sans-serif")
+        .style("font-weight", "600")
+        .style("font-size", `${labelFontSize}px`)
+        .style("text-transform", "uppercase")
+        .style("letter-spacing", "0.15em")
+        .style("fill", color)
+        .style("opacity", 1.0);
+
+      //bind text to path
+      text
+        .append("textPath")
+        .attr("href", `#${pathId}`)
+        .attr("startOffset", "50%")
+        .style("text-anchor", "middle")
+        .text(label);
+
+      if (normalizedMidAngle <= 90 || normalizedMidAngle >= 270) {
+        text.attr("dy", 6 * SF); // Sposta verso l'alto (valore negativo)
+      }
+    });
+
+    //show labels
+    showTechSectorLabels();
+  } //initTechSectorLabels()
 
   // Helper function per creare un arco SVG pulito
   function describeArc(x, y, radius, startAngle, endAngle) {
@@ -2407,6 +2502,28 @@ const createCompetencesMap = (container) => {
 
     project_ring_text.transition().duration(200).style("opacity", 0);
   } //hideProjectRingLabel()
+
+  // Show tech sector labels
+  function showTechSectorLabels() {
+    if (!tech_sector_labels_group) return;
+
+    tech_sector_labels_group
+      .selectAll("text")
+      .transition()
+      .duration(300)
+      .style("opacity", 1.0);
+  } //showTechSectorLabels()
+
+  // Hide tech sector labels
+  function hideTechSectorLabels() {
+    if (!tech_sector_labels_group) return;
+
+    tech_sector_labels_group
+      .selectAll("text")
+      .transition()
+      .duration(200)
+      .style("opacity", 0);
+  } //hideTechSectorLabels()
 
   //wrap label text (smaller, uppercase)
   function wrapLabelSVG(textElement, text, maxWidth, fontSize) {
@@ -3406,7 +3523,8 @@ const createCompetencesMap = (container) => {
 
     //Labels
     CENTRAL_LABEL_RADIUS = CENTRAL_HOLE_RADIUS - (PADDING / 8) * SF;
-    PROJECT_RING_LABEL_RADIUS = PROJECTS_RADIUS + (PADDING / 1.5) * SF; //credo troppo
+    PROJECT_RING_LABEL_RADIUS = PROJECTS_RADIUS + (PADDING / 2) * SF;
+    TECH_SECTOR_LABEL_RADIUS = TECHNOLOGY_RADIUS + (PADDING / 2) * SF;
 
     //central radius label
     LABEL_FONT_SIZE = CENTRAL_LABEL_BASE.label_size * SF;
@@ -3438,6 +3556,11 @@ const createCompetencesMap = (container) => {
       project_ring_text.style("font-size", `${ringLabelFontSize}px`);
     }
 
+    if (tech_sector_labels_group && triadData) {
+      tech_sector_labels_group.remove();
+      tech_sector_labels_group = null;
+      initTechSectorLabels(triadData);
+    }
     //add others...
   } //updateLabels()
 
