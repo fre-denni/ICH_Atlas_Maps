@@ -1263,11 +1263,19 @@ const createCompetencesMap = (container) => {
   //to handle project description
   function truncate(text, limit) {
     if (!text) return "";
-    const words = text.split(" ");
+    const cleaned = text
+      .replace(/^["'""'']+|["'""'']+$/g, "") // Rimuovi virgolette iniziali/finali
+      .replace(/[""]/g, "") // Rimuovi virgolette doppie curve
+      .replace(/"/g, "") // Rimuovi virgolette doppie dritte
+      .replace(/\\/g, "") // Rimuovi backslash
+      .replace(/\s+/g, " ") // Rimuovi spazi multipli
+      .trim(); // Trim finale
+
+    const words = cleaned.split(" ");
     if (words.length > limit) {
       return words.slice(0, limit).join(" ") + "...";
     }
-    return text;
+    return cleaned;
   } //truncate()
 
   //manage data connection from dataset 3
@@ -1321,12 +1329,6 @@ const createCompetencesMap = (container) => {
 
     //truncate the text
     description = data.map((d) => truncate(d.description, DESCRIPTION_WORDS));
-
-    console.log("Total projects:", data.length);
-    console.log("Unique Fruition Outputs:", fruition_outputs);
-    console.log("Unique ICH Domains:", ich_domains);
-    console.log("Example project 0 fruitions:", fruition_label[0]);
-    console.log("Example project 0 domains:", domain_label[0]);
   } //handleProjdata()
 
   //////////////////////////////////
