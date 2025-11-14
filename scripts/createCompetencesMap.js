@@ -2997,7 +2997,7 @@ const createCompetencesMap = (container) => {
       .select("body")
       .append("div")
       .attr("id", "project-modal")
-      .attr("class", "viz-modal-overlay") // CLASSE SPECIFICA
+      .attr("class", "viz-modal-overlay")
       .style("display", "none")
       .style("position", "fixed")
       .style("z-index", "1000")
@@ -3006,18 +3006,17 @@ const createCompetencesMap = (container) => {
       .style("right", "0")
       .style("bottom", "0")
       .style("width", "100vw")
+      .style("background-color", "rgba(0, 0, 0, 0.75)")
       .style("height", "100vh")
       .style("max-width", "none !important") // OVERRIDE max-width
       .style("margin", "0 !important") // OVERRIDE margin
       .style("padding", "0 !important") // OVERRIDE padding
-      .style("overflow", "auto")
-      .style("background-color", "rgba(163, 163, 163, 0.75)")
-      .style("animation", "fadeIn 0.4s");
+      .style("overflow", "auto");
 
     // Crea il contenuto della modale - CENTRATO
     const modalContent = modal
       .append("div")
-      .attr("class", "viz-modal-content") // CLASSE SPECIFICA
+      .attr("class", "viz-modal-content")
       .style("position", "absolute")
       .style("top", "50%")
       .style("left", "50%")
@@ -3132,73 +3131,8 @@ const createCompetencesMap = (container) => {
   } //updateProjectModalSize()
 
   // Open project modal with data
-  /* function openProjectModal(projectIndex) {
-    const modal = d3.select("#project-modal");
-
-    if (modal.empty()) {
-      console.error("Modal not initialized");
-      return;
-    }
-
-    // Mostra la modale
-    modal.style("display", "block");
-
-    // Popola il contenuto
-    const header = d3.select("#project-modal-header");
-    const body = d3.select("#project-modal-body");
-
-    // Header con titolo
-    header.html(`
-    <h2 style="font-size: 24px; font-weight: 400; margin: 16px 0 0 0; color: ${COLORS.ui}; font-family: 'IBM Plex Serif', serif;">
-      ${title[projectIndex]}
-    </h2>
-  `);
-
-    // Body con descrizione
-    body.html(`
-    <p style="font-size: 16px; font-family: 'IBM Plex Serif', serif; color: ${COLORS.label}; line-height: 1.6;">
-      ${description[projectIndex]}
-    </p>
-    <p style="font-size: 14px; font-family: 'Inter', sans-serif; color: ${COLORS.label}; margin-top: 12px;">
-      Date: ${date[projectIndex]}
-    </p>
-  `);
-
-    // Aggiungi link "Discover more"
-    if (hyperlink[projectIndex]) {
-      body
-        .append("a")
-        .attr("href", hyperlink[projectIndex])
-        .attr("target", "_blank")
-        .attr("rel", "noopener noreferrer")
-        .style("display", "inline-block")
-        .style("margin-top", "20px")
-        .style("font-family", "'Inter', sans-serif")
-        .style("font-size", "16px")
-        .style("font-weight", "400")
-        .style("color", COLORS.ui)
-        .style("text-decoration", "underline")
-        .style("cursor", "pointer")
-        .text("Discover more")
-        .on("mouseenter", function () {
-          d3.select(this).style("color", d3.color(COLORS.ui).darker(0.5));
-        })
-        .on("mouseleave", function () {
-          d3.select(this).style("color", COLORS.ui);
-        });
-    }
-
-    console.log("Opening modal for project:", projectIndex);
-  } //openProjectModal() */
-
   function openProjectModal(projectIndex) {
-    const modal = d3
-      .select("#project-modal")
-      .style("background", COLORS.background)
-      .style("border-radius", "24px")
-      .style("padding", "24px")
-      .style("max-width", "800px") // Larghezza massima appropriata
-      .style("margin", "auto");
+    const modal = d3.select("#project-modal");
 
     if (modal.empty()) {
       console.error("Modal not initialised");
