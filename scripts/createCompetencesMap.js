@@ -3097,7 +3097,7 @@ const createCompetencesMap = (container) => {
       .viz-modal-content {
         max-width: 700px !important;
         margin: 0 !important;
-        padding: 40px !important;
+        padding: 12px !important;
       }
       
       .viz-modal-header,
@@ -3105,6 +3105,12 @@ const createCompetencesMap = (container) => {
         max-width: none !important;
         margin: 0 !important;
         padding: 0 !important;
+        display: inline-flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        align-content: center;
       }
       
       /* Animazione fadeIn */
@@ -3126,7 +3132,7 @@ const createCompetencesMap = (container) => {
   } //updateProjectModalSize()
 
   // Open project modal with data
-  function openProjectModal(projectIndex) {
+  /* function openProjectModal(projectIndex) {
     const modal = d3.select("#project-modal");
 
     if (modal.empty()) {
@@ -3183,6 +3189,148 @@ const createCompetencesMap = (container) => {
     }
 
     console.log("Opening modal for project:", projectIndex);
+  } //openProjectModal() */
+
+  function openProjectModal(projectIndex) {
+    const modal = d3
+      .select("#project-modal")
+      .style("background", COLORS.background)
+      .style("border-radius", "24px")
+      .style("padding", "24px")
+      .style("max-width", "800px") // Larghezza massima appropriata
+      .style("margin", "auto");
+
+    if (modal.empty()) {
+      console.error("Modal not initialised");
+      return;
+    }
+
+    modal.style("display", "block");
+
+    const header = d3.select("#project-modal-header");
+    const body = d3.select("#project-modal-body");
+
+    header.html(`
+    <div style="text-align: center;">
+      <div style="font-family: 'Inter', sans-serif; font-size: 16px; color: ${COLORS.text}; margin: 0; padding: 0;">
+        ${date[projectIndex]}
+      </div>
+      <h2 style="font-size: 20px; font-weight: 400; margin: 0; color: ${COLORS.ui}; font-family: 'IBM Plex Serif', serif;">
+        ${title[projectIndex]}
+      </h2>
+    </div>
+    `);
+
+    body.html(`
+      <div style="display: flex; gap: 40px; margin: 0px; align-items: flex-start; padding: 0;">
+        <div style="flex: 1; min-width: 0; margin: 0;">
+          <div style="font-size: 16px; font-family: 'IBM Plex Serif', serif; text-align: start; color: ${COLORS.text}; line-height: 1.6; margin-bottom: 0;">
+            ${description[projectIndex]}
+          </div>
+          <div style="font-size: 12px; font-family: 'IBM Plex Serif', serif; text-align: start; color: ${COLORS.type}; line-height: 1.5;">
+            ${credits[projectIndex]}
+          </div>
+        </div>
+        <div style="flex: 0 0 200px; display: flex; flex-direction: column; gap: 12px; margin: 0;">
+          <div class="modal-section" style="margin: 0;">
+            <div class="modal-section-title" style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: ${COLORS.ui}; text-transform: uppercase; letter-spacing: 1px; line-height: 130%; text-align: start; padding: 0;">
+              FRUITION OUTPUTS
+            </div>
+            <div class="modal-chips-container" id="fruition-chips-${projectIndex}" style="display: flex; flex-direction: column; align-items: flex-start; gap: 9px; padding: 16px 0 0 0; margin: 0;"></div>
+          </div>
+          <div class="modal-section" style="margin: 0;">
+            <div class="modal-section-title" style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: ${COLORS.ui}; text-transform: uppercase; letter-spacing: 1px; line-height: 130%; text-align: start; padding: 0;">
+              ICH DOMAINS
+            </div>
+            <div class="modal-chips-container" id="domain-chips-${projectIndex}" style="display: flex; flex-direction: column; align-items: flex-start; gap: 9px; padding: 16px 0 0 0; margin: 0;"></div>
+          </div>
+        </div>
+      </div>
+    `);
+
+    //populate FRUITION OUTPUTS chips
+    const fruitionOutputs = fruition_label[projectIndex];
+    const fruitionContainer = d3.select(`#fruition-chips-${projectIndex}`);
+
+    fruitionOutputs.forEach((output) => {
+      fruitionContainer
+        .append("div")
+        .attr("class", "modal-chip")
+        .style("display", "block")
+        .style("width", "fit-content")
+        .style("margin", "0")
+        .style("padding", "6px 14px")
+        .style("background", COLORS.background)
+        .style("border-radius", "58px")
+        .style("outline", `1px solid ${COLORS.ui}`)
+        .style("outline-offset", "-1px")
+        .style("font-family", "'Inter', sans-serif")
+        .style("font-size", "8px")
+        .style("font-weight", "600")
+        .style("color", COLORS.ui)
+        .style("text-transform", "uppercase")
+        .style("letter-spacing", "0.5px")
+        .style("line-height", "130%")
+        .text(output);
+    });
+
+    //populate ICH DOMAINS chips
+    const domains = domain_label[projectIndex];
+    const domainContainer = d3.select(`#domain-chips-${projectIndex}`);
+
+    domains.forEach((domain) => {
+      domainContainer
+        .append("div")
+        .attr("class", "modal-chip")
+        .style("display", "block")
+        .style("width", "fit-content")
+        .style("margin", "0")
+        .style("padding", "6px 14px")
+        .style("background", COLORS.background)
+        .style("border-radius", "58px")
+        .style("outline", `1px solid ${COLORS.ui}`)
+        .style("outline-offset", "-1px")
+        .style("font-family", "'Inter', sans-serif")
+        .style("font-size", "8px")
+        .style("font-weight", "600")
+        .style("color", COLORS.ui)
+        .style("text-transform", "uppercase")
+        .style("letter-spacing", "0.5px")
+        .style("line-height", "130%")
+        .text(domain);
+    });
+
+    //"Discover more"
+    if (hyperlink[projectIndex]) {
+      body
+        .append("div")
+        .style("margin-top", "16px")
+        .style("padding-top", "12px")
+        .style(
+          "border-top",
+          `1px solid ${d3.color(COLORS.label).copy({ opacity: 0.3 })}`
+        ) // Linea separatrice
+        .style("text-align", "center")
+        .style("width", "100%")
+        .append("a")
+        .attr("href", hyperlink[projectIndex])
+        .attr("target", "_blank")
+        .attr("rel", "noopener noreferrer")
+        .style("display", "inline-block")
+        .style("font-family", "'Inter', sans-serif")
+        .style("font-size", "16px")
+        .style("font-weight", "400")
+        .style("color", COLORS.ui)
+        .style("text-decoration", "underline")
+        .style("cursor", "pointer")
+        .text("Discover more")
+        .on("mouseenter", function () {
+          d3.select(this).style("color", d3.color(COLORS.ui).darker(0.2));
+        })
+        .on("mouseleave", function () {
+          d3.select(this).style("color", COLORS.ui);
+        });
+    }
   } //openProjectModal()
 
   // Close project modal
