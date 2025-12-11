@@ -3,6 +3,7 @@
 A github repo containing all the resources and scripts for the visualisations visible at: [ich-atlas.com](https://tramadev.nextatlas.com/)
 
 ```
+.
 ├── 404.html
 ├── about.html
 ├── assets
@@ -11,21 +12,39 @@ A github repo containing all the resources and scripts for the visualisations vi
 │   ├── favicon.svg
 │   └── Logo.svg
 ├── data
-│   └── links.csv
+│   ├── comparisons-tool.csv
+│   ├── competences-map-skill.csv
+│   ├── competences-map-tech.csv
+│   ├── content-modal.csv
+│   ├── download
+│   │   └── Competences-Map-Dataset.xlsx
+│   ├── links.csv
+│   └── projects-description.csv
 ├── index.html
 ├── lib
 │   ├── d3-bboxCollide.min.js
-│   └── d3.js
+│   ├── d3-delaunay.js
+│   ├── d3.js
+│   └── lunr.js
 ├── README.md
+├── requirements.txt
 ├── scripts
+│   ├── backup
+│   │   └── createCompetence-backup.js
 │   ├── createComparisonsTool.js
 │   ├── createCompetencesMap.js
 │   ├── createCreativeMap.js
 │   ├── createDigitalisationMap.js
+│   ├── createExcels.py
 │   ├── fetchData.py
 │   ├── menu.js
-│   └── modal.js
-├── style.css
+│   ├── modal.js
+│   └── unifyComp.py
+├── styles
+│   ├── global.css
+│   ├── menu.css
+│   ├── modal.css
+│   └── style.css
 └── visualisations
     ├── comparisons-tool.html
     ├── competences-map.html
@@ -64,7 +83,7 @@ Made with best intentions and open-source code :heart:
   - [x] Fare script di base per visualizzazioni
     - [x] importare d3.js nelle pagine
     - [x] importare data
-  - [ ] Vedi alternative di hosting -- coordinarsi con icoolhunt
+  - [x] Vedi alternative di hosting -- coordinarsi con icoolhunt
     - [x] Vedi come nascondere parti della Ui per l'`<i-frame>`
 
   #### Fase 2
@@ -100,4 +119,4 @@ Made with best intentions and open-source code :heart:
     - [ ] modale data quando cliccati
   - [ ] impostare modale "more" e linking
   - [ ] label dinamiche per funzionalità bottone (animazione e titoli)
-  - [ ] modale con "esperienza migliore con visualizzazione desktop"
+  - [x] modale con "esperienza migliore con visualizzazione desktop"
