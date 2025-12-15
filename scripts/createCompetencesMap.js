@@ -1768,15 +1768,15 @@ const createCompetencesMap = (container) => {
       .attr("r", (d) => d.radius)
       .attr("fill", (d) => d3.color(tech_colors(d.type)).darker(DARK_VALUE))
       .attr("cx", (d) => d.x)
-      .attr("cy", (d) => d.y)
-      .attr("cx", 0)
+      .attr("cy", (d) => d.y);
+    /*.attr("cx", 0)
       //animation
       .attr("cy", 0)
       .transition()
       .duration(800)
       .delay((d, i) => i * 2.5)
       .attr("cx", (d) => d.x)
-      .attr("cy", (d) => d.y);
+      .attr("cy", (d) => d.y);*/
   } //positionTechNodes
 
   /***
