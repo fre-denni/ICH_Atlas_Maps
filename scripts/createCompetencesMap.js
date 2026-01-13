@@ -2284,7 +2284,7 @@ const createCompetencesMap = (container) => {
       .attr("y", 0)
       .attr("text-anchor", "middle")
       .attr("dominant-baseline", "middle")
-      .style("font-family", "'IBM Plex Serif', serif")
+      .style("font-family", "'IBM Plex Serif Regular', serif")
       .style("font-weight", "400")
       .style("fill", COLORS.text)
       .style("opacity", 0);
@@ -3170,7 +3170,7 @@ const createCompetencesMap = (container) => {
       <div style="font-family: 'Inter', sans-serif; font-size: 16px; color: ${COLORS.text}; margin: 0; padding: 0;">
         ${date[projectIndex]}
       </div>
-      <h2 style="font-size: 20px; font-weight: 400; margin: 0; color: ${COLORS.ui}; font-family: 'IBM Plex Serif', serif;">
+      <h2 style="font-size: 20px; font-weight: 400; margin: 0; color: ${COLORS.ui}; font-family: 'IBM Plex Serif Regular', serif;">
         ${title[projectIndex]}
       </h2>
     </div>
@@ -3179,10 +3179,10 @@ const createCompetencesMap = (container) => {
     body.html(`
       <div style="display: flex; gap: 40px; margin: 0px; align-items: flex-start; padding: 0;">
         <div style="flex: 1; min-width: 0; margin: 0;">
-          <div style="font-size: 16px; font-family: 'IBM Plex Serif', serif; text-align: start; color: ${COLORS.text}; line-height: 1.6; margin-bottom: 0;">
+          <div style="font-size: 16px; font-family: 'IBM Plex Serif Regular', serif; text-align: start; color: ${COLORS.text}; line-height: 1.6; margin-bottom: 0;">
             ${description[projectIndex]}
           </div>
-          <div style="font-size: 12px; font-family: 'IBM Plex Serif', serif; text-align: start; color: ${COLORS.type}; line-height: 1.5;">
+          <div style="font-size: 12px; font-family: 'IBM Plex Serif Regular', serif; text-align: start; color: ${COLORS.type}; line-height: 1.5;">
             ${credits[projectIndex]}
           </div>
         </div>
