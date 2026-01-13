@@ -4212,15 +4212,15 @@ const createCompetencesMap = (container) => {
    * Funzione per scaricare l'SVG corrente
    * Aggiungila dove preferisci, ad esempio dopo chart.resize ***/
   chart.downloadSVG = function () {
-    // 1. Definiamo i font da includere, se vuoi essere sicuro
+    //1. Include the fonts
     const fontStyles = `
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=IBM+Plex+Serif:wght@400&display=swap');
     `;
 
-    // 2. Prendiamo l'elemento SVG
+    // 2. Take the svg
     const svgNode = svg.node();
 
-    // 3. Creiamo un clone per non sporcare la visualizzazione live
+    // 3. Let's create a clone
     const clonedSvgNode = svgNode.cloneNode(true);
 
     // 4. Inseriamo gli stili dei font in un tag <style> nel clone
@@ -4256,7 +4256,7 @@ const createCompetencesMap = (container) => {
     document.body.appendChild(link); // Aggiungilo
     link.click(); // Cliccalo
     document.body.removeChild(link); // Rimuovilo
-  }; //define function to donwload chart
+  }; //define function to download chart
 
   return chart;
 };
