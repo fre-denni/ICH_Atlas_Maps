@@ -29,11 +29,6 @@ function openMenu() {
   nav.classList.add("is-open");
   menuBtn.classList.add("is-active");
   menuBtn.setAttribute("aria-expanded", "true");
-
-  // focus first item
-  setTimeout(() => {
-    menuItems[0]?.focus();
-  }, 150);
 }
 
 function closeMenu() {
@@ -131,3 +126,10 @@ if (checkIframe()) {
   moreBtn && (moreBtn.style.display = "none");
   searchBtn && (searchBtn.style.display = "none");
 }
+
+//open menu at load
+window.addEventListener("DOMContentLoaded", () => {
+  setTimeout(() => {
+    menuBtn.click();
+  }, 500);
+});
