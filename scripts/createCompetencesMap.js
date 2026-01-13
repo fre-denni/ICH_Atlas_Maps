@@ -2307,9 +2307,23 @@ const createCompetencesMap = (container) => {
       //MODALS
       .on("click", function (event, d) {
         event.stopPropagation();
-        const currentProject = getCurrentProjectIndex();
-        if (currentProject !== null) {
-          openProjectModal(currentProject);
+        if (d.type == "project") {
+          const currentProject = getCurrentProjectIndex();
+          if (currentProject !== null) {
+            openProjectModal(currentProject);
+          }
+        } else if (d.boundary) {
+          //get skill type
+          const skillTypeName = d.type;
+          //find corresponding skill type
+          const targetArc = donutData.data.find(
+            (arc) => arc.data.type === skillTypeName
+          );
+          console.log(targetArc);
+          //when clicked, click the skill type label
+          if (targetArc) {
+            ClickManager.onClick(targetArc, "skill_type");
+          }
         }
       })
       .on("mouseenter", function () {
@@ -2835,6 +2849,7 @@ const createCompetencesMap = (container) => {
     let header_text = "";
     let bg_color = COLORS.background;
     let text_color = COLORS.text;
+    let cta_content = CTA_TEXT;
     let show_cta = false;
 
     //configure based on node type
@@ -2844,6 +2859,8 @@ const createCompetencesMap = (container) => {
         header_text = node.id;
         bg_color = COLORS.skill;
         text_color = COLORS.text;
+        show_cta = true;
+        cta_content = node.type;
         break;
 
       case "tech":
@@ -2855,7 +2872,7 @@ const createCompetencesMap = (container) => {
         label_text = tech_labels[node.type] || "TECHNOLOGY";
         header_text = node.id;
         bg_color = tech_colors(node.type);
-        text_color = COLORS.background;
+        text_color = COLORS.text;
         break;
 
       case "project":
@@ -2865,6 +2882,7 @@ const createCompetencesMap = (container) => {
         bg_color = COLORS.proj;
         text_color = COLORS.background;
         show_cta = true;
+        cta_content = CTA_TEXT;
         break;
 
       case "skill_type":
@@ -2914,10 +2932,11 @@ const createCompetencesMap = (container) => {
     // Fix CTA position
     if (show_cta) {
       cta
+        .datum(node)
         .style("font-size", `${CTA_FONT_SIZE}px`)
         .style("fill", text_color)
         .style("opacity", 0)
-        .text(CTA_TEXT);
+        .text(cta_content);
 
       const cta_y = CENTRAL_LABEL_BASE.cta_y_offset * SF;
       cta.attr("y", cta_y);
