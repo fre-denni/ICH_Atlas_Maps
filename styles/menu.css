@@ -181,6 +181,16 @@ nav.is-open #more-btn {
   position: relative;
 }
 
+.menu-btn:hover {
+  background: var(--primary);
+}
+
+.menu-btn:hover .menu-line,
+.menu-btn:hover .menu-line::before,
+.menu-btn:hover .menu-line::after {
+  background: var(--white);
+}
+
 /* hamburger lines */
 .menu-btn .menu-line,
 .menu-btn .menu-line::before,
@@ -211,7 +221,11 @@ nav.is-open #more-btn {
 
 /* open */
 .menu-btn.is-active {
-  background-color: var(--primary-light);
+  background-color: var(--white);
+}
+
+.menu-btn.is-active:hover {
+  background-color: var(--primary);
 }
 
 .menu-btn.is-active .menu-line {
@@ -221,13 +235,18 @@ nav.is-open #more-btn {
 .menu-btn.is-active .menu-line::before {
   transform: rotate(45deg);
   top: 0;
-  background-color: var(--primary);
+  background-color: var(--gray);
 }
 
 .menu-btn.is-active .menu-line::after {
   transform: rotate(-45deg);
   top: 0;
-  background-color: var(--primary);
+  background-color: var(--gray);
+}
+
+.menu-btn.is-active:hover .menu-line::before,
+.menu-btn.is-active:hover .menu-line::after {
+  background-color: var(--white);
 }
 
 /* =========================
