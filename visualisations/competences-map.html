@@ -28,7 +28,7 @@
     <script src="../lib/d3.js"></script>
     <script src="../lib/d3-delaunay.js"></script>
     <script src="../lib/d3-bboxCollide.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/opentype.js@latest/dist/opentype.min.js"></script>
+    <script src="../scripts/manageFonts.js"></script>
     <script src="../scripts/createCompetencesMap.js"></script>
   </head>
   <body style="overflow: hidden">
@@ -155,7 +155,7 @@
       });
 
       document.getElementById("download-btn").addEventListener("click", () => {
-        drawMap.downloadSVG(); // Chiama la funzione che abbiamo creato
+        drawMap.downloadPNG(); // Download image as .png
       });
 
       //handle responsiviness

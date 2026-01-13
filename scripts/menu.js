@@ -24,7 +24,7 @@ function downloadData(filePath, fileName) {
   download.addEventListener("change", function () {
     if (this.checked) {
       trigger.click();
-      console.log("donwload started...");
+      console.log("download started...");
       this.checked = false;
     }
   });

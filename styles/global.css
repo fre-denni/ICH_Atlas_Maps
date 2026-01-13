@@ -10,15 +10,15 @@
 }
 
 @font-face {
-  font-family: "IBM Plex Serif Light";
-  font-weight: 400;
+  font-family: "IBM Plex Serif";
+  font-weight: 300;
   font-style: normal;
   src: url("../assets/fonts/IBMPlexSerif-Light.woff2") format("woff2");
 }
 
 @font-face {
-  font-family: "IBM Plex Serif Regular";
-  font-weight: 500;
+  font-family: "IBM Plex Serif";
+  font-weight: 400;
   font-style: normal;
   src: url("../assets/fonts/IBMPlexSerif.woff2") format("woff2");
 }
@@ -31,14 +31,14 @@
 }
 
 @font-face {
-  font-family: "Inter Bold";
-  font-weight: 600;
+  font-family: "Inter";
+  font-weight: 500;
   font-style: normal;
   src: url("../assets/fonts/Inter-SemiBold.woff2") format("woff2");
 }
 
 body {
-  font-family: "IBM Plex Serif Regular", serif;
+  font-family: "IBM Plex Serif", serif;
   font-weight: 400;
   font-size: 20px;
   text-align: center;

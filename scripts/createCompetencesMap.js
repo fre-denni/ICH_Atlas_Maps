@@ -2284,7 +2284,7 @@ const createCompetencesMap = (container) => {
       .attr("y", 0)
       .attr("text-anchor", "middle")
       .attr("dominant-baseline", "middle")
-      .style("font-family", "'IBM Plex Serif Regular', serif")
+      .style("font-family", "'IBM Plex Serif', serif")
       .style("font-weight", "400")
       .style("fill", COLORS.text)
       .style("opacity", 0);
@@ -3170,7 +3170,7 @@ const createCompetencesMap = (container) => {
       <div style="font-family: 'Inter', sans-serif; font-size: 16px; color: ${COLORS.text}; margin: 0; padding: 0;">
         ${date[projectIndex]}
       </div>
-      <h2 style="font-size: 20px; font-weight: 400; margin: 0; color: ${COLORS.ui}; font-family: 'IBM Plex Serif Regular', serif;">
+      <h2 style="font-size: 20px; font-weight: 400; margin: 0; color: ${COLORS.ui}; font-family: 'IBM Plex Serif', serif;">
         ${title[projectIndex]}
       </h2>
     </div>
@@ -3179,10 +3179,10 @@ const createCompetencesMap = (container) => {
     body.html(`
       <div style="display: flex; gap: 40px; margin: 0px; align-items: flex-start; padding: 0;">
         <div style="flex: 1; min-width: 0; margin: 0;">
-          <div style="font-size: 16px; font-family: 'IBM Plex Serif Regular', serif; text-align: start; color: ${COLORS.text}; line-height: 1.6; margin-bottom: 0;">
+          <div style="font-size: 16px; font-family: 'IBM Plex Serif', serif; text-align: start; color: ${COLORS.text}; line-height: 1.6; margin-bottom: 0;">
             ${description[projectIndex]}
           </div>
-          <div style="font-size: 12px; font-family: 'IBM Plex Serif Regular', serif; text-align: start; color: ${COLORS.type}; line-height: 1.5;">
+          <div style="font-size: 12px; font-family: 'IBM Plex Serif', serif; text-align: start; color: ${COLORS.type}; line-height: 1.5;">
             ${credits[projectIndex]}
           </div>
         </div>
@@ -4208,32 +4208,20 @@ const createCompetencesMap = (container) => {
       .attr("visibility", DEBUG);
   } //renderBoundaries()
 
-  /***
-   * Funzione per scaricare l'SVG corrente
-   * Aggiungila dove preferisci, ad esempio dopo chart.resize ***/
-  chart.downloadSVG = function () {
-    //1. Include the fonts
-    const fontStyles = `
-      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=IBM+Plex+Serif:wght@400&display=swap');
-    `;
-
-    // 2. Take the svg
+  //Download function of chart
+  chart.downloadPNG = function () {
+    // Clone svg chart
     const svgNode = svg.node();
-
-    // 3. Let's create a clone
     const clonedSvgNode = svgNode.cloneNode(true);
 
-    // 4. Inseriamo gli stili dei font in un tag <style> nel clone
-    // Questo aiuta i programmi (tipo Illustrator) a trovare i font giusti
     const styleEl = document.createElement("style");
-    styleEl.innerHTML = fontStyles;
-    clonedSvgNode.querySelector("g").prepend(styleEl); // Inseriscilo all'inizio
+    styleEl.textContent = fontStyles; //from manageFonts.js
+    clonedSvgNode.querySelector("g").prepend(styleEl);
 
-    // 5. Serializziamo il clone in una stringa di testo
     const serializer = new XMLSerializer();
     let svgString = serializer.serializeToString(clonedSvgNode);
 
-    // 6. Aggiungiamo il namespace XML, fondamentale per la compatibilità
+    // Add namespace if missing
     if (
       !svgString.match(/^<svg[^>]+xmlns="http:\/\/www\.w3\.org\/2000\/svg"/)
     ) {
@@ -4243,20 +4231,49 @@ const createCompetencesMap = (container) => {
       );
     }
 
-    // 7. Creiamo un "file" in memoria (Blob)
-    const blob = new Blob([svgString], {
+    // 3. Define the size and scale (Scale 2x for better quality)
+    const width = svgNode.getBoundingClientRect().width;
+    const height = svgNode.getBoundingClientRect().height;
+    const scale = 2; // Increase this for higher resolution
+
+    // 4. Create an Image element to load the SVG data
+    const img = new Image();
+    const svgBlob = new Blob([svgString], {
       type: "image/svg+xml;charset=utf-8",
     });
+    const url = URL.createObjectURL(svgBlob);
 
-    // 8. Usiamo un trucco per il download: creiamo un link invisibile e lo clicchiamo
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "mappa-competenze-tecnologie.svg"; // Il nome del file
+    img.onload = function () {
+      // 5. Draw the image onto a Canvas
+      const canvas = document.createElement("canvas");
+      canvas.width = width * scale;
+      canvas.height = height * scale;
 
-    document.body.appendChild(link); // Aggiungilo
-    link.click(); // Cliccalo
-    document.body.removeChild(link); // Rimuovilo
-  }; //define function to download chart
+      const ctx = canvas.getContext("2d");
+      // Scale the context to ensure the image fits the larger canvas
+      ctx.scale(scale, scale);
+
+      // Optional: Add a white background (otherwise transparent parts are black/empty)
+      ctx.fillStyle = COLORS.background;
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // 6. Convert Canvas to PNG and Download
+      URL.revokeObjectURL(url); // Clean up memory
+
+      const link = document.createElement("a");
+      // toDataURL converts the canvas pixels to a PNG data string
+      link.href = canvas.toDataURL("image/png");
+      link.download = "mappa-competenze-chart.png";
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+
+    img.src = url; // Trigger the loading
+  }; //chart.download
 
   return chart;
 };
