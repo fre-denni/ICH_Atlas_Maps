@@ -1,0 +1,60 @@
+@import url(global.css);
+
+div {
+  max-width: 600px;
+  margin: auto;
+  padding: 10px;
+}
+
+h1 {
+  font-weight: 300;
+  font-size: 46px;
+  color: var(--primary);
+}
+
+p {
+  font-family: "IBM Plex Serif", serif;
+  margin: 16px 0;
+  text-align: justify;
+  line-height: 115%;
+  letter-spacing: 0.012em;
+}
+
+ul {
+  padding-left: 0;
+  margin: 60px 0;
+  text-transform: uppercase;
+  font-family: "Inter", sans-serif;
+}
+
+li {
+  list-style-type: none;
+  border-bottom: 1px solid var(--gray);
+  margin: 10px 0 30px;
+  line-height: 7px;
+}
+
+li a {
+  padding: 10px;
+}
+
+a {
+  text-decoration: none;
+  color: var(--primary);
+  background: var(--white);
+}
+
+a:hover {
+  color: var(--primary-dark);
+  font-weight: 500;
+}
+
+@media only screen and (max-width: 500px) {
+  body {
+    font-size: 18px;
+  }
+
+  li {
+    line-height: 20px;
+  }
+}

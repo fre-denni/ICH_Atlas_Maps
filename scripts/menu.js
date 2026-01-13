@@ -1,49 +1,133 @@
 /**********************************************
- * Functional Script that handles the menu
- * -> search and query of results (highlighting elements) -- trigger with d3?
- * -> open and close modal window
- * -> open to the website of the project
+ * MENU LOGIC + ACCESSIBILITY
  ***********************************************/
 
-const menu = document.getElementById("menu");
-const items = document.getElementsByClassName("menu-item");
 const nav = document.getElementById("floating-nav");
-const trigger = document.getElementById("trigger");
-const download = document.getElementById("download");
+const menuBtn = document.getElementById("menu-btn");
 
-//animations
-menu.addEventListener("click", () => {
-  nav.classList.toggle("is-open");
+const searchBtn = document.getElementById("search-btn");
+const infoBtn = document.getElementById("info-btn");
+const downloadBtnNav = document.getElementById("download-btn-nav");
+const moreBtn = document.getElementById("more-btn");
+const cameraBtn = document.getElementById("camera-btn");
+
+const trigger = document.getElementById("trigger");
+
+const menuItems = [
+  searchBtn,
+  infoBtn,
+  downloadBtnNav,
+  cameraBtn,
+  moreBtn,
+].filter(Boolean);
+
+/* ===============================
+   OPEN / CLOSE MENU
+================================ */
+
+function openMenu() {
+  nav.classList.add("is-open");
+  menuBtn.classList.add("is-active");
+  menuBtn.setAttribute("aria-expanded", "true");
+
+  // focus first item
+  setTimeout(() => {
+    menuItems[0]?.focus();
+  }, 150);
+}
+
+function closeMenu() {
+  nav.classList.remove("is-open");
+  menuBtn.classList.remove("is-active");
+  menuBtn.setAttribute("aria-expanded", "false");
+  menuBtn.focus();
+}
+
+menuBtn.addEventListener("click", () => {
+  nav.classList.contains("is-open") ? closeMenu() : openMenu();
 });
 
-// download dataset when activated (triggered on main code)
+/* ===============================
+   ESC TO CLOSE
+================================ */
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && nav.classList.contains("is-open")) {
+    e.preventDefault();
+    closeMenu();
+  }
+});
+
+/* ===============================
+   KEYBOARD SHORTCUTS
+================================ */
+
+document.addEventListener("keydown", (event) => {
+  if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA")
+    return;
+
+  const key = event.key.toLowerCase();
+
+  switch (key) {
+    case "d":
+      downloadBtnNav?.click();
+      break;
+    case "s":
+      cameraBtn?.click();
+      break;
+    case "i":
+      infoBtn?.click();
+      break;
+  }
+});
+
+/* ===============================
+   TAB / SHIFT+TAB LOOP
+================================ */
+
+nav.addEventListener("keydown", (e) => {
+  if (!nav.classList.contains("is-open")) return;
+  if (e.key !== "Tab") return;
+
+  const focusable = [menuBtn, ...menuItems];
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+
+  if (e.shiftKey && document.activeElement === first) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && document.activeElement === last) {
+    e.preventDefault();
+    first.focus();
+  }
+});
+
+/* ===============================
+   DOWNLOAD DATASET
+================================ */
+
 function downloadData(filePath, fileName) {
   trigger.href = filePath;
   trigger.setAttribute("download", fileName);
 
-  download.addEventListener("change", function () {
-    if (this.checked) {
-      trigger.click();
-      console.log("download started...");
-      this.checked = false;
-    }
+  downloadBtnNav.addEventListener("click", () => {
+    trigger.click();
   });
 }
 
-// Search modal and code (to trigger in main code with the dataset)
+/* ===============================
+   IFRAME CHECK
+================================ */
 
-// check if it is in iframe and hide "more" checkbox
 function checkIframe() {
   try {
     return window.self !== window.top;
-  } catch (e) {
+  } catch {
     return true;
   }
 }
 
 if (checkIframe()) {
-  //element to not display when in <iframe>
-  document.getElementById("label-more").style.display = "none";
-  document.getElementById("label-search").style.display = "none";
-  document.getElementById("download-btn").style.display = "none";
+  moreBtn && (moreBtn.style.display = "none");
+  searchBtn && (searchBtn.style.display = "none");
 }

@@ -1,0 +1,120 @@
+/* --- MODAL --- */
+@import url(global.css);
+
+.modal {
+  display: none;
+  gap: 2rem;
+  position: fixed;
+  z-index: 1;
+  margin: 0;
+  top: 50%;
+  left: 50%;
+  max-width: none;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(from var(--gray) r g b / 75%);
+  -webkit-animation-name: fadeIn;
+  -webkit-animation-duration: 0.4s;
+  animation-name: fadeIn;
+  animation-duration: 0.4s;
+}
+
+.modal-content {
+  position: relative;
+  margin: 15% auto;
+  padding: 20px;
+  width: 80%;
+  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.15);
+  border-radius: 1rem;
+  background-color: var(--white);
+}
+
+#modal-header {
+  margin: 0;
+  padding: 0;
+  max-width: none;
+}
+
+#modal-body {
+  margin: 0;
+  padding: 0;
+  max-width: none;
+}
+
+.modal-content h2 {
+  font-size: 24px;
+  font-weight: 400;
+  margin: 16px 0 0 0;
+  color: var(--primary);
+}
+
+.modal-content p {
+  font-size: 16px;
+}
+
+.close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  line-height: 1;
+  color: var(--gray);
+  float: right;
+  margin: 0;
+  height: 0;
+  font-size: 32px;
+  font-weight: 200;
+  cursor: pointer;
+  font-family: "Inter", sans-serif;
+  text-transform: uppercase;
+}
+
+.close:hover,
+.close:focus {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 300;
+  cursor: pointer;
+}
+
+/* Add Animation */
+@-webkit-keyframes slideIn {
+  from {
+    bottom: -300px;
+    opacity: 0;
+  }
+  to {
+    bottom: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    bottom: -300px;
+    opacity: 0;
+  }
+  to {
+    bottom: 0;
+    opacity: 1;
+  }
+}
+
+@-webkit-keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

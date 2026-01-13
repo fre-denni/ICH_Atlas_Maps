@@ -1,0 +1,214 @@
+/* --- MENU --- */
+@import url(global.css);
+
+nav {
+  --anim-duration: 0.25s;
+  --anim-ease: cubic-bezier(0.25, 1, 0.5, 1);
+
+  position: fixed;
+  left: 5%;
+  top: 5%;
+  display: inline-flex;
+  padding: 8px;
+  flex-direction: column;
+  align-items: flex-start;
+  border-radius: 2rem;
+  background-color: var(--white);
+  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.25);
+}
+
+nav button {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+}
+
+.menu-item {
+  display: none;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-4px);
+
+  transition: opacity var(--anim-duration) var(--anim-ease),
+    transform var(--anim-duration) var(--anim-ease);
+}
+
+nav.is-open .menu-item {
+  display: flex;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  margin-top: 8px;
+}
+
+/* Closing */
+#search-btn {
+  transition-delay: 0.2s;
+}
+#info-btn {
+  transition-delay: 0.15s;
+}
+#download-btn-nav {
+  transition-delay: 0.1s;
+}
+#camera-btn {
+  transition-delay: 0.05s;
+}
+#more-btn {
+  transition-delay: 0s;
+}
+
+/* Opening */
+nav.is-open #search-btn {
+  transition-delay: 0s;
+}
+nav.is-open #info-btn {
+  transition-delay: 0.1s;
+}
+nav.is-open #download-btn-nav {
+  transition-delay: 0.2s;
+}
+nav.is-open #camera-btn {
+  transition-delay: 0.3s;
+}
+nav.is-open #more-btn {
+  transition-delay: 0.4s;
+}
+
+.icon {
+  background: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 40px;
+  height: 40px;
+
+  padding: 8px;
+  border-radius: 50%;
+  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.15);
+  color: var(--gray);
+
+  transition: background-color 0.3s ease, transform 0.3s ease,
+    color var(--anim-duration) var(--anim-ease);
+}
+
+.icon::before {
+  content: none;
+}
+
+nav.is-open .icon::before {
+  content: "";
+  width: 22px;
+  height: 22px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+#menu-btn::before {
+  content: none;
+}
+
+#search-btn::before {
+  background-image: url("../assets/icons/magnifying-glass.svg");
+}
+
+#info-btn::before {
+  background-image: url("../assets/icons/info.svg");
+}
+
+#download-btn-nav::before {
+  background-image: url("../assets/icons/download-simple.svg");
+}
+
+#more-btn::before {
+  background-image: url("../assets/icons/dots-three-outline.svg");
+}
+
+#camera-btn::before {
+  background-image: url("../assets/icons/camera.svg");
+}
+
+nav.is-open .icon {
+  padding: 8px;
+}
+
+nav {
+  transition: all var(--anim-duration) var(--anim-ease);
+}
+
+.icon .menu,
+.icon .menu::before,
+.icon .menu::after {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  content: "";
+  background-color: var(--gray);
+  display: block;
+  height: 2px;
+  width: 20px;
+  border-radius: 2px;
+  transition: all 0.3s ease-in-out;
+}
+
+.icon:hover .menu,
+.icon:hover .menu::before,
+.icon:hover .menu::after {
+  background: var(--white);
+}
+
+.icon:hover {
+  background-color: var(--primary);
+  transform: scale(1.1);
+  color: var(--white);
+}
+
+.icon .menu {
+  position: relative;
+}
+
+.icon .menu::before,
+.icon .menu::after {
+  content: "";
+  position: absolute;
+  left: 0;
+}
+
+.icon .menu::before {
+  top: -6px;
+}
+
+.icon .menu::after {
+  top: 6px;
+}
+
+.icon.is-active {
+  background-color: var(--primary-light);
+  color: var(--white);
+}
+
+.icon.is-active:hover {
+  background-color: var(--primary);
+}
+
+#menu-btn.is-active .menu {
+  background: transparent;
+}
+
+#menu-btn.is-active .menu::before {
+  transform: rotate(45deg);
+}
+
+#menu-btn.is-active .menu::after {
+  transform: rotate(-45deg);
+}
+
+#menu-btn.is-active .menu::before,
+#menu-btn.is-active .menu::after {
+  top: 0;
+  background: var(--white);
+  transition: top ease 0.3s, transform ease 0.3s 0.3s;
+}

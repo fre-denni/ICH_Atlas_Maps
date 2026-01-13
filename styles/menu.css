@@ -1,4 +1,6 @@
-/* --- MENU --- */
+/* =========================
+   MENU
+========================= */
 @import url(global.css);
 
 nav {
@@ -8,191 +10,246 @@ nav {
   position: fixed;
   left: 5%;
   top: 5%;
+
   display: inline-flex;
-  padding: 8px;
   flex-direction: column;
   align-items: flex-start;
+
+  padding: 8px;
   border-radius: 2rem;
+
   background-color: var(--white);
-  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.25);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.25);
 }
 
-.menu-item {
-  max-height: 0;
-  height: 0;
-  opacity: 0;
-  overflow: hidden;
-  pointer-events: none;
-  margin-top: 0;
-  padding-top: 0;
-  padding-bottom: 0;
-  transition: max-height var(--anim-duration) var(--anim-ease),
-    opacity var(--anim-duration) var(--anim-ease),
-    margin-top var(--anim-duration) var(--anim-ease),
-    padding var(--anim-duration) var(--anim-ease);
-}
-
-nav.is-open .menu-item {
-  max-height: 60px;
-  opacity: 1;
-  pointer-events: auto;
-  margin-top: 8px;
-  padding-top: 8px;
-  padding-bottom: 8px;
-}
-
-/* Closing Delays (reverse order: the last item closes first) */
-label[for="search"] {
-  transition-delay: 0.15s;
-} /* This item will disappear last */
-label[for="info"] {
-  transition-delay: 0.1s;
-}
-label[for="download"] {
-  transition-delay: 0.05s;
-}
-label[for="more"] {
-  transition-delay: 0s;
-} /* This item will disappear first */
-
-/* Opening Delays (forward order: the first item opens first) */
-nav.is-open label[for="search"] {
-  transition-delay: 0.1s;
-}
-nav.is-open label[for="info"] {
-  transition-delay: 0.2s;
-}
-nav.is-open label[for="download"] {
-  transition-delay: 0.3s;
-}
-nav.is-open label[for="more"] {
-  transition-delay: 0.4s;
-}
-
-input[type="checkbox"] {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-  display: none;
-}
-
-.icon {
-  background: var(--white);
+/* =========================
+   RESET BOTTONI
+========================= */
+nav button {
+  all: unset;
+  box-sizing: border-box;
   cursor: pointer;
+  display: flex;
+}
+
+/* =========================
+   BASE SHARED STYLE
+========================= */
+.menu-btn,
+.icon {
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 24px;
-  width: 24px;
-  padding: 8px;
-  border-radius: 24px;
-  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.15);
-  color: var(--gray);
-  transition: background-color 0.3s ease, transform 0.3s ease,
-    padding var(--anim-duration) var(--anim-ease),
-    color var(--anim-duration) var(--anim-ease);
+
+  border-radius: 50%;
+  background-color: var(--white);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.15);
+
+  transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
-.icon svg {
-  width: 22px;
-  height: 22px;
-}
-
-label.icon:not(:first-of-type) {
-  padding-top: 0;
-  padding-bottom: 0;
-}
-
-nav.is-open .icon {
-  padding: 8px;
-}
-
-nav {
-  transition: all var(--anim-duration) var(--anim-ease);
-}
-
-.icon .menu,
-.icon .menu::before,
-.icon .menu::after {
-  max-width: none;
-  margin: 0;
-  padding: 0;
-  content: "";
-  background-color: var(--gray);
-  display: block;
-  height: 2px;
-  width: 20px;
-  border-radius: 2px;
-  transition: all 0.3s ease-in-out;
-}
-
-.icon:hover .menu,
-.icon:hover .menu::before,
-.icon:hover .menu::after {
-  background: var(--white);
-}
-
-.icon:hover {
-  background-color: var(--primary);
-  transform: scale(1.1);
-  color: var(--white);
-}
-
-.icon .menu {
+/* =========================
+   ICON BUTTONS
+========================= */
+.icon {
   position: relative;
 }
 
-.icon .menu::before,
-.icon .menu::after {
+/* SVG via mask */
+.icon::before {
   content: "";
-  position: absolute;
-  left: 0;
+  width: 22px;
+  height: 22px;
+
+  background-color: var(--gray);
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+
+  transition: background-color 0.2s ease;
 }
 
-.icon .menu::before {
+/* Icon mapping */
+#search-btn::before {
+  mask-image: url("../assets/icons/magnifying-glass.svg");
+}
+
+#info-btn::before {
+  mask-image: url("../assets/icons/info.svg");
+}
+
+#download-btn-nav::before {
+  mask-image: url("../assets/icons/download-simple.svg");
+}
+
+#camera-btn::before {
+  mask-image: url("../assets/icons/camera.svg");
+}
+
+#more-btn::before {
+  mask-image: url("../assets/icons/dots-three-outline.svg");
+}
+
+/* Hover */
+.icon:hover {
+  background-color: var(--primary);
+  transform: scale(1.1);
+}
+
+.icon:hover::before {
+  background-color: var(--white);
+}
+
+/* Active / clicked */
+.icon.is-active::before {
+  background-color: var(--primary);
+}
+
+/* =========================
+   MENU ITEMS (COLLAPSE)
+========================= */
+.menu-item {
+  display: none;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-4px);
+
+  transition: opacity var(--anim-duration) var(--anim-ease),
+    transform var(--anim-duration) var(--anim-ease);
+}
+
+nav.is-open .menu-item {
+  display: flex;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  margin-top: 8px;
+}
+
+/* Opening delays */
+nav.is-open #search-btn {
+  transition-delay: 0s;
+}
+nav.is-open #info-btn {
+  transition-delay: 0.1s;
+}
+nav.is-open #download-btn-nav {
+  transition-delay: 0.2s;
+}
+nav.is-open #camera-btn {
+  transition-delay: 0.3s;
+}
+nav.is-open #more-btn {
+  transition-delay: 0.4s;
+}
+
+/* =========================
+   HAMBURGER MENU BUTTON
+========================= */
+.menu-btn {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--white);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* hamburger lines */
+.menu-btn .menu-line,
+.menu-btn .menu-line::before,
+.menu-btn .menu-line::after {
+  content: "";
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--gray);
+  border-radius: 2px;
+  transition: transform 0.25s ease, opacity 0.2s ease;
+}
+
+.menu-btn .menu-line {
+  position: relative;
+}
+
+.menu-btn .menu-line::before {
+  position: absolute;
   top: -6px;
 }
 
-.icon .menu::after {
+.menu-btn .menu-line::after {
+  position: absolute;
   top: 6px;
 }
 
-#menu:checked + .icon .menu {
+/* OPEN STATE */
+.menu-btn.is-active {
+  background: var(--primary-light);
+}
+
+.menu-btn.is-active .menu-line {
   background: transparent;
 }
 
-#menu:checked + .icon .menu::before {
+.menu-btn.is-active .menu-line::before {
   transform: rotate(45deg);
-}
-
-#menu:checked + .icon .menu::after {
-  transform: rotate(-45deg);
-}
-
-#menu:checked + .icon .menu::before,
-#menu:checked + .icon .menu::after {
   top: 0;
-  transition: top ease 0.3s, transform ease 0.3s 0.3s;
-  background: var(--white);
+  background: var(--primary);
 }
 
-#menu:checked + .icon,
-#search:checked + .icon,
-#info:checked + .icon,
-#more:checked + .icon {
-  background-color: var(--primary-light);
-  color: var(--white);
-  transition: all ease 0.3s;
+.menu-btn.is-active .menu-line::after {
+  transform: rotate(-45deg);
+  top: 0;
+  background: var(--primary);
 }
 
-#menu:checked + .icon:hover,
-#search:checked + .icon:hover,
-#info:checked + .icon:hover,
-#more:checked + .icon:hover {
+/* =========================
+   FOCUS ACCESSIBILITY
+========================= */
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
+/* =========================
+   HINT UI
+========================= */
+.icon[data-hint]::after {
+  content: attr(data-hint);
+  position: absolute;
+  left: 140%;
+  top: 50%;
+
+  transform: translateY(-50%);
+  white-space: nowrap;
+
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 6px;
+
   background-color: var(--primary);
-  transition: all ease 0.3s;
+  color: var(--white);
+
+  font-family: "Inter", sans-serif;
+
+  opacity: 0;
+  pointer-events: none;
+
+  transition: opacity 0.2s ease;
+}
+
+.icon:hover::after,
+.icon:focus-visible::after {
+  opacity: 1;
 }
