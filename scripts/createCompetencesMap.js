@@ -2307,12 +2307,7 @@ const createCompetencesMap = (container) => {
       //MODALS
       .on("click", function (event, d) {
         event.stopPropagation();
-        if (d.type == "project") {
-          const currentProject = getCurrentProjectIndex();
-          if (currentProject !== null) {
-            openProjectModal(currentProject);
-          }
-        } else if (d.boundary) {
+        if (d.boundary) {
           //get skill type
           const skillTypeName = d.type;
           //find corresponding skill type
@@ -2323,6 +2318,11 @@ const createCompetencesMap = (container) => {
           //when clicked, click the skill type label
           if (targetArc) {
             ClickManager.onClick(targetArc, "skill_type");
+          }
+        } else {
+          const currentProject = getCurrentProjectIndex();
+          if (currentProject !== null) {
+            openProjectModal(currentProject);
           }
         }
       })
@@ -2932,7 +2932,7 @@ const createCompetencesMap = (container) => {
     // Fix CTA position
     if (show_cta) {
       cta
-        .datum(node)
+        .datum(node) //probabile colpevole
         .style("font-size", `${CTA_FONT_SIZE}px`)
         .style("fill", text_color)
         .style("opacity", 0)
