@@ -64,7 +64,7 @@ nav button {
 
   margin-top: 0;
 
-  overflow: hidden;
+  /*overflow: hidden;*/
 
   max-height: 0;
   opacity: 0;
@@ -90,6 +90,8 @@ nav.is-open .menu-items {
 
   transition: opacity var(--anim-duration) var(--anim-ease),
     transform var(--anim-duration) var(--anim-ease);
+  position: relative;
+  overflow: visible;
 }
 
 nav.is-open .menu-item {
