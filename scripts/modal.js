@@ -1,93 +1,78 @@
 /**********************************************
- * Functional Script that handles the modal
- * -> manage graphic and content depending on visualisation
+ * Functional Script that handles the graphic modal
+ * -> manages responsive image loading based on page
  ***********************************************/
 
 document.addEventListener("DOMContentLoaded", function () {
-  // Get the modal element (div, menu button, x,  and content)
-  let modal = document.getElementById("legend-modal");
-  let btn = document.getElementById("info-btn");
-  let span = document.getElementById("modal-close");
+  // Elements
+  const modal = document.getElementById("legend-modal");
+  const btn = document.getElementById("info-btn");
+  const span = document.getElementById("modal-close");
+  const modalImg = document.getElementById("modal-img");
 
-  //manage content of the modal
-  let header = document.getElementById("modal-header");
-  let body = document.getElementById("modal-body");
+  // Base path for images
+  const basePath = "../assets/img/";
 
-  // get csv table with content
-  const content = "../data/content-modal.csv";
-
-  // When the user clicks the button, open the modal and load content
-  btn.onclick = function () {
-    modal.style.display = "block";
-    fetchCSV(); //filter and apply data
-  };
-
-  // When the user clicks on <span> (x), close the modal
-  span.onclick = function () {
-    modal.style.display = "none";
-    btn.checked = false;
-  };
-
-  // When the user clicks anywhere outside of the modal, close it
-  window.onclick = function (event) {
-    if (event.target == modal) {
-      modal.style.display = "none";
-      btn.checked = false;
-    }
-  };
-
-  // detect page
-  function getPage() {
+  // --- 1. CONFIGURAZIONE IMMAGINI ---
+  // Mappa il nome della pagina al file immagine corrispondente
+  function getImageNameByPage() {
     const path = window.location.pathname;
-    const page = path.split("/").pop(); //determine name
+    const page = path.split("/").pop(); // estrae nomefile.html
 
     switch (page) {
       case "digitalisation-flux.html":
-        return "Digitalisation Flux";
+        return "Dig_Flux_legend.png";
       case "creative-approaches.html":
-        return "Creative Approach";
+        return "Creative_Tact_legend.png";
       case "competences-map.html":
-        return "Competences Map";
+        return "Tech_and_skill_legend.png";
       case "comparisons-tool.html":
-        return "Comparison Tool";
+        return "Comp_tool_legend.png";
       default:
-        return null;
+        return "Ecosystems_legend.png"; // Fallback
     }
   }
 
-  //take the correct content
-  function fetchCSV() {
-    const k = getPage();
-    if (!k) {
-      console.error("Not getting any viz, fam");
-      return;
-    }
+  // Funzione per aprire la modale e caricare l'immagine
+  function openModal() {
+    const imgName = getImageNameByPage();
+    modalImg.src = basePath + imgName;
 
-    fetch(content) //get the content from url
-      .then((response) => response.text())
-      .then((csvText) => {
-        const rows = csvText.trim().split("\n");
+    modal.style.display = "block";
 
-        header.innerHTML = "";
-        body.innerHTML = "";
-
-        for (let i = 1; i < rows.length; i++) {
-          const row = rows[i];
-
-          // This regex safely splits the row by commas, ignoring commas within quotes
-          const columns = row.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g);
-
-          const visualisation = columns[0].trim().replace(/"/g, "");
-          const headerTxt = columns[1].trim().replace(/"/g, "");
-          const bodyTxt = columns[2].trim().replace(/"/g, "");
-
-          if (visualisation === k) {
-            header.innerHTML = `<h2>${headerTxt}</h2>`;
-            body.innerHTML = `<p>${bodyTxt}</p>`;
-            break;
-          }
-        }
-      })
-      .catch((error) => console.error("CSV problem: ", error));
+    // Aggiorna stato bottone (opzionale se usato come toggle)
+    if (btn) btn.checked = true;
   }
+
+  // --- EVENT LISTENERS ---
+
+  // Click sul bottone Info
+  if (btn) {
+    btn.onclick = function () {
+      openModal();
+    };
+  }
+
+  // Click sulla X per chiudere
+  if (span) {
+    span.onclick = function () {
+      modal.style.display = "none";
+      if (btn) btn.checked = false;
+    };
+  }
+
+  // Click fuori dalla modale per chiudere
+  window.onclick = function (event) {
+    if (event.target == modal) {
+      modal.style.display = "none";
+      if (btn) btn.checked = false;
+    }
+  };
+
+  // --- AUTO-OPEN LOGIC ---
+  // Apre la modale automaticamente al caricamento della pagina
+  // Usiamo un timeout per coordinarci (o confliggere meno) con il menu
+  setTimeout(() => {
+    openModal();
+  }, 500); // Ritardo di 1 secondo
 });
