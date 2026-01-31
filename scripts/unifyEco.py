@@ -14,7 +14,7 @@ df2 = pd.read_csv(sheet2)
 # Create an Excel writer object using xlsxwriter engine
 download = os.path.join(data_folder, "download")
 os.makedirs(download, exist_ok=True)
-excel = os.path.join(download, "TRAMA-Ecosystem-Map-Dataset.xlsx")
+excel = os.path.join(download, "Ecosystem-Map-Dataset.xlsx")
 writer = pd.ExcelWriter(excel, engine='xlsxwriter')
 
 # Write each DataFrame to a separate sheet

@@ -1,601 +1,82 @@
-CODE,Title,Year,Primary Objective,Secondary Objectives,Beneficiaries,Creative Approach,Financial Resources,Business Model,Human Resources,Entity Types,Competences,ICH Domain,ICH Elements,Data Source,Data Type,Capturing Technologies,Representation Technologies,Digitization Output,Dissemination Technologies,Fruition Output
-1,Multi - Multimedia Museum,2023,Transmission,Global outreach,Enthusiasts,,,,Lead Developer,,Digital Content Design,,Dialects,Spoken-language recordings,Audio,,,,,Virtual museum
-1,Multi - Multimedia Museum,2023,Celebration,Edutainment,ICH Curious,Digital twinning,,,IT Consultancy,Multidisciplinary Design Studio,Administration,,Spoken Languages,Illustrations,Pictures,Audio recording,Storytelling tools,Structured metadata,,
-1,Multi - Multimedia Museum,2023,,,,,,,Front-End Developer,,Cultural Preservation Strategy,,Linguistics,Archive entry,,,,,,
-1,Multi - Multimedia Museum,2023,Preservation,Inclusivity,General public,Storytelling,Publicly funded,Free Access Model,Scientific curators,Educational Institution,Public Relations & Partnerships,Oral traditions and expressions,Languages,Written text,Text,2D acquisition,Database system,"Digitized collection of texts, images, and audio",Web platform,
-1,Multi - Multimedia Museum,2023,Enhancement,,Educational institutions,,,,Backend developer,University research center,Strategic Leadership,,Oral history,Books,,,,,,
-1,Multi - Multimedia Museum,2023,,,,,,,,,Creative Direction,,,,,,,,,
-1,Multi - Multimedia Museum,2023,,,,,,,,,Graphic Design,,,,,,,,,
-1,Multi - Multimedia Museum,2023,,,,,,,Art Director,,Documentation Research,,,,,,,,,
-1,Multi - Multimedia Museum,2023,,,,,,,Lead Designer,,Photography,,,,,,,,,
-1,Multi - Multimedia Museum,2023,,,,,,,UX/UI Designer,,Sales Strategy,,,,,,,,,
-1,Multi - Multimedia Museum,2023,,,,,,,,,UX/UI Design,,,,,,,,,
-1,Multi - Multimedia Museum,2023,,,,,,,,,,,,,,,,,,
-1,Multi - Multimedia Museum,2023,,,,,,,,,,,,,,,,,,
-1,Multi - Multimedia Museum,2023,,,,,,,,,,,,,,,,,,
-1,Multi - Multimedia Museum,2023,,,,,,,,,,,,,,,,,,
-2,Hundred Days: Winemaking Simulator,2021,,,Cultural practitioners,,,,,Winemakers,Art Direction,,,,,,,,,
-2,Hundred Days: Winemaking Simulator,2021,,,,,,,,,Audio/Sound Design,,,,,,,,,
-2,Hundred Days: Winemaking Simulator,2021,Preservation,Edutainment,Gamers,Gamification,Self-Funded,Direct to Consumers (DtC),Producer,,Business Development,Knowledge and practices concerning nature and the universe,Winemaking,Craftsmen Know-how,Text,,Game engine,Winemaking management simulator,Gaming system,Videogame
-2,Hundred Days: Winemaking Simulator,2021,,,Local communities,,,,,,Concept Art,,,,,,,,,
-2,Hundred Days: Winemaking Simulator,2021,,Global outreach,General public,Digital twinning,,,,Digital Artists,Game Development,,,,,,,Structured knowledge base,,
-2,Hundred Days: Winemaking Simulator,2021,,,,,,,,,,,,,,,,,,
-2,Hundred Days: Winemaking Simulator,2021,Accessibility,Economic sustainability,Enthusiasts,Storytelling,,,3D Graphic Designer,Music and Sound Design Studio,Lighting Design,,Food production,Enological chemistry documentation,Formulas,,,Statistical formulas,,
-2,Hundred Days: Winemaking Simulator,2021,Promotion,Cultural representation,ICH Curious,Simulation,,Pay-to-Play (P2P),Narrative Designer,Game development studio,Strategic Leadership,Traditional craftsmanship,Alcoholic beverages,Books on winemaking,Statistics,,Simulation algorithms,Dataset of winemaking processes,Media communication app,
-2,Hundred Days: Winemaking Simulator,2021,,,,,,,,,UX/UI Design,,,,,,,,,
-3,ADLaM,2023,Accessibility,Educational outreach,Marginalized communities,Participation,,,Typeface Designers,Visual Culture Specialists,Ethnographic Research,,Spoken Languages,Oral knowledge,Pictures,,Typeface modeling software,Vectorized text assets,,Participatory initiative
-3,ADLaM,2023,Preservation,Inclusivity,Local communities,Glocalization,Corporate-Sponsored,Free Access Model,Cultural Practitioner,Cultural Practitioners,Cultural Preservation Strategy,Oral traditions and expressions,,Adlam font lettering,Text,2D acquisition,Vector graphic software,Digital font of the Adlam script,Cloud system,Digital assets
-3,ADLaM,2023,Revitalization,,,,,,Art Director,Cultural Practitioners Community,Graphic Design,,Language preservation,,,,,,,
-3,ADLaM,2023,Lost/Endangered/Undocumented Recovery,Cultural identity reinforcement,Younger generations,,,,ICH Researchers,Typeface Designers,Participatory Production,,Languages,Digital script documentation,Digital font,,Text editing software,,,Digital campaign
-3,ADLaM,2023,Representativeness in digital world,,ICH Specialists,,,,Textile Expert,Advertising agency,Typeface Design,,Indigenous languages,,,,,,,
-3,ADLaM,2023,,,,,,,Creative Director,,Art Direction,,Adlam written texts,,,,,,,
-3,ADLaM,2023,,,,,,,Executive Creative Director,,Copywriting,,,,,,,,,
-3,ADLaM,2023,,,,,,,,,Creative Coordination,,,,,,,,,
-3,ADLaM,2023,,,,,,,Principal Program Manager,,Concept Ideation & Dev.,,,,,,,,,
-3,ADLaM,2023,,,,,,,Designer,,Cross-Platform Compatibility,,,,,,,,,
-3,ADLaM,2023,,,,,,,,,Communication Strategy,,,,,,,,,
-3,ADLaM,2023,Community empowerment,Global outreach,Schools,,,,,Multinational Technology Firm,Digital Content Curation,,Signs,,,,,,,
-3,ADLaM,2023,,,,,,,Design Director,,Digital Product Management,,,,,,,,,
-3,ADLaM,2023,,,,,,,Copywriter,,Rights & Permissions Management,,,,,,,,,
-3,ADLaM,2023,,,,,,,Principal Product Manager,,Strategic Leadership,,,,,,,,,
-3,ADLaM,2023,,,,,,,Head of Design,,Unicode Integration,,,,,,,,,
-3,ADLaM,2023,,,,,,,Accountant,,,,,,,,,,,
-3,ADLaM,2023,,,,,,,Director of Operations,,,,,,,,,,,
-3,ADLaM,2023,,,,,,,Group Account Director,,,,,,,,,,,
-3,ADLaM,2023,,,,,,,Executive Production Officer,,,,,,,,,,,
-3,ADLaM,2023,,,,,,,Executive Producer,,,,,,,,,,,
-3,ADLaM,2023,,,,,,,Strategy Director,,,,,,,,,,,
-4,A soup to remember,2024,Promotion,Economic sustainability,Schools,,,,Executive Director,Policy makers,Animation,,Dance,,,,,,,
-4,A soup to remember,2024,Preservation,Edutainment,Marginalized communities,Participation,Corporate-Sponsored,Free Access Model,Musicians,Pasta Producer,Art Direction,Oral traditions and expressions,Oral knowledge,Songs lyrics,Text,Audio recording,Alphabet-shaped pasta manufacturing,Illustrated books,Social Media,Digital campaign
-4,A soup to remember,2024,Community empowerment,Cultural dissemination,Local communities,,,,Brand Manager,Cultural and Arts local association,Graphic Design,,Vocal music,Međimurje oral traditions,,Text editing software,Vector graphic software,,,
-4,A soup to remember,2024,,,,,,,Creative Director,,Physical Computing,,Instrumental music,,,,,,,
-4,A soup to remember,2024,,,,,,,Designer,,Brand Management,,,,,,,,,
-4,A soup to remember,2024,,,ICH Specialists,,,,,,Cinematography,,Costumes,,,,,,,
-4,A soup to remember,2024,,,,,,,Head of Creative Excellence,,Community Engagement,,,,,,,,,
-4,A soup to remember,2024,,,,,,,Accountant,,Copywriting,,,,,,,,,
-4,A soup to remember,2024,,,,,,,Creative Manager,,Concept Ideation & Dev.,,,,,,,,,
-4,A soup to remember,2024,,,,,,,Copywriter,,Team Leadership,,,,,,,,,
-4,A soup to remember,2024,,,,,,,,,Cultural Knowledge Transfer,,,,,,,,,
-4,A soup to remember,2024,Visibility and reputation,Community empowerment,Younger generations,Materialization,,,ICH Practitioners,Advertising agency,Digital Illustration,Performing arts,Wedding customs,Music live performances,Audio,Video recording,Image editing software,Packaged with song lyrics alphabet-shaped pasta,,Participatory initiative
-4,A soup to remember,2024,,,,,,,Head of Video Production,,Decision-making,,,,,,,,,
-4,A soup to remember,2024,,,,,,,Head of Pre-Press,,,,,,,,,,,
-4,A soup to remember,2024,,,,,,,Craft Partner,,Digital Media Handling,,,,,,,,,
-4,A soup to remember,2024,,,,,,,Creative Partner,,Musical Composition,,,,,,,,,
-4,A soup to remember,2024,,,,,,,Social Media Manager,,Product Design,,,,,,,,,
-4,A soup to remember,2024,,,,,,,Video Animator,,Project Coordination,,,,,,,,,
-4,A soup to remember,2024,,,,,,,Head of Social Media,,Sociology,,,,,,,,,
-4,A soup to remember,2024,,,,,,,Art Director,,Strategic Leadership,,Religious practice,,,,,,,
-4,A soup to remember,2024,,,,,,,,,Video Production,,,,,,,,,
-4,A soup to remember,2024,,,,,,,Global Producer,,,,,,,,,,,
-4,A soup to remember,2024,,,,,,,Public Relationship,,,,,,,,,,,
-4,A soup to remember,2024,,,,,,,Illustrator,,,,,,,,,,,
-4,A soup to remember,2024,,,,,,,Photographer,,,,,,,,,,,
-4,A soup to remember,2024,,,,,,,Press and Production,,,,,,,,,,,
-4,A soup to remember,2024,,,,,,,Director of Photography,,,,,,,,,,,
-5,Pub Museums,2024,,,,,,,,,Advocacy Management,,,,,,,,,
-5,Pub Museums,2024,,,,,,,Digital Manager,,AI/AR/VR Integration,,Everyday life,,,,,,,
-5,Pub Museums,2024,,,Local communities,,,,Communication Manager,,AR Content Creation,,Food customs,,,,,,,
-5,Pub Museums,2024,,,Citizens,,,,,,Art Direction,,Hospitality customs,Floor plans,,,,,,
-5,Pub Museums,2024,,,,,,,Copywriter,,Business Strategy,,Irish pub floor plans,,,,,,,
-5,Pub Museums,2024,,,,,,,Creative Director,,Client Relationship Management,,Irish pub stories,,,,,,,
-5,Pub Museums,2024,,,,,,,CCO,,Communication Strategy,,,,,,,,,
-5,Pub Museums,2024,,,,,,,Client Service Director,,Content Strategy,,,,,,,,,
-5,Pub Museums,2024,Recognition,Policy advocacy,Tourists,,,,Digital Director,,Copywriting,,Fermented beverages,Pub stories,Audio,Audio recording,,Geographic metadata,,
-5,Pub Museums,2024,,,,,,,,,Concept Ideation & Dev.,,,,,,,,,
-5,Pub Museums,2024,,,,,,,Brand Manager,,Global & Local Marketing,,,,,,,,,
-5,Pub Museums,2024,,,,,,,,,Global Brand Leadership,,,,,,,,,
-5,Pub Museums,2024,,,,,,,Marketing Manager,,IT Systems Development,,,,,,,,,
-5,Pub Museums,2024,,,,,,,Group Account Director,,Machine Learning,,,,,,,,,
-5,Pub Museums,2024,Economic sustainability,Cultural dissemination,Cultural practitioners,Digital twinning,Corporate-Sponsored,Free Access Model,Director Global Brand,Advertising agency,Creative Coordination,"Social practices, rituals and festive events",Social gathering,Historical objects,Object/artefact,GPS,3D modeling software,Digital 3D models of historical objects,Mobile App,Virtual museum
-5,Pub Museums,2024,,,,,,,CEO,,Product Design,,,,,,,,,
-5,Pub Museums,2024,,,,,,,Marketing Director,,Technical Support,,Friendship memories,,,,,,,
-5,Pub Museums,2024,Preservation,Community engagement,Tradition bearers,Institutionalization,,,,Brewing company,Storytelling,,Brewing,Oral knowledge,Oral knowledge,3D scanning,Augmented Reality,Audio narrations,AR technologies,Museum
-5,Pub Museums,2024,,,,,,,Accountant,,,,,,,,,,,
-5,Pub Museums,2024,,,,,,,Head of PR & Communications,,,,,,,,,,,
-5,Pub Museums,2024,,,,,,,,,,,,,,,,,,
-5,Pub Museums,2024,,,,,,,Head of Creative Technology,,,,,,,,,,,
-5,Pub Museums,2024,,,,,,,Head of Digital Production,,,,,,,,,,,
-5,Pub Museums,2024,,,,,,,Digital Producer Supervisor,,,,,,,,,,,
-5,Pub Museums,2024,,,,,,,Digital Designer,,,,,,,,,,,
-5,Pub Museums,2024,,,,,,,,,,,,,,,,,,
-5,Pub Museums,2024,,,,,,,Agency Producer,,,,,,,,,,,
-5,Pub Museums,2024,,,,,,,Art Director,,,,,,,,,,,
-5,Pub Museums,2024,,,,,,,Technical Lead,,,,,,,,,,,
-5,Pub Museums,2024,,,,,,,Studio Lead,,,,,,,,,,,
-5,Pub Museums,2024,,,,,,,Production Assistant,,,,,,,,,,,
-5,Pub Museums,2024,,,,,,,Print Production,,,,,,,,,,,
-5,Pub Museums,2024,,,,,,,Business Director,,,,,,,,,,,
-5,Pub Museums,2024,,,,,,,Head of Creative Innovation,,,,,,,,,,,
-5,Pub Museums,2024,,,,,,,Public Relationship,,,,,,,,,,,
-5,Pub Museums,2024,,,,,,,,,,,,,,,,,,
-6,THE GREAT PALERMO,2015,,,Local communities,,,,Copywriter,,Game Programming,,Oral history,,,,,,,
-6,THE GREAT PALERMO,2015,,,,,,,Project Manager,,Rights & Permissions Management,,Storytelling,,,,,,,
-6,THE GREAT PALERMO,2015,,Community engagement,Tourists,,,,Visual Designer,,Copywriting,,Past History,Historical narratives,Object/artefact,,,,,
-6,THE GREAT PALERMO,2015,,,,,,,App Developer,,Creative Coordination,,Folklore,,,,,,,
-6,THE GREAT PALERMO,2015,,,,,,,,,Cultural Mediation,,,,,,,,,
-6,THE GREAT PALERMO,2015,Celebration,Cultural representation,General public,Storytelling,,,Game developer,Cultural Association,Digital Illustration,,Food preparation,Urban folklore,Audio,,Visual-novel game engine,Digital storytelling,Visual-novel gaming system,ICH-inspired artefact
-6,THE GREAT PALERMO,2015,,,,,,,Voiceover Artist,,Kinematic Analysis & Evaluation,,Urban spaces,,,,,,,
-6,THE GREAT PALERMO,2015,,,,,,,Sound Designer,,Project Coordination,,Monument history,,,,,,,
-6,THE GREAT PALERMO,2015,Preservation,Edutainment,Gamers,Gamification,Hybrid Funding Model,Free Access Model,Producer,Game development studio,Storytelling,"Social practices, rituals and festive events",Food customs,Oral narratives,Text,,Vector graphic software,Illustrated content,Web platform,Videogame
-6,THE GREAT PALERMO,2015,,,,,,,,,,,Sicilian oral traditions,,,,,,,
-6,THE GREAT PALERMO,2015,,,,,,,,,,,,,,,,,,
-6,THE GREAT PALERMO,2015,,,,,,,,,,,,,,,,,,
-6,THE GREAT PALERMO,2015,,,,,,,,,,,,,,,,,,
-6,THE GREAT PALERMO,2015,,,,,,,,,,,,,,,,,,
-6,THE GREAT PALERMO,2015,,,,,,,,,,,,,,,,,,
-6,THE GREAT PALERMO,2015,,,,,,,,,,,,,,,,,,
-6,THE GREAT PALERMO,2015,,,,,,,,,,,,,,,,,,
-7,Cultural Avatars,2023,,,,,,,Fashion Designer,,Advertising Management,,,,,,,,,
-7,Cultural Avatars,2023,,,,,,,Client Manager,,Campaign Coordination,,,,,,,,,
-7,Cultural Avatars,2023,,,,,,,Advertising Manager,,Client Relationship Management,,,,,,,,,
-7,Cultural Avatars,2023,,,,,,,Sales Manager,,Communication Strategy,,,,,,,,,
-7,Cultural Avatars,2023,,,,,,,Motion Designer,,,,,,,,,,,
-7,Cultural Avatars,2023,Empowerment,Cultural preservation,Local communities,Digital twinning,,,Coordinator of Joint Campaigns,Advertising agency,Copywriting,,Technical skills,Music live performances,Pictures,Annotation system,Game engine,,Gaming system,ICH-inspired artefact
-7,Cultural Avatars,2023,,,,,,,Art Director,,3D Modeling,,Craft workers,,,,,,,Digital campaign
-7,Cultural Avatars,2023,Cultural identity representation,Youth empowerment,Younger generations,Participation,Corporate-Sponsored,Free Access Model,Communication Officer,Telecommunications and digital service provider,Creative Coordination,Traditional craftsmanship,Apprenticeship,Traditional costumes,Object/artefact,2D acquisition,3D modeling software,3D gaming skins,Cloud system,Participatory initiative
-7,Cultural Avatars,2023,,,,,,,,,Creative Direction,,Traditional and contemporary African costumes,,,,,,,
-7,Cultural Avatars,2023,,,,,,,,,Cross-Cultural Storytelling,,,,,,,,,
-7,Cultural Avatars,2023,,,,,,,,,Team Leadership,,,,,,,,,
-7,Cultural Avatars,2023,,,,,,,,,,,Weaving,,,,,,,
-7,Cultural Avatars,2023,,,,,,,Assistant Art Director,,Gaming Skins Design,,Cultural identity,,,,,,,
-7,Cultural Avatars,2023,,,,,,,,,Decision-making,,,,,,,,,
-7,Cultural Avatars,2023,,,,,,,,,Fashion Design,,Jewelry,,,,,,,
-7,Cultural Avatars,2023,,,,,,,3D Graphic Designer,,Motion Graphics,,,,,,,,,
-7,Cultural Avatars,2023,,Open-source contribution,Gamers,,,,Copywriter,Game development studio,Coding,,Pattern,Technical documentation,,,,,,Dedicated physical events
-7,Cultural Avatars,2023,,,,,,,3D Character Artist,,Olfactory Heritage Documentation,,,,,,,,,
-7,Cultural Avatars,2023,,,,,,,Consulting Director,,Stage Spatial Design,,,,,,,,,
-7,Cultural Avatars,2023,,Community engagement,Marginalized communities,Glocalization,,,Creative Director,Fashion designers,Branding,,Costumes,Fashion Designer knowledge,Templates and Measures,,,,,Digital assets
-8,"ARCHETIPI da Poseidonia a Paestum, ricerca di manufatti contemporanei",2023,Remix and reinterpretation,Cultural promotion,Cultural institutions,Remix,,B2C,Industrial Designer,Manufacturing company,Ceramic Making,,Technical skills,Cultural symbols,Metadata,,3D printing,,,
-8,"ARCHETIPI da Poseidonia a Paestum, ricerca di manufatti contemporanei",2023,,,,,,,3D Printing Specialist,,Co-Design Facilitation,,Ceramic arts,,,,,,,
-8,"ARCHETIPI da Poseidonia a Paestum, ricerca di manufatti contemporanei",2023,,,,,,,,,Community Engagement,,Clay artefacts,,,,,,,
-8,"ARCHETIPI da Poseidonia a Paestum, ricerca di manufatti contemporanei",2023,Valorization,,General public,,,,Interior Designer,Industrial Designer,3D Printing,,Handicrafts,Historical documentation,,,,,,
-8,"ARCHETIPI da Poseidonia a Paestum, ricerca di manufatti contemporanei",2023,,,,,,,Architect,Architecture & Interior Design Studio,Digital Fabrication,,Apprenticeship,Archive entry,,,,,,
-8,"ARCHETIPI da Poseidonia a Paestum, ricerca di manufatti contemporanei",2023,,,,,,,3D Modeling Specialist,,Exhibition Design,,Geometrical shapes,,,,,,,
-8,"ARCHETIPI da Poseidonia a Paestum, ricerca di manufatti contemporanei",2023,Visibility and reputation,Contemporary design integration,Manufacturers,Archetyping,Self-Funded,B2B,Ceramicist,Archaeological site,Production Planning,Traditional craftsmanship,Craft workers,Archaeological artifacts,Object/artefact,2D acquisition,3D modeling software,3D printed prototypes and ceramic molds,Ceramic casting,ICH-inspired artefact
-9,No Food Tomorrow - Eucarestia,2023,,Community empowerment,Tradition bearers,Crowdsourcing,,,Scientific curators,Research Center,Photography,,Mediterranean diet food staples,,,,,,,Dedicated physical events
-9,No Food Tomorrow - Eucarestia,2023,,Celebration,Researchers and Scholars,Translation,,Crowdfunding,Conceptual Artist,Digital Art Studio,Concept Ideation & Dev.,,Harvesting techniques,,,2D acquisition,Annotation software,,,ICH-inspired artefact
-9,No Food Tomorrow - Eucarestia,2023,Preservation,Economic sustainability,Educational institutions,Artification,,Direct to Consumers (DtC),Creative Director,Artistic collective,Creative Direction,Knowledge and practices concerning nature and the universe,Plant resources,Photomicrograph of olive oil,Object/artefact,Optical microscopy,Photo-editing software,High-resolution macro images of diet samples,NFT technologies,Digital assets
-9,No Food Tomorrow - Eucarestia,2023,,,Enthusiasts,Magnification,,,Visual Designer,,Exhibition Design,,,Photomicrograph of sea water,,,,,,
-9,No Food Tomorrow - Eucarestia,2023,,,Policy makers,,,,Photographer,University research center,Community Impact Evaluation,,Social capital,Photomicrograph of wine,,,,,,
-9,No Food Tomorrow - Eucarestia,2023,,,,,,,Set Designer,,On-site Experience Coordination,,,Photomicrograph of cereals,,,,,,
-9,No Food Tomorrow - Eucarestia,2023,,,ICH Curious,,,,Music Composer,,Branding,,,,,,,,,
-9,No Food Tomorrow - Eucarestia,2023,,,,,,,Digital Designer,,,,,,,,,,,
-10,Virtual Dance Museum,2016-2025,,,,,,,XR Developer,,AI/AR/VR Integration,,,,,,,,,
-10,Virtual Dance Museum,2016-2025,,,,,,,Sound Technician,,Audio/Sound Recording,,,,,,,,,
-10,Virtual Dance Museum,2016-2025,,,Students,,,,Costume Designer,University Joint Venture,Traditional Costume Knowledge,,Handicrafts,,,,,,,
-10,Virtual Dance Museum,2016-2025,,,,,,,Digital Costume Designer,,,,,,,,,,,
-10,Virtual Dance Museum,2016-2025,,,,,,,Software Developer,,Cross-Platform Compatibility,,,,,,,,,
-10,Virtual Dance Museum,2016-2025,,,,,,,3D Animator,,,,,,,,,,,
-10,Virtual Dance Museum,2016-2025,Open resource creation,Interactive learning,,Digital twinning,,,Cultural Heritage Specialist,Academy of Customs and traditional dances,Heritage Expertise,"Social practices, rituals and festive events",Costumes,Traditional costumes,Video,Video recording,3D motion analysis software,Digitized video and audio recordings,,Virtual museum
-10,Virtual Dance Museum,2016-2025,,,,,,,,,3D Modeling,,,,,,,,,
-10,Virtual Dance Museum,2016-2025,,,,,,,Dance Documentation Specialist,,Dance Documentation,,,,,,,,,
-10,Virtual Dance Museum,2016-2025,,,,,,,Video Director,,Dance Performance Recording,,,,,,,,,
-10,Virtual Dance Museum,2016-2025,,,,,,,Digital Archivist,,Data Archiving & Retrieval,,,,,,,,,
-10,Virtual Dance Museum,2016-2025,,,,,,,Data Processing Specialist,,Data Post-Processing,,,,,,,,,
-10,Virtual Dance Museum,2016-2025,,,,,,,Database Manager,,Database Information Management,,,,,,,,,
-10,Virtual Dance Museum,2016-2025,,,Gamers,,,,Motion Capture Operator,Research Foundation,Motion Graphics,,Instrumental music,,,,,,,
-10,Virtual Dance Museum,2016-2025,Preservation,Cultural dissemination,Tradition bearers,,,,Ethnochoreologist,Traditional Arts Events Organization,Folk Dance Knowledge,,Choreography,Traditional music,Audio,HD cameras,,,,Digital assets
-10,Virtual Dance Museum,2016-2025,,,ICH Specialists,,,,Historian,Dance Academy,Historical & Literary Research,,Apprenticeship,,,3D scanning,,,,
-10,Virtual Dance Museum,2016-2025,,,,,,,3D Web Integration,,Interaction Design,,,,,,,,,
-10,Virtual Dance Museum,2016-2025,,,,,,,Metadata Specialist,,Microencapsulation,,,,,,,,,
-10,Virtual Dance Museum,2016-2025,,,,,,,Kinesiologist,,Motion Capture Data Acquisition,,,,,,,,,
-10,Virtual Dance Museum,2016-2025,Accessibility,Edutainment,Researchers and Scholars,Simulation,Publicly Funded,Free Access Model,Project Manager,Educational Institution,Project Coordination,Performing arts,Dance,Dance performance,Motion data,Motion tracking,Sensor Fusion,Motion data archives,Web platform,Digital archive
-10,Virtual Dance Museum,2016-2025,,,,,,,Researcher,University research center,Resource Planning,,,,,,,,,
-10,Virtual Dance Museum,2016-2025,,,,,,,UX/UI Designer,,UX/UI Design,,,,,,,,,
-10,Virtual Dance Museum,2016-2025,,,,,,,Web developer,,Web Development,,,,,,,,,
-10,Virtual Dance Museum,2016-2026,,,,,,,Post-production Editor,,,,,,,,,,,
-11,GPT-4 for Icelandic Language,2023,,,,,,,,Public Foundation,Deep Neural Networks,,Cultural identity,,,,,,,
-11,GPT-4 for Icelandic Language,2023,Community empowerment,Linguistic preservation,Policy makers,,,,Language Support Tools Developer,Language Technology company,AI System Dev.,,Oral history,,,,,,Generative AI,
-11,GPT-4 for Icelandic Language,2023,Knowledge transfer,,,,,,Linguistic Specialist,Language Technology Center,Computational Statistics,,Linguistics,,,,,,,
-11,GPT-4 for Icelandic Language,2023,Preservation,Cultural representation,Local communities,Glocalization,Public-Private Partnership,Free Access Model,,AI Research Organization,Entrepreneurship,Oral traditions and expressions,,Icelandic grammar rules,Text,OCR,Natural Language Processing (NLP),"Trained LLM (with basic knoledge of Icelandic language, albeit with errors)",LLM,Conversational agent
-11,GPT-4 for Icelandic Language,2023,Representativeness in digital world,,,,,,,Language Community,Machine Translation,,Languages,,,,,,,
-11,GPT-4 for Icelandic Language,2023,Revitalization,Community engagement,Private companies,Participation,,,Digital Product Developer,Governmental Agency,Resource Planning,,Spoken Languages,Books,,Text editing software,Machine Learning,,Reinforcement Learning,Participatory initiative
-11,GPT-4 for Icelandic Language,2023,,,,,,,,,Language Technology,,Icelandic grammar resources,,,,,,,
-11,GPT-4 for Icelandic Language,2023,,,,,,,,,Marketing Strategy,,,,,,,,,
-11,GPT-4 for Icelandic Language,2023,,,,,,,,,Data Analysis,,,,,,,,,
-11,GPT-4 for Icelandic Language,2023,,,,,,,,,Speech Synthesis,,,,,,,,,
-11,GPT-4 for Icelandic Language,2023,,,,,,,,,Sponsorship,,,,,,,,,
-12,Ichpedia,2010,,,,,,,Archaeologist,,Archaeology,Traditional craftsmanship,,,,,,,,
-12,Ichpedia,2010,Documentation,International collaboration,,,,,Researcher,Governmental Agency,Computer Engineering,Knowledge and practices concerning nature and the universe,Past History,Local communities,Text,Annotation system,,System for inventorying ICH,Wiki-based platform,Participatory initiative
-12,Ichpedia,2010,Preservation,Community engagement,,Participation,Publicly Funded,Free Access Model,,Research Center,Cultural Anthropology,"Social practices, rituals and festive events",Cultural identity,ICH Documentation,Object/artefact,2D acquisition,Database system,Digitized archive of Korean ICH,Web platform,Digital archive
-12,Ichpedia,2010,Visibility and reputation,Educational outreach,ICH Specialists,,,,Cultural Anthropologist,,Folklore Studies,,Memories,Oral histories,Pictures,,,,,
-12,Ichpedia,2010,Accessibility,,General public,,,,Software Developer,,Language/Style Checking,,Collective memory,Photos,Metadata,,,,,
-12,Ichpedia,2010,,,,,,,Literary Editor,,Digital Content Curation,,Korean ICH documentation,,,,,,,
-12,Ichpedia,2010,Community empowerment,,,,,,Folklorist,,Historical & Literary Research,,,,,,,,,
-12,Ichpedia,2010,,,,,,,Korean Literature Expert,,Immersive Sound Design,,,,,,,,,
-12,Ichpedia,2010,,,,,,,Sociologist,,Knowledge Graphs,,,,,,,,,
-12,Ichpedia,2010,,,,,,,Information Scientist,,Software Development,,,,,,,,,
-12,Ichpedia,2010,,,,,,,Historian,,Wood Science,,,,,,,,,
-13,MODAS: Sas Boghes da sos Singers a Tenor,2023,Promotion,Community engagement,Tradition bearers,Glocalization,,,Executive Producer,Community,Audio/Sound Post-production,,Throat singing,Oral knowledge,,,,,,
-13,MODAS: Sas Boghes da sos Singers a Tenor,2023,Celebration,Educational outreach,Local authorities,Storytelling,,,Cultural Network Coordinator,Cultural Association,Creative Direction,Performing arts,Polyphonic singing,Music live performances,,,,,,
-13,MODAS: Sas Boghes da sos Singers a Tenor,2023,Preservation,Linguistic preservation,Local communities,Participation,Publicly Funded,Free Access Model,Technical-Scientific Coordinator,Regional Cultural Organization,Community Engagement,Oral traditions and expressions,Vocal music,Songs lyrics,Audio,Audio recording,Audio processing,Digitized audio recordings of interviews and songs,Audio streaming platforms,Podcast
-13,MODAS: Sas Boghes da sos Singers a Tenor,2023,,,,,,,,Cultural Practitioners Community,Social Agents Simulation,,Spoken Languages,,,,,,,
-13,MODAS: Sas Boghes da sos Singers a Tenor,2023,,,,,,,Sound Technician,,,,Dialects,,,,,,,
-13,MODAS: Sas Boghes da sos Singers a Tenor,2023,,,,,,,Copywriter,,,,Instrumental music,,,,,,,
-13,MODAS: Sas Boghes da sos Singers a Tenor,2023,,,,,,,Mixing and Mastering Specialist,,,,Poetry,,,,,,,
-13,MODAS: Sas Boghes da sos Singers a Tenor,2023,,,,,,,Sound Designer,,,,Dance,,,,,,,
-13,MODAS: Sas Boghes da sos Singers a Tenor,2023,,,,,,,,,,,Wedding customs,,,,,,,
-13,MODAS: Sas Boghes da sos Singers a Tenor,2023,,,,,,,,,,,Work songs,,,,,,,
-13,MODAS: Sas Boghes da sos Singers a Tenor,2023,,,,,,,,,,,Pastoralism,,,,,,,
-13,MODAS: Sas Boghes da sos Singers a Tenor,2023,,,,,,,,,,,Everyday life,,,,,,,
-13,MODAS: Sas Boghes da sos Singers a Tenor,2023,,,,,,,,,,,Sheep husbandry,,,,,,,
-13,MODAS: Sas Boghes da sos Singers a Tenor,2023,,,,,,,,,,,Cultural perception of the island,,,,,,,
-13,MODAS: Sas Boghes da sos Singers a Tenor,2023,,,,,,,,,,,Sardinian canto a tenore songs,,,,,,,
-14,Camino Al Mictlan NFT,2021,Celebration,Community engagement,Virtual Tourists and avatars,Participation,,Community Contributions,Visual Artist,Video Jockey (VJ),AI/AR/VR Integration,,Religious practice,Mexican oral traditions,Pictures,,,Digital environments,VR,Digital assets
-14,Camino Al Mictlan NFT,2021,Preservation,Cultural representation,Indigenous communities,Digital twinning,Hybrid Funding Model,NFT Sales,Video and Sound Artist,Artistic collective,Digital Illustration,"Social practices, rituals and festive events",Festivals,Cultural symbols,Object/artefact,,3D modeling software,3D models of virtual altars,Web3 systems,Participatory initiative
-14,Camino Al Mictlan NFT,2021,Economic sustainability,Educational outreach,Creators,,,,,Digital Artists,Storytelling,,Family memories,Cultural artifacts and costumes,,,,Wearable assets for avatars,NFT technologies,ICH-inspired artefact
-14,Camino Al Mictlan NFT,2021,Community empowerment,Economic sustainability,,,,,Filmaker,Visual Artist,,,Flower arrangement,,,,,,,Dedicated virtual events
-14,Camino Al Mictlan NFT,2021,,,,,,,,Soundmaker,,,Veneration of the dead,,,,,,,
-14,Camino Al Mictlan NFT,2021,,,,,,,,,,,Rituals,,,,,,,
-14,Camino Al Mictlan NFT,2021,,,,,,,,,,,Religous syncretism,,,,,,,
-14,Camino Al Mictlan NFT,2021,,,,,,,,,,,Harvesting techniques,,,,,,,
-14,Camino Al Mictlan NFT,2021,,,,,,,,,,,Handicrafts,,,,,,,
-14,Camino Al Mictlan NFT,2021,,,,,,,,,,,Food preparation,,,,,,,
-14,Camino Al Mictlan NFT,2021,,,,,,,,,,,Day of the Dead symbols,,,,,,,
-15,Whispering table,2009,Edutainment,Cultural representation,General public,Materialization,Publicly Funded,Free Access Model,Project Manager,Design studio,Concept Ideation & Dev.,"Social practices, rituals and festive events",Religious practice,Oral narratives,Audio,Audio recording,Audio processing,Digitized audio recordings of conversations on culture and food traditions,Sensors,Interactive exhibition
-15,Whispering table,2009,,,,,,,,,Storytelling,,,,,,,,Microcontroller,
-15,Whispering table,2009,Celebration,Interactive engagement,Museums,Animation,,,Creative Director,Museum,Architectural Analysis,,Food culture,Cultural culinary traditions,,Microphones,Multimedia development engines,,Motion-activated system,
-15,Whispering table,2009,Fostering intercultural dialogue,,,Storytelling,,,,,UX/UI Design,,Food customs,,,,,,Microphones,
-15,Whispering table,2009,,,,,,,,,,,,,,,,,Wireless systems,
-16,History Blocks,2019,Preservation,Edutainment,Students,Digital twinning,Public-Private Partnership,Free Access Model,Creative Director,Creative Agency,Art Direction,Knowledge and practices concerning nature and the universe,Monuments,Archaeological documentation of destroyed monuments,Pictures,2D acquisition,Minecraft 3D modeling tools,Pre-built 3D Minecraft monument templates and re-building instructions,Web platform,Digital tools
-16,History Blocks,2019,,,,,,,Sound Designer,School,Copywriting,,,,,,,,,Digital campaign
-16,History Blocks,2019,Edutainment,Global outreach,Teachers,Participation,,,Producer,International Cultural Organization,Musical Performance,,Destroyed and endangered heritage,Architectural heritage data,Templates and Measures,Annotation system,,,,Digital assets
-16,History Blocks,2019,,,Schools,Facilitation,,,Music Composer,Edutainment game platform,Public Relations & Partnerships,,Middle Eastern architectural heritage data,Technical documentation,,,,,,Participatory initiative
-16,History Blocks,2019,,,,,,,Video Editor,Production Company,,,,,,,,,,
-16,History Blocks,2019,,,,,,,Copywriter,Music and Sound Production Company,,,,,,,,,,
-16,History Blocks,2019,,,,,,,Educational Consultant,Post-production company,,,,,,,,,,
-17,Odeuropa Smell Explorer,2020-2023,,,,,,,,National Scientific Institution,Olfactory Heritage Documentation,,,,,,,,,
-17,Odeuropa Smell Explorer,2020-2023,Accessibility,Cultural engagement,ICH Specialists,,,,Policy maker,Foundation and Research Center,Computer Vision,,Fragrances,Technical documentation,,OCR,Machine Learning,,AI Model,
-17,Odeuropa Smell Explorer,2020-2023,Stakeholders connection,,General public,,,,Funding & Partnerships referent,European Engineering School,Data Collection,,,Scientific articles,,,Computer vision,,,
-17,Odeuropa Smell Explorer,2020-2023,Recognition,,Artists,,,,,Educational Institution,Historical & Literary Research,,,,,,Semantic web standards,,,
-17,Odeuropa Smell Explorer,2020-2023,Documentation,,Researchers and Scholars,Digital twinning,Publicly Funded,Free Access Model,Semantic Web Expert,Research Center,Exhibit Fabrication,"Social practices, rituals and festive events",Smell,Historical texts,Text,2D acquisition,Database system,European Olfactory Knowledge Graph,Web platform,Digital archive
-17,Odeuropa Smell Explorer,2020-2023,Preservation,Educational outreach,Perfumers,Institutionalization,,,Cultural History expert,University research center,NFT Asset Management,Traditional craftsmanship,Scent,Historical images,Pictures,Annotation system,AI text-analysis,Annotated smell-related data,Artificial Intelligence,Digital tools
-17,Odeuropa Smell Explorer,2020-2023,,,,,,,,Research Organization,Scriptwriting & Narrative Adaptation,,,,,,,,,
-17,Odeuropa Smell Explorer,2020-2023,,,,,,,,,,,,,,,,,,
-18,Polifonia Portal,2021-2024,,,Memory institutions,,,,Digital Archivist,Archive,Community Engagement,,,,,,,,,
-18,Polifonia Portal,2021-2024,Preservation,Interdisciplinary collaboration,Educators,Institutionalization,,,Music Historian,Research Center,Digital Musicology,,Historical manuscripts,Music recordings,Text,Annotation system,Database system,Curated metadata collections,Data mining,Digital tools
-18,Polifonia Portal,2021-2024,Open resource creation,,Enthusiasts,,,,Assistant Professor,National Scientific Institution,Knowledge Graphs,,Documents,,,,,,AI Model,
-18,Polifonia Portal,2021-2024,Enhancement,,Musicians,,,,Researcher,Research Organization,,,,,,,,,,
-18,Polifonia Portal,2021-2024,Accessibility,,ICH Curious,,,,Web developer,Governmental Agency,Historical & Literary Research,,Recordings,Archive entry,Metadata,,Semantic web standards,,Natural Language Processing (NLP),
-18,Polifonia Portal,2021-2024,Documentation,Educational outreach,Researchers and Scholars,Digital twinning,Publicly Funded,Free Access Model,Musicology Researcher,Educational Institution,Music Production,"Social practices, rituals and festive events",Historical sources,Historical manuscripts,Audio-visual,Audio recording,Audio processing,Database of musical heritage,Web platform,Digital archive
-18,Polifonia Portal,2021-2024,,,,,,,Semantic Web Expert,,,,,,,,,,,
-18,Polifonia Portal,2021-2024,,,,,,,Etnoanthropologist,Web agency,,,,,,,,,,
-18,Polifonia Portal,2021-2024,,,,,,,Visual Anthropologist,Museum,,,,,,,,,,
-18,Polifonia Portal,2021-2024,,,,,,,Data Engineer,University research center,,,,,,,,,,
-18,Polifonia Portal,2021-2024,,,,,,,,,,,,,,,,,,
-18,Polifonia Portal,2021-2024,,,,,,,Metadata Specialist,,,,,,,,,,,
-18,Polifonia Portal,2021-2024,,,,,,,Knowledge Graph Engineer,,,,,,,,,,,
-18,Polifonia Portal,2021-2024,,,,,,,User Interface Engineer,,,,,,,,,,,
-18,Polifonia Portal,2021-2024,,,,,,,Communication Manager,,,,,,,,,,,
-18,Polifonia Portal,2021-2024,,,,,,,Social Media Manager,,,,,,,,,,,
-19,TRACTION Opera co-creation for a social transformation,2022,Democratization,,Artists,,,,Community Engagement Manager,Technology Research Center,Traditional Costume Knowledge,,Apprenticeship,,,,,,,Dedicated virtual events
-19,TRACTION Opera co-creation for a social transformation,2022,Open resource creation,Cultural accessibility,Non-professional artists,Remix,,,Opera heritage expert,Art school,Graphic Design,,Dance,Community interactions,Video,Video recording,,Structured community-generated content,Cloud system,Digital tools
-19,TRACTION Opera co-creation for a social transformation,2022,Accessibility,Community empowerment,Marginalized communities,Participation,Publicly Funded,Free Access Model,,Opera company,Project Coordination,Performing arts,Vocal music,Music live performances,Audio,Audio recording,Multimedia processing and production,Audio-video recordings of opera performances,Participatory digital workflow production,Immersive live performance
-19,TRACTION Opera co-creation for a social transformation,2022,Stakeholders connection,,General public,,,,Theatre Executive Director,Participatory Art Community,Physical Computing,,Poetry,,,,,,,Dedicated physical events
-19,TRACTION Opera co-creation for a social transformation,2022,Remix and reinterpretation,,Local residents,,,,Social and Artistic Coordinator,XR technology company,Strategic Leadership,,Instrumental music,Cultural practitioners' contributions,,,,,,Participatory initiative
-19,TRACTION Opera co-creation for a social transformation,2022,Social inclusion,,Younger generations,,,,XR Developer,,,,,,,,,,,
-19,TRACTION Opera co-creation for a social transformation,2022,,,Elderlies,,,,Interactive Systems Developers,Educational Institution,,,,,,,,,,
-19,TRACTION Opera co-creation for a social transformation,2022,,,,,,,Singers,University research center,,,,,,,,,,
-19,TRACTION Opera co-creation for a social transformation,2022,,,,,,,Non-professional Dancers,,,,,,,,,,,
-20,Paderpedia,2020,Preservation,,Younger generations,,,,Metadata Specialist,Archive,Data Archiving & Retrieval,,,Multimedia content,Metadata,Annotation system,,,,
-20,Paderpedia,2020,Documentation,Edutainment,Students,Participation,Publicly Funded,Free Access Model,Historian,Regional Government,Database Information Management,"Social practices, rituals and festive events",Community action,Literature database,Pictures,2D acquisition,Database system,Database of structured historical and ecological data,Web platform,Digital archive
-20,Paderpedia,2020,Lost/Endangered/Undocumented Recovery,Citizen science,Schools,Digital twinning,,,Database Manager,Educational Institution,Microencapsulation,,Cultural perception of a river,Historical maps,Text,GPS,Archival systems,,Wiki-based platform,
-20,Paderpedia,2020,Promotion,,Environmental educators,,,,Digital Archivist,Library,,,,Local citizen contributions,,,,,,
-20,Paderpedia,2020,,,Local residents,,,,Information Scientist,University research center,,,,,,,,,,
-20,Paderpedia,2020,,,Amateur historians,,,,,,,,,,,,,,,
-20,Paderpedia,2020,,,Enthusiasts,,,,,,,,,,,,,,,
-20,Paderpedia,2020,,,Civic associations,,,,,,,,,,,,,,,
-21,Omni Chang’An Site Concept Show,2022-2023,,,Local communities,,,,Executive Coordinator,,Backstage Management,,,,,,,,,
-21,Omni Chang’An Site Concept Show,2022-2023,Remix and reinterpretation,Artistic innovation,Stage designers,,,,Operations Director,,Budget Management,,Qinqiang opera,Opera perfomance,Motion data,,,,,
-21,Omni Chang’An Site Concept Show,2022-2023,,,Tourists,,,,Lighting Instructor,,Sponsorship,,,,,,,,,
-21,Omni Chang’An Site Concept Show,2022-2023,,,,,,,Stage Manager,,Traditional Costume Knowledge,,,,,,,,,
-21,Omni Chang’An Site Concept Show,2022-2023,,,Cultural institutions,,,,Associated Director,,Project Coordination,,,,,,,,,
-21,Omni Chang’An Site Concept Show,2022-2023,,,Cultural tourists,,,,Performance Coordinator,,Lighting Design,,,,,,,,,
-21,Omni Chang’An Site Concept Show,2022-2023,,,General public,,,,Literary Screenwriter,,Logistics Management,,,,,,,,,
-21,Omni Chang’An Site Concept Show,2022-2023,Celebration,Cultural tourism promotion,Dancers and actors,Animation,,,Executive Producer,,Operational Project Management,,Cultural travel performance,Puppets,Pictures,,,,Kinetic system,Immersive live performance
-21,Omni Chang’An Site Concept Show,2022-2023,,,Performing artists,,,,Director & Funding partner,,Promotion,,,,,,,,,
-21,Omni Chang’An Site Concept Show,2022-2023,,,Tech providers,,,,Producer,,Social Agents Simulation,,,Cultural symbols,Text,,,,,
-21,Omni Chang’An Site Concept Show,2022-2023,,,,,,,Technical Director,,Stakeholder Alignment,,,,,,,,,
-21,Omni Chang’An Site Concept Show,2022-2023,Preservation,,Theaters,Storytelling,Public-Private Partnership,Ticketed Revenue Model,Executive Director,Innovative Performing Arts Group,,"Social practices, rituals and festive events",Traditional culture,,Object/artefact,,Multimedia processing and production,Multimedia contents inspired to traditional ICH culture and symbols,Projection Mapping,Dedicated physical events
-21,Omni Chang’An Site Concept Show,2022-2023,,,Creative producers,,,,Business Coordinator,,,,Traditional Chinese shadow puppetry,Shadow puppetry performance,,,,,,
-21,Omni Chang’An Site Concept Show,2022-2023,,,Policy makers,,,,Visual Designer,,,,,,,,,,,
-21,Omni Chang’An Site Concept Show,2022-2023,,,Schools,,,,Chief Stage Designer,,,,,,,,,,,
-21,Omni Chang’An Site Concept Show,2022-2023,,,,,,,Lighting Designer,,,,,,,,,,,
-21,Omni Chang’An Site Concept Show,2022-2023,,,,,,,Projection Designer,,,,,,,,,,,
-21,Omni Chang’An Site Concept Show,2022-2023,,,,,,,Styling Designer,,,,,,,,,,,
-21,Omni Chang’An Site Concept Show,2022-2023,,,,,,,,,,,,,,,,,,
-22,Tempio del Brunello,2021,,,Regional stakeholders,,,,Cultural Event Coordinator,,AI/AR/VR Integration,,,,,,,,,
-22,Tempio del Brunello,2021,,,Tourists,,,,Video Producer,Cultural Heritage Site,Content Strategy,,,,,,,,Mobile App,
-22,Tempio del Brunello,2021,,,Enthusiasts,,,,Content Producer,,Cultural Event Organization,,,,,,,,Near Field Communication (NFC),
-22,Tempio del Brunello,2021,,,,,,,Heritage Site Manager,,Cultural Policy,,,,,,,,,
-22,Tempio del Brunello,2021,Preservation,Edutainment,ICH Curious,Storytelling,Public-Private Partnership,Ticketed Revenue Model,Multimedia Technician,Cultural Heritage Laboratory and Events Organizer,Exhibition Design,Knowledge and practices concerning nature and the universe,Winemaking,Archive entry,Pictures,2D acquisition,Multimedia processing and production,"Digitized collection of historical and contemporary images, videos",Virtual Reality (VR),Museum
-22,Tempio del Brunello,2021,,,,,,,Oenologist,Trade association,Historical Site Management,,,,,,,,,
-22,Tempio del Brunello,2021,Celebration,Cultural tourism promotion,,Animation,,,Exhibition Designer,Multidisciplinary Design Studio,Interactive Installation,Traditional craftsmanship,Alcoholic beverages,Interviews,Text,Audio recording,,,Interactive Displays,Interactive exhibition
-22,Tempio del Brunello,2021,Visibility and reputation,,General public,Bespoke exhibiting,,,Interaction Designer,Wine producers' consortium,Interactive Media,,Food production,Historical documentation,Audio,Video recording,,,Projection Mapping,
-22,Tempio del Brunello,2021,Edutainment,,Cultural practitioners,,,,Installation Artist,Religious organization,Kinematic Analysis & Evaluation,,,,,,,,Sensors,
-22,Tempio del Brunello,2021,,,Cultural institutions,,,,App Developer,Regional Government,Video Production,,,,,,,,Augmented Reality (AR),
-22,Tempio del Brunello,2021,,,,,,,XR Developer,,Winemaking,,,,,,,,,
-22,Tempio del Brunello,2021,,,,,,,Cultural Policy Advisor,,,,,,,,,,,
-23,Renai Dance Animation,2019-2021,,,Educators,,,,Sound Track Composer,Composer,Audio/Sound Design,,Western ballet choreography,,,,Visual Effects software,,,
-23,Renai Dance Animation,2019-2021,Remix and reinterpretation,Cross-cultural integration,General public,,,,Computer Graphic Artist,Visual Artist,Computer Graphics,Performing arts,Costumes,Ballet choreography,Pictures,,3D animation software,,Videomaking software,Digital campaign
-23,Renai Dance Animation,2019-2021,Preservation,Cross-generation transmission of ICH,Younger generations,Storytelling,Academic Institutional Support,B2B,Creative Director,Narrative visual artist,Creative Coordination,"Social practices, rituals and festive events",Chinese lion dancing performances,Dance performance,Video,,Digital embroidery tool,3D animated characters,Narrative development software,ICH-inspired artefact
-23,Renai Dance Animation,2019-2021,Celebration,,Families,,,,Creative Producer,Producer,Digital Musical Composition,,Rituals,Cultural symbols,Oral knowledge,,3D modeling software,,,
-23,Renai Dance Animation,2019-2021,,,,,,,,,,,Transmission,,,,,,,
-23,Renai Dance Animation,2019-2021,,,Art audiences,,,,Sound Designer,Sound designer,,,Apprenticeship,,,,Rendering software,,,
-23,Renai Dance Animation,2019-2021,,,Cultural practitioners,,,,,,,,Emotional response,,,,,,,
-23,Renai Dance Animation,2019-2021,,,Enthusiasts,,,,,,,,Exchange,,,,,,,
-24,ReCollection,2023,Preservation,Cultural reproduction,Care communities,Materialization,,,AI Research Scientist,AI Research Scientist,AI System Dev.,,Cultural identity,Documentaries,Video,Video recording,Machine Learning,,Projection Mapping,Dedicated physical events
-24,ReCollection,2023,Reimagination of collective memory,,Art audiences,,,,AI Technical Director,AI Expert,Exhibition Design,,Oral history,Visual memories,,,Text-to-Image model,,Generative AI,AI-generated content
-24,ReCollection,2023,,,Cultural practitioners,,,,,Academic & Creative Innovation Hub,,,Storytelling,,,,,,,
-24,ReCollection,2023,Lost/Endangered/Undocumented Recovery,Cultural representation,General public,Participation,Academic Institutional Support,B2B,New Media Artist,New Media Artist,Museum Spatial Planning,Oral traditions and expressions,Collective memory,Oral narratives,Audio,Audio recording,Natural Language Processing (NLP),System turning speech into textual prompts and images,Voice-activated system,Interactive installation
-24,ReCollection,2023,,,Artists,,,,,Foundation and Research Center,,,Community participation,,,,,,,
-24,ReCollection,2023,,,Memory institutions,,,,,,,,,,,,,,,
-25,Synthetic Memories,2022,ICH stakeholders connection,Intergenerational connection,Local city communities,Animation,,,AI Specialist,Education & Creativity Organization,AI System Dev.,,Cultural identity,Interviews,,,,Digitally reconstructed visual memories,,Dedicated physical events
-25,Synthetic Memories,2022,,,,,,,Technical Lead,,Client Relationship Management,,Undocumented memories,,,,,,,
-25,Synthetic Memories,2022,,,,,,,Manager Assistant,,Community Engagement,,,,,,,,,
-25,Synthetic Memories,2022,,,Researchers and Scholars,,,,Sound Designer,,Concept Ideation & Dev.,,,,,,,,,
-25,Synthetic Memories,2022,,,Marginalized communities,,,,General Manager,Innovative Cultural Funding Platform,Team Leadership,,,,,,,,,
-25,Synthetic Memories,2022,,,Cultural institutions,,,,Creative,,Workflow Management,,,,,,,,,
-25,Synthetic Memories,2022,,,,,,,Industrial Designer,,Facilitation,,,,,,,,,
-25,Synthetic Memories,2022,,,Mental health professionals,,,,Project Manager,Government Funding Organization,Community Impact Evaluation,,,,,,,,,
-25,Synthetic Memories,2022,,,,,,,Accountant,,Digital Content Design,,,,,,,,,
-25,Synthetic Memories,2022,,,People with dementia,,,,Creative Journalist,Gender & Inclusion Organization,Voiceover,,Storytelling,,,,,,,
-25,Synthetic Memories,2022,Preservation,Therapeutic applications,Policy makers,Materialization,,,Head of Digital,Cultural Exchange & Social Integration Organization,System Architecture Design,,Oral history,Community storytelling sessions,,,,,,Participatory initiative
-25,Synthetic Memories,2022,,,Migrant and refugee communities,,,,Operations Director & Partner,Funding Organization,Participatory Design,,,,,,,,,
-25,Synthetic Memories,2022,,,,,,,Digital Designer,,Platform Mainteinance,,,,,,,,,
-25,Synthetic Memories,2022,,,,,,,Visual Designer,,Project Management,,,,,,,,,
-25,Synthetic Memories,2022,Lost/Endangered/Undocumented Recovery,Inclusivity,,Participation,Public-Private Partnership,Free Access Model,,Design studio,Project Coordination,Oral traditions and expressions,Collective memory,Personal narratives,Oral knowledge,Text editing software,Generative AI,Memory textual prompt,Generative AI,Museum
-25,Synthetic Memories,2022,Reimagination of collective memory,Documentation,Families,Memory elicitation,,,Director & Funding partner,Community Development Organization,Storytelling,,Community participation,,,,,,,AI-generated content
-25,Synthetic Memories,2022,,,,,,,Front-End Developer,,Technical Support,,,,,,,,,
-25,Synthetic Memories,2022,,,,,,,Head of Design & Production,,UX/UI Design,,,,,,,,,
-25,Synthetic Memories,2022,,,,,,,Producer,,,,,,,,,,,
-25,Synthetic Memories,2022,,,,,,,Cultural Social Integrator,,,,,,,,,,,
-25,Synthetic Memories,2022,,,,,,,Community Engagement Manager,,,,,,,,,,,
-26,Lisbon Under Stars,2018,,,,,,,Dancers,,Sourcing & Licensing,,,,,,,,,
-26,Lisbon Under Stars,2018,Celebration,Community engagement,Policy makers,Storytelling,,,Artistic Director,Archive,Concept Ideation & Dev.,"Social practices, rituals and festive events",Cultural identity,Historical documentation,Pictures,Audio recording,,,,Immersive live performance
-26,Lisbon Under Stars,2018,,,,,,,Musicians,,Dance Choreography,,,,,,,,,
-26,Lisbon Under Stars,2018,Preservation,Cultural tourism promotion,Tourists,Animation,Public-Private Partnership,Ticketed Revenue Model,Project Manager,Video Mapping and Interactive Projections Firm,Production Execution,Oral traditions and expressions,Collective memory,Archive entry,Video,2D acquisition,Multimedia processing tools,Curated audiovisual content,Projection Mapping,Dedicated physical events
-26,Lisbon Under Stars,2018,Edutainment,,Cultural institutions,,,,Technical Director,Former Convent,Audio/Sound Post-production,,Oral history,Portuguese music,Audio,Video recording,,,,Dedicated virtual events 
-26,Lisbon Under Stars,2018,,,,,,,Narrator,,Content curation,,Portuguese music,,,,,,,
-26,Lisbon Under Stars,2018,,,,,,,Projection Mapping Artist,,Natural Language Processing,,,,,,,,,
-26,Lisbon Under Stars,2018,,,General public,,,,Sound Designer,Dance Educators,Historical & Literary Research,,Storytelling,Music live performances,,,,,,
-26,Lisbon Under Stars,2018,,,Local communities,,,,Historian,,Promotion,,Public history,,,,,,,
-26,Lisbon Under Stars,2018,,,,,,,Choreographer,,Visual Art,,,,,,,,,
-26,Lisbon Under Stars,2018,,,,,,,Urban Artists,,,,,,,,,,,
-26,Lisbon Under Stars,2018,,,,,,,Documentation Provider,,,,,,,,,,,
-27,Craftal,2019,,,General public,,,,Strategic Planner,,Business Strategy,,Ceramic arts,,,,,,,
-27,Craftal,2019,Visibility and reputation,Promoting sustainable consumption,Cultural practitioners,Matchmaking,,,Project Manager,,Creative Direction,,Apprenticeship,Craftsmen Know-how,,Text editing software,,,,
-27,Craftal,2019,Promotion,,Service providers,,,,Platform curator,,Production Planning,,Craft workers,,,,,,,
-27,Craftal,2019,Economic sustainability,Facilitating Artisan-Chef Collaboration,Restaurants,Participation,Self-Funded,Subscription-Based Revenue Model,,Business Design Company,Project Coordination,Traditional craftsmanship,Clay artefacts,Craft Tableware,Object/artefact,Pictures,Database system,Digital inventory of Japanese craft tableware,Web platform,Network platform
-27,Craftal,2019,,,,,,,Ceramicist,,Traditional Printing,,Traditional Japanese craft tableware,,,,,,,
-27,Craftal,2019,Preservation,Enhancing cultural appreciation,Tradition bearers,,,,Platform designer,,UX/UI Design,,Technical skills,,,,,,,
-27,Craftal,2019,,,,,,,,,,,Ceramics,,,,,,,
-28,RISE UP - Revitalising Languages and Safeguarding Cultural Diversity,2023-2026,,,,,,,Community Engagement Manager,Video Game Development Studio,Co-Design Facilitation,,Linguistics,,,,,,,
-28,RISE UP - Revitalising Languages and Safeguarding Cultural Diversity,2023-2026,Stakeholders connection,Community engagement,Endangered local communities,Crowdsourcing,,,Language Revitalization Specialist,Educational Institution,Cultural Preservation Strategy,,Spoken Languages,Endangered language documentation,Audio,,,,Wiki-based platform,
-28,RISE UP - Revitalising Languages and Safeguarding Cultural Diversity,2023-2026,Empowerment,Resource sharing,Citizens,Matchmaking,,,Gamification Designer,Cultural Institution,Gamification design,,Endangered languages,Community-generated content,,,,,,
-28,RISE UP - Revitalising Languages and Safeguarding Cultural Diversity,2023-2026,Revitalization,,Learners,,,,Digital Platform Developer,Youth Organization,Policy Analysis,,Oral history,,,,,,,
-28,RISE UP - Revitalising Languages and Safeguarding Cultural Diversity,2023-2026,Lost/Endangered/Undocumented Recovery,Policy advocacy,Researchers and Scholars,Participation,Publicly Funded European Union Project,Free Access Model,Project Manager,Creative Agency,Project Coordination,Oral traditions and expressions,Languages,Oral histories,Text,,Database system,Database and data structure to allow people to add entries to the platform,Web platform,Network platform
-28,RISE UP - Revitalising Languages and Safeguarding Cultural Diversity,2023-2026,,,,,,,Communication Officer,Innovation consultancy,Public Communication,,Cultural identity,,,,,,,
-28,RISE UP - Revitalising Languages and Safeguarding Cultural Diversity,2023-2026,,,,,,,Educational Content Developer,University research center,Educational Content Dev.,,Collective memory,,,,,,,
-29,Bamboo Weaving Mold,2024,Open resource creation,Economic sustainability,Local communities,Archetyping,,,Bamboo Weaving Practitioners,,AI System Dev.,,Technical skills,Craftsmen Know-how,Templates and Measures,,,Digital archive of patterns,,
-29,Bamboo Weaving Mold,2024,Democratization,,,,,,Software Developer,,Audio/Sound Editing,,Weaving,,,,,,,
-29,Bamboo Weaving Mold,2024,Knowledge transfer,Skill development and capacity building,Learners,Facilitation,,,Educators,Educational Institution,Traditional Ceramics Crafting,Traditional craftsmanship,Craft workers,Bamboo weaving patterns,Object/artefact,CAD software,Pattern generation software,Disposable weaving paper molds,Paper printing,Digital tools
-29,Bamboo Weaving Mold,2024,,,,,,,,University research center,,,Bamboo artefacts,,,,,,,
-29,Bamboo Weaving Mold,2024,,,,,,,,,,,Handicrafts,,,,,,,
-29,Bamboo Weaving Mold,2024,,,,,,,,,,,Apprenticeship,,,,,,,
-29,Bamboo Weaving Mold,2024,,,,,,,,,,,Textile art,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,,,,,,,Social anthropologist,,Data Archiving & Retrieval,,,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,,,,,,,Project Manager,,Metadata Structuring & Organization,,,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,Reimagination of collective memory,,Archives,,,,Sociologist,,Ethics Critical Reflection,,Public history,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,,,,,,,Architect,,Ethnographic Research,,Archival data,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,,,,,,,,,3D Scanning,,,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,,,,,,,,,Educational Program Dev.,,,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,,,,,,,Digital Archivist,,Operational Support,,,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,,,,,,,,,Financial Reporting,,,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,,,,,,,Digital History Architecture Editor,,Historical & Literary Research,,,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,Preservation,Public engagement,Local communities,Participation,Donor support,Free Access Model,CEO,Archive and Research Center,Project Coordination,,Oral traditions,Urban-related documents,Text,2D acquisition,Database system,Digitized urban history archive,,Digital archive
-30,"Urban Media Archive, [unarchiving] program",2022,,,,,,,Philosopher,,Projection Mapping,,Oral history,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,,,,,,,,,Qualitative Research,,,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,Democratization,,Filmmakers,,,,Historian,,Spatial Design,,Everyday life,,Video,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,,,,,,,,,Traditional Weaving,,,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,,,,,,,,,User-Centered Design,,,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,,,,,,,,,Web Development,,,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,Community empowerment,Artistic collaboration,Cultural institutions,Remix,,,Director & Funding partner,,,"Social practices, rituals and festive events",Community participation,Oral histories,Pictures,Annotation system,Archival systems,,,Dedicated physical events
-30,"Urban Media Archive, [unarchiving] program",2022,,,,,,,Head of Educational projects,,,,,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,,,,,,,Communication Officer,,,,,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,,,,,,,System administrator,,,,,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,,,,,,,Office and building administrator,,,,,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,,,,,,,Translator,,,,,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,,,,,,,Office manager,,,,,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,,,,,,,Financial manager,,,,,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,,,,,,,Digital Designer,,,,,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,,,,,,,Accountant,,,,,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,,,,,,,Premises Management Assistant,,,,,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,,,,,,,Administrative Manager,,,,,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,,,,,,,Technical Assistant,,,,,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,,,,,,,Academic Coordinator,,,,,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,,,,,,,IT Manager,,,,,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,,,,,,,Financial assistant,,,,,,,,,,,
-30,"Urban Media Archive, [unarchiving] program",2022,Knowledge transfer,Educational outreach,Artists,,,,Deputy Director,,Social Media Strategy,,Community action,Multimedia content,Audio,,,,,
-31,Swapmuseum,2016,Edutainment,Cultural accessibility,Local communities,,,,Audience Developer,Fablab,Audience Development,,Everyday life,Documentaries,Text,Text editing software,,,,
-31,Swapmuseum,2016,,,General public,,,,Tutors,,Storytelling,,,,,,,,,
-31,Swapmuseum,2016,Community empowerment,,Museums,,,,Business Analyst,Social Cooperative,3D Integration,,,Illustrations,,,,,,
-31,Swapmuseum,2016,Youth engagement,,Cultural institutions,,,,Facilitator,,Metadata Structuring & Organization,,,Historical finds,,,,,,
-31,Swapmuseum,2016,Knowledge transfer,,Schools,Matchmaking,,,Project Manager,Cultural and Innovation Hub,Project Coordination,,Student participation,Interviews,Pictures,Video recording,,,Media systems,Digital tools
-31,Swapmuseum,2016,Stakeholders connection,Skill development and capacity building,Younger generations,Participation,Hybrid Funding Model,Free Access Model,Community Engagement Manager,Cultural Association,Community Engagement,Oral traditions and expressions,Community action,Archive entry,Video,2D acquisition,,"Collection of images, videos, and stories related to the museum and the local community",Social Media,Participatory initiative
-31,Swapmuseum,2016,,,,,,,Social Media Manager,Museum,,,,,,,,,,
-32,Comuniterràe,2017,Documentation,Local community engagement,Local communities,Participation,Hybrid Funding Model,Free Access Model,Project Manager,Cultural Association,Pattern Design,"Social practices, rituals and festive events",Community action,Oral knowledge,Pictures,2D acquisition,Database system,"Digital archive of pictures, stories, knowledge related to the community costums",Web platform,Participatory initiative
-32,Comuniterràe,2017,Community mapping,,,,,,Map Illustrator,Community Foundation,Storytelling,,Memories,Photos,,,,,,
-32,Comuniterràe,2017,Celebration,Reinforcing community identity,Policy makers,Storytelling,,,Community Facilitator,National park,Community Engagement,Oral traditions and expressions,Festivals,Local histories,Oral knowledge,,Annotation software,,,Digital archive
-32,Comuniterràe,2017,Community empowerment,Cultural revitalization,,,,,Cultural Heritage Specialist,Regional Government,Heritage Documentation,,Cultural identity,Community traditions,Text,,Vector graphic software,,,
-32,Comuniterràe,2017,Cultural identity preservation,,,,,,Communication Officer,Community,Qualitative Research,,Food production,Festivals,,,,,,
-32,Comuniterràe,2017,,,,,,,,,,,Myths,,,,,,,
-33,Tacit Dialogues,2019-2022,,,,,,,Researcher,Glassmaking Studio,Historical Research,,Engraving,,,,,,,
-33,Tacit Dialogues,2019-2022,,,,,,,Art Historian,Visual Artist,Audio-Visual Media Creation,,Craft workers,,,,,,,
-33,Tacit Dialogues,2019-2022,Research,Public engagement,Learners,Materialization,,,Glass Producer,Contemporary Artist,,,,Artisan movements,Audio,Audio recording,Motion data analysis tools,Motion data of glassblowing techniques,Motion Graphic Software,
-33,Tacit Dialogues,2019-2022,,Artistic collaboration,Artisans,Translation,Hybrid Funding Model,Free Access Model,,Designer,Glassblowing,Traditional craftsmanship,Glass art,Glassblowing live performances,Motion data,Motion detection systems,Visual processing software,Visual and sonic data archives,3D printed artefacts,ICH-inspired artefact
-33,Tacit Dialogues,2019-2022,Remix and reinterpretation,,General public,,,,Industrial Designer,Artistic associates to Art Schools,Production Planning,,Technical skills,,,,,,,
-33,Tacit Dialogues,2019-2022,,,,,,,,Design studio,Resource Planning,,Silver artefacts,,,,,,,
-33,Tacit Dialogues,2019-2022,Preservation,,Researchers and Scholars,,,,,Digital Fabrication Artist,Storytelling,,Apprenticeship,Sound and visual interactions,Visual data,Video recording,Sound analysis software,,,
-33,Tacit Dialogues,2019-2022,,,,,,,Visual Artist,Glass sculptor,,,Traditional tools,,,,,,,
-33,Tacit Dialogues,2019-2022,,,,,,,,,,,Creative thinking,,,,,,,
-33,Tacit Dialogues,2019-2022,,,,,,,,,,,,,,,,,,
-33,Tacit Dialogues,2019-2022,,,,,,,,,,,,,,,,,,
-34,Cyberknitics,2016,Experimentation,Community engagement,Makers,Magnification,,,,,Coding,,Technical skills,Artisan movements,,Microcontrollers,Motion data translation systems,,Motion-activated system,
-34,Cyberknitics,2016,Remix and reinterpretation,Artistic innovation,Artisans,Translation,Self-Funded,,Knitter,Graphic Designer,Space & Product Design Integration,Traditional craftsmanship,Craft workers,Knitting gestures,Motion data,Motion capture system,Physical Computing,Syncronized electronic system turning movements into sound,Microcontroller,Immersive live performance
-34,Cyberknitics,2016,,,,Synesthesia,,,,Creative Technologist,,,Handicrafts,,,,Audio processing,,Microphones,
-34,Cyberknitics,2016,,,,,,,,,,,Apprenticeship,,,,,,,
-34,Cyberknitics,2016,,,,,,,,,,,Knitting techniques,,,,,,,
-34,Cyberknitics,2016,,,,,,,,,,,Textile art,,,,,,,
-34,Cyberknitics,2016,,,,,,,,,,,Technical tools,,,,,,,
-35,Kaarigari,2020,Preservation,,General public,,,,Textile Digital manufacturer,Maker laboratory,Textile Fabrication,,Handicrafts,Weaving patterns,,Photography,,,,
-35,Kaarigari,2020,Celebration,Visibility and recognition,Artisans,Translation,Institutional support,,Designer,Designer,Digital Media Handling,Traditional craftsmanship,Craft workers,Block printing techniques,Motion data,Motion detection systems,Motion analysis tools,Motion data clouds of block printing,Digital pattern making software,ICH-inspired artefact
-35,Kaarigari,2020,Visibility and reputation,Contemporary design integration,Local communities,Materialization,,,Hand-block Printing Artisan,Hand-block Printing Artisan,Translation,,Technical skills,Artisan movements,,Video recording,Pattern generation software,Digitized patterns,Textile digital manufacturing,
-35,Kaarigari,2020,,,,,,,,,,,Apprenticeship,,,,,,,
-35,Kaarigari,2020,,,,,,,,,,,Wood artefacts,,,,,,,
-35,Kaarigari,2020,,,,,,,,,,,Engraving,,,,,,,
-35,Kaarigari,2020,,,,,,,,,,,Wood working,,,,,,,
-35,Kaarigari,2020,,,,,,,,,,,Textile art,,,,,,,
-35,Kaarigari,2020,,,,,,,,,,,Technical tools,,,,,,,
-35,Kaarigari,2020,,,,,,,,,,,Drawings,,,,,,,
-36,La Baguette stamp,2024,,Public engagement,ICH Curious,Materialization,,,Technology expert,Printing Press,Digital Illustration,Traditional craftsmanship,Breadmaking,Historical references,Visual design,,,,,
-36,La Baguette stamp,2024,,,,,,,,,,,Social inclusion,,,,,,,
-36,La Baguette stamp,2024,,,Enthusiasts,,,,Distributor,Illustrator,Machine Learning,,Contests,Bread memory archetypes,Scent data,,,,,
-36,La Baguette stamp,2024,Celebration,Promotion of national identity,National inhabitants,Synesthesia,Publicly Funded,B2C,Illustrator,National Postal Company,App Design & Dev.,"Social practices, rituals and festive events",Apprenticeship,Cultural symbols,Object/artefact,Microencapsulation scent,Vector graphic software,Digital illustration and cooked break microencapsulated scent,Scratch and sniff printing,ICH-inspired artefact
-36,La Baguette stamp,2024,,,Collectors,,,,,Microencapsulation Technologies company,,,Creative thinking,,,,,,,
-36,La Baguette stamp,2024,,,Tourists,,,,,,,,Everyday life,,,,,,,
-36,La Baguette stamp,2024,,,,,,,,,,,Fermentation techniques,,,,,,,
-36,La Baguette stamp,2024,,,,,,,,,,,Bread smell,,,,,,,
-36,La Baguette stamp,2024,,,,,,,,,,,Food customs,,,,,,,
-36,La Baguette stamp,2024,,,,,,,,,,,Food preparation,,,,,,,
-36,La Baguette stamp,2024,,,,,,,,,,,Handicrafts,,,,,,,
-36,La Baguette stamp,2024,,,,,,,,,,,Bakeries,,,,,,,
-36,La Baguette stamp,2024,,,,,,,,,,,Cooking tools,,,,,,,
-36,La Baguette stamp,2024,,,,,,,,,,,Technical skills,,,,,,,
-37,Fabric Museum: TextLoom,2023,Remix and reinterpretation,Interactive engagement,Museum audience,Simulation,Academic Institutional Support,,Graphic Designer,Graphic Designer,Brand Management,"Social practices, rituals and festive events",Craft workers,Craftsmen Know-how,Motion data,Pressure sensors,Vector graphic software,ICH-inspired movements,Projection Mapping,Interactive exhibition
-37,Fabric Museum: TextLoom,2023,Experimentation,Educational outreach,,Storytelling,,,Museum curator,Private Art University Educators,Generative Design,Traditional craftsmanship,Technical skills,Keywords writing movements,,Slider sensors,Generative art software,Syncronized electronic system turning movements into visuals and sound,Motion-activated system,
-37,Fabric Museum: TextLoom,2023,,,,,,,Researcher,Museum,,,Handicrafts,,,,Integrated Development Environment (IDE),,,
-37,Fabric Museum: TextLoom,2023,,,,,,,,,,,Apprenticeship,,,,Physical Computing,,,
-37,Fabric Museum: TextLoom,2023,,,,,,,,,,,Textile art,,,,Mapping tools,,,
-37,Fabric Museum: TextLoom,2023,,,,,,,,,,,Technical tools,,,,Audio processing,,,
-37,Fabric Museum: TextLoom,2023,,,,,,,,,,,Weaving,,,,,,,
-38,Weaving Time,2019-2020,Preservation,Edutainment,,Gamification,,,Software Developer,History Museum,Concept Design,,Technical skills,Photographs of Inca textiles and costumes,Pictures,Annotation system,Vector graphic software,Syncronized electronic system turning movements into visuals and sound,Motion-activated system,ICH-inspired artefact
-38,Weaving Time,2019-2020,Celebration,,,,,,Electrical engineer,Museum Exhibit Manufacturer,Exhibition Design,,Handicrafts,,Metadata,,,,,
-38,Weaving Time,2019-2020,,,,,,,Lighting Engineer,Experience Design Studio,Graphic Design,,Apprenticeship,,,,,,,
-38,Weaving Time,2019-2020,Remix and reinterpretation,Interactive engagement,Museum audience,Simulation,Publicly Funded,B2C,Project Manager,Marketing Agency,Interactive Installation,Traditional craftsmanship,Craft workers,Weaving patterns,Visual patterns,2D acquisition,Image editing software,ICH-inspired digitized pattern tiles,Screen-based display,Interactive exhibition
-38,Weaving Time,2019-2020,,,,,,,,Lighting Design Consultancy Company,,,Textile art,,,,,,,
-38,Weaving Time,2019-2020,,,,,,,,,,,Technical tools,,,,,,,
-38,Weaving Time,2019-2020,,,,,,,,,,,Traditional Inca weaving patterns,,,,,,,
-39,Design philology,2023,Visibility and reputation,Interactive engagement,Learners,Digital twinning,,,Project Coordinator,,Archival Research,"Social practices, rituals and festive events",Cultural identity,Interviews,Pictures,Video recording,Archival systems,Curated timelines and narratives,,Participatory initiative
-39,Design philology,2023,Celebration,Educational outreach,Educational institutions,Participation,Publicly Funded,Free Access Model,Scientific curators,Educational Institution,Documentation Research,Oral traditions and expressions,Collective memory,Archive entry,Text,2D acquisition,Database system,Database of structured historical and contemporary data related to the Design department,Web platform,Digital archive
-39,Design philology,2023,,,,,,,Web designers,University research center,Exhibition Design,,Storytelling,Letters,Video,,,,,
-39,Design philology,2023,,Collaborative partnerships,Local communities,,,,Communication Officer,,Branding,,Oral history,Historical documentation,Audio,Audio recording,Vector graphic software,,,
-39,Design philology,2023,,,,,,,Web developer,,,,Everyday life,Institutional reports,,,,,,
-39,Design philology,2023,,,,,,,Video-testimonial designers,,,,Student participation,Photos,,,,,,
-39,Design philology,2023,,,,,,,Video Producer,,,,Teachers,Historical videos,,,,,,
-39,Design philology,2023,,,,,,,Voiceover Artist,,,,,Drawings and sketches,,,,,,
-39,Design philology,2023,,,,,,,Technical support teams,,,,,,,,,,,
-39,Design philology,2023,,,,,,,Alumni Contributors,,,,,,,,,,,
-40,MEMEX. MEMories and EXperiences for inclusive digital storytelling,2019-2021,,,,,,,AR Developer,Non-governmental Cultural Foundation,AI/AR/VR Integration,Oral traditions and expressions,,,,,,,,
-40,MEMEX. MEMories and EXperiences for inclusive digital storytelling,2019-2021,Stakeholders connection,Skill development and capacity building,,,,,Data Scientist,Creative Agency,Data Analysis,"Social practices, rituals and festive events",Urban spaces,Images and videos,Video,Text editing software,,,Natural Language Processing (NLP),
-40,MEMEX. MEMories and EXperiences for inclusive digital storytelling,2019-2021,,,,,,,Software Engineer,Cultural Mediation and Education Company,Software Development,,,,,,,,,
-40,MEMEX. MEMories and EXperiences for inclusive digital storytelling,2019-2021,Community empowerment,Cultural heritage accessibility,General public,Facilitation,,,Cultural Heritage Specialist,Technology Research Center,Heritage Analysis,,Collective memory,User-generated stories,Pictures,2D acquisition,,,Augmented Reality (AR),Digital tools
-40,MEMEX. MEMories and EXperiences for inclusive digital storytelling,2019-2021,,,,,,,Interaction Designer,Research and Production Agency,Interactive Installation,,,,,,,,,
-40,MEMEX. MEMories and EXperiences for inclusive digital storytelling,2019-2021,,,,,,,ICT Specialist,Public Scientific and Technological Organization,IT Systems Maintenance,,,,Location,,,,,
-40,MEMEX. MEMories and EXperiences for inclusive digital storytelling,2019-2021,,,,,,,Heritage Data Curator,Non-profit Research Association,Microencapsulation,,,,,,,,,
-40,MEMEX. MEMories and EXperiences for inclusive digital storytelling,2019-2021,,,,,,,App Developer,Educational Institution,Kinematic Analysis & Evaluation,,,,,,,,,
-40,MEMEX. MEMories and EXperiences for inclusive digital storytelling,2019-2021,,,,,,,Community Engagement Manager,University research center,Audio-Visual Post-Production,,,,,,,,,
-40,MEMEX. MEMories and EXperiences for inclusive digital storytelling,2019-2021,Accessibility,Community engagement,Marginalized communities,Crowdsourcing,Publicly Funded,Free Access Model,Project Coordinator,Research Organization,Project Coordination,,Monument history,TCH Documentation,Text,GPS,Knowledge Graph system,Enabling infrastructure for mobile app combining geolocated information and multumedia contents,Mobile App,Participatory initiative
-40,MEMEX. MEMories and EXperiences for inclusive digital storytelling,2019-2021,,,,,,,Ethnographer,European Cultural Network,Machine Learning,,,ICH Documentation,,,,,,
-40,MEMEX. MEMories and EXperiences for inclusive digital storytelling,2019-2021,Social inclusion,,,,,,AI Specialist,Business Consulting Firm,Machine Translation,,Storytelling,,User narratives,,,,Digital camera,
-40,MEMEX. MEMories and EXperiences for inclusive digital storytelling,2019-2021,,,,,,,UX/UI Designer,Cultural Management Center,UX/UI Design,,,,,,,,,
-40,MEMEX. MEMories and EXperiences for inclusive digital storytelling,2019-2021,,,,,,,Policy maker,,,,,,,,,,,
-41,Réveil des Archives sonores,2014,,Artistic innovation,Musicians,Remix,Publicly Funded,B2B,Sound archivist,Ethnographic Museum,Audio/Sound Design,Performing arts,Music,Collection of phonograms,Audio,Audio recording,Audio processing,Digitized recordings of musical traditions,Audio streaming platforms,Digital archive
-41,Réveil des Archives sonores,2014,Celebration,Collaborative partnerships,Enthusiasts,,,,Music Composer,Ethnomusicology Department,Audio/Sound Post-production,,Instrumental music,Metadata,,,,,,Dedicated virtual events
-41,Réveil des Archives sonores,2014,,Educational outreach,ICH Curious,,,,Anthropologist,,Ethnographic Research,,Vocal music,Archive entry,,Annotation system,,,,Dedicated physical events
-41,Réveil des Archives sonores,2014,Remix and reinterpretation,Public engagement,Cultural institutions,,,B2C,Ethnomusicologist,Musicians,Audio/Sound Installation,,Musical performances,Musical funds,,Audio digitization tools,Database system,,,ICH-inspired artefact
-41,Réveil des Archives sonores,2014,,,,,,,Sound Engineer,Sound Artists,,,Musicology,,,,,,,
-41,Réveil des Archives sonores,2014,,,General public,,,,Sound Designer,,,,Orchestras,,,,,,,
-42,The Living Museum,2024,Edutainment,Personalised curation,Museums,Animation,Donor support,Free Access Model,AI Engineer,,Historical & Literary Research,"Social practices, rituals and festive events",Storytelling,Historical finds,Object/artefact,2D acquisition,Photo-editing software,Digitized archive of historical finds and metadata,Generative AI,Virtual museum
-42,The Living Museum,2024,Enhancement,Interactive learning,Digital archivists,Storytelling,,,,,Generative Agents Dev.,Traditional craftsmanship,Collective memory,Artifacts descriptions,Metadata,Annotation system,Database system,,Web platform,Conversational agent
-42,The Living Museum,2024,,Remote accessibility,General public,,,,,,,,Past History,Museum curators comments,,,,,,
-42,The Living Museum,2024,,,,,,,,,,,Handicrafts,,,,,,,
-42,The Living Museum,2024,,,,,,,,,,,Costumes,,,,,,,
-42,The Living Museum,2024,,,,,,,,,,,Customs,,,,,,,
-43,Planet Word: The First Voice-Activated Museum,2020,,,,,,,Lead Architect,Acoustic Design Consultancy Firm,Historical & Literary Research,,,,,,,,,
-43,Planet Word: The First Voice-Activated Museum,2020,,,Marginalized communities,,,,Contents Developers,Exhibition and Media Design studio,Audio-Visual System Installation,,Linguistics,,,Text editing software,,,,
-43,Planet Word: The First Voice-Activated Museum,2020,,Artistic collaboration,Schools,,,,Media Producer,,Educational Content Dev.,,Dialects,Historical texts,,Transcription tools,,,,
-43,Planet Word: The First Voice-Activated Museum,2020,Celebration,Multilingual representation,Museums,,,Earned income,Media Designer,,Community Impact Evaluation,,Spoken Languages,United States oral traditions,Audio,Audio recording,Multimedia development engines,,Projection Mapping,Museum
-43,Planet Word: The First Voice-Activated Museum,2020,Edutainment,Interactive engagement,Younger generations,Participation,Hybrid Funding Model,Philantropic support,Lead Designer,Museum,Game Design,Oral traditions and expressions,Languages,Linguistic resources,Text,2D acquisition,Audio processing,Digitized archive of historical and contemporary records,Voice-activated system,Interactive exhibition
-43,Planet Word: The First Voice-Activated Museum,2020,,Educational outreach,Local communities,,,,Media & Software Developers,Architecture Studio,Music Analysis,,Oral history,Books,,Video recording,,,,
-43,Planet Word: The First Voice-Activated Museum,2020,,,,,,,Audio-Visual (AV) Integrator,Sound Design Studio,,,,,,,,,,
-43,Planet Word: The First Voice-Activated Museum,2020,,,,,,,Architect,Motion Design Studio,,,,,,,,,,
-43,Planet Word: The First Voice-Activated Museum,2020,,,,,,,Sound Designer,,,,,,,,,,,
-43,Planet Word: The First Voice-Activated Museum,2020,,,,,,,Sound Engineer,,,,,,,,,,,
-44,Piccolo Museo del Diario,2013,,,,,,,Architect,,Digital Illustration,,,,,,,,,
-44,Piccolo Museo del Diario,2013,,,,,,,Art Director,,Exhibition Design,,,,,,,,,
-44,Piccolo Museo del Diario,2013,,,,,,,Interaction Designer,,Graphic Design,,,,,,,,,
-44,Piccolo Museo del Diario,2013,Preservation,Interactive engagement,Local communities,Animation,Hybrid Funding Model,Philantropic support,Curator,Cultural Foundation,Archival Storytelling,Oral traditions and expressions,Collective memory,Personal diaries,Text,2D acquisition,Database system,Digitized diary entries and stories,Projection Mapping,Interactive exhibition
-44,Piccolo Museo del Diario,2013,,,,,,,Project Manager,Literary Archive,Speech Recognition,,,Books,,,,,,
-44,Piccolo Museo del Diario,2013,Accessibility,Educational outreach,Archives,,,Earned income,Creative Director,Multidisciplinary Design Studio,System Architecture Design,,Cultural identity,Letters,Pictures,Audio recording,Archival systems,,Displays,Museum
-44,Piccolo Museo del Diario,2013,,,,,,,Technology Officer,,User-Centered Design,,,,,,,,,
-44,Piccolo Museo del Diario,2013,Celebration,,Schools,,,,General Manager,,Workflow Management,,,Testimonies,Video,,,,Microphones,
-44,Piccolo Museo del Diario,2013,Edutainment,Community engagement,Cultural institutions,,,,Fundraising Manager,,Grant Acquisition,,Oral history,Photos,Audio,Video recording,Multimedia processing and production,,Motion-activated system,
-44,Piccolo Museo del Diario,2013,,,,,,,Designer,,,,,,,,,,,
-44,Piccolo Museo del Diario,2013,,,,,,,Exhibition Designer,,,,,,,,,,,
-44,Piccolo Museo del Diario,2013,,,,,,,Researcher,,,,,,,,,,,
-44,Piccolo Museo del Diario,2013,,,,,,,Photographer,,,,,,,,,,,
-45,Quantum Temple Path to Alango,2022,,,Global audience,,,,Head of Engineering,,Community Impact Evaluation,,Rituals,,,,,,,
-45,Quantum Temple Path to Alango,2022,,,,,,,Marketing,,Content Strategy,,,,,,,,,
-45,Quantum Temple Path to Alango,2022,,,,,,,Impact Coordinator,,Cultural Advisory,,Choreography,,,,,,,
-45,Quantum Temple Path to Alango,2022,Preservation,Global outreach,Tourists,Matchmaking,,,Anthropologist,Governmental Agency,Ethnographic Research,,Dance,Balinese oral traditions,Video,Video recording,,,Non-Fungible Token (NFT),Participatory initiative
-45,Quantum Temple Path to Alango,2022,,,,,,,UI Designer,,Data Analysis,,,,,,,,,
-45,Quantum Temple Path to Alango,2022,,,,,,,Local Operations,,Digital Marketing,,,,,,,,,
-45,Quantum Temple Path to Alango,2022,,,,,,,Head of Content,,Software Development,,,,,,,,,
-45,Quantum Temple Path to Alango,2022,,,,,,,Field Experience Manager,,Mentoring,,,,,,,,,
-45,Quantum Temple Path to Alango,2022,,,,,,,UI Lead Designer,,Live Performance Logistics,,,,,,,,,
-45,Quantum Temple Path to Alango,2022,Empowerment,Educational outreach,Local authorities,,,,Cultural Practitioner,Tourism Travel Agency,Production Planning,,Masks,Ritual performances,,,,,Web3 platform,
-45,Quantum Temple Path to Alango,2022,,,,,,,Graphic Designer,,Project Coordination,,,,,,,,,
-45,Quantum Temple Path to Alango,2022,Economic sustainability,Economic sustainability,Indigenous communities,Participation,Donor support,B2C,CEO,Blockchain-powered travel platform,,"Social practices, rituals and festive events",Costumes,Balinese cultural heritage,Audio,Audio recording,Multimedia processing and production,Videos of Balinese culture keepers performing rituals and traditional dances,Blockchain,Digital assets
-45,Quantum Temple Path to Alango,2022,,,,,,,Product Analyst Intern,,System Architecture Design,,Balinese cultural heritage,,,,,,,
-45,Quantum Temple Path to Alango,2022,,,,,,,Senior Advisor,,UX/UI Design,,,,,,,,,
-45,Quantum Temple Path to Alango,2022,,,,,,,Product Strategist,,,,,,,,,,,
-45,Quantum Temple Path to Alango,2022,,,Researchers and Scholars,,,,Head of Product,Blockchain Technologies Company,Technical Support,,Instrumental music,,,,,,,
-45,Quantum Temple Path to Alango,2022,,,,,,,Project Manager,,,,,,,,,,,
-45,Quantum Temple Path to Alango,2022,,,,,,,Full Stack Engineer,,,,,,,,,,,
-45,Quantum Temple Path to Alango,2022,,,,,,,IT Architect,,,,,,,,,,,
-45,Quantum Temple Path to Alango,2022,,,,,,,Head of Operations,,,,,,,,,,,
-45,Quantum Temple Path to Alango,2022,,,,,,,Administrative Manager,,,,,,,,,,,
-45,Quantum Temple Path to Alango,2022,,,,,,,Accountant,,,,,,,,,,,
-46,Quantum Temple Passport,2021,,,Global audience,,,,Head of Engineering,,Community Impact Evaluation,,Rituals,,,,,,,
-46,Quantum Temple Passport,2021,,,,,,,Marketing,,Content Strategy,,,,,,,,,
-46,Quantum Temple Passport,2021,,,,,,,Impact Coordinator,,Cultural Advisory,,Choreography,,,,,,,
-46,Quantum Temple Passport,2021,Preservation,Global outreach,Tourists,Matchmaking,,,Anthropologist,Governmental Agency,Ethnographic Research,,Dance,Ritual performances,Video,,,,Web3 platform,Participatory initiative
-46,Quantum Temple Passport,2021,,,,,,,UI Designer,,Data Analysis,,,,,,,,,
-46,Quantum Temple Passport,2021,,,,,,,Local Operations,,Digital Marketing,,,,,,,,,
-46,Quantum Temple Passport,2021,,,,,,,Head of Content,,Software Development,,,,,,,,,
-46,Quantum Temple Passport,2021,,,,,,,Field Experience Manager,,Mentoring,,,,,,,,,
-46,Quantum Temple Passport,2021,,,,,,,UI Lead Designer,,Live Performance Logistics,,,,,,,,,
-46,Quantum Temple Passport,2021,,,Local authorities,,,,Cultural Practitioner,Tourism Travel Agency,Production Planning,,Masks,Community projects,,,,,Cryptocurrencies,
-46,Quantum Temple Passport,2021,,,,,,,Graphic Designer,,Project Coordination,,,,,,,,,
-46,Quantum Temple Passport,2021,Economic sustainability,Community engagement,Indigenous communities,Participation,Publicly Funded,B2C,CEO,Blockchain-powered travel platform,,"Social practices, rituals and festive events",Costumes,Balinese oral traditions,Audio,Text editing software,Database system,A collection of community projects and fund requests,Blockchain,Digital assets
-46,Quantum Temple Passport,2021,,,,,,,Product Analyst Intern,,System Architecture Design,,,,,,,,,
-46,Quantum Temple Passport,2021,,,,,,,Senior Advisor,,,,,,,,,,,
-46,Quantum Temple Passport,2021,,,,,,,Product Strategist,,UX/UI Design,,,,,,,,,
-46,Quantum Temple Passport,2021,,,Researchers and Scholars,,,,Head of Product,Blockchain Technologies Company,Technical Support,,Instrumental music,,,,,,,
-46,Quantum Temple Passport,2021,,,,,,,Project Manager,,,,,,,,,,,
-46,Quantum Temple Passport,2021,,,,,,,Full Stack Engineer,,,,,,,,,,,
-46,Quantum Temple Passport,2021,,,,,,,IT Architect,,,,,,,,,,,
-46,Quantum Temple Passport,2021,,,,,,,Head of Operations,,,,,,,,,,,
-46,Quantum Temple Passport,2021,,,,,,,Administrative Manager,,,,,,,,,,,
-46,Quantum Temple Passport,2021,,,,,,,Accountant,,,,,,,,,,,
-47,HKMALA - Hong Kong Martial Arts Living Archive,2012,Preservation,Public engagement,Researchers and Scholars,Facilitation,,,Digital Museology Researcher,Educational Institution,Audio/Sound Design,,Traditional weapons,Historical documentation,Pictures,Motion capture,Deep-learning pattern recognition,Documentation of rituals,Motion-activated system,Interactive exhibition
-47,HKMALA - Hong Kong Martial Arts Living Archive,2012,Knowledge transfer,Community collaboration,ICH Curious,,,,Media Artist,University research center,Heritage Documentation,,Acrobatic perfomances,,Audio,3D reconstruction systems,Database system,,,
-47,HKMALA - Hong Kong Martial Arts Living Archive,2012,Documentation,Documentation,Cultural practitioners,Translation,Publicly Funded,,,Organization for Martial Arts Safeguarding,Holographic Projection Design & Dev.,Performing arts,Sports,Kung fu masters performances,Motion data,2D acquisition,Motion data processing tools,"Kung fu motion data, video and photographic dataset archive",Graphic motion animation,Digital archive
-47,HKMALA - Hong Kong Martial Arts Living Archive,2012,Community empowerment,Educational outreach,Cultural institutions,,,,Martial Arts Expert,,Coding,,Choreography,Martial Arts oral traditions,Video,Video recording,Multimodal search and retrieval tools,Digitized copies of historical resources,Smart mirrors,Dedicated physical events
-47,HKMALA - Hong Kong Martial Arts Living Archive,2012,Edutainment,,Enthusiasts,,,,Martial Arts Performers,,,,Apprenticeship,,,Annotation system,,,,
-47,HKMALA - Hong Kong Martial Arts Living Archive,2012,Valorization,,General public,,,,Videographer,,,,Sports competition,,,,,,,
-47,HKMALA - Hong Kong Martial Arts Living Archive,2012,,,,,,,Photographer,,,,,,,,,,,
-47,HKMALA - Hong Kong Martial Arts Living Archive,2012,,,,,,,Installation Designer,,,,,,,,,,,
-47,HKMALA - Hong Kong Martial Arts Living Archive,2012,,,,,,,Audio Designer,,,,,,,,,,,
-47,HKMALA - Hong Kong Martial Arts Living Archive,2012,,,,,,,Documentary Producers,,,,,,,,,,,
+Entities,Type,Project,Ruolo,Livello,Posizione,Translation Tacticts,Human Resources
+Multidisciplinary Design Studio,Group,Multi - Multimedia Museum,Creative Agency,Secondary External,Production,"[""Virtualization"",""Storytelling""]","[""Lead Developer"",""IT Consultancy"",""Front-End Developer"",""Scientific curators"",""Backend developer"",""Art Director"",""Lead Designer"",""UX/UI Designer""]"
+Educational Institution,Group,Multi - Multimedia Museum,Education,Primary Internal,Initiator,"[""Storytelling""]","[""Scientific curators""]"
+University research center,Group,Multi - Multimedia Museum,Academic,Primary Internal,Initiator,"[""Storytelling""]","[""Scientific curators""]"
+Visual Culture Specialists,Group,ADLaM,Creative Agency,Secondary External,Production,"[""Participation""]","[""ICH Researchers"",""Textile Expert"",""Creative Director""]"
+Cultural Practitioners,Individual,ADLaM,Community,Primary Internal,Initiator,"[""Participation""]","[""Cultural Practitioner""]"
+Cultural Practitioners Community,Group,ADLaM,Community,Primary Internal,Validators,"[""Participation""]",
+Typeface Designers,Group,ADLaM,Creative Agency,Secondary External,Production,"[""Glocalization""]","[""Typeface Designers"",""Designer"",""Design Director""]"
+Advertising agency,Group,ADLaM,Creative Agency,Secondary External,Production,"[""Glocalization""]","[""Art Director"",""Creative Director"",""Executive Creative Director"",""Copywriter"",""Principal Product Manager"",""Head of Design"",""Designer"",""Design Director""]"
+Multinational Technology Firm,Group,ADLaM,Technology Provider,Primary External,Funding,"[""Glocalization""]","[""Principal Program Manager"",""Principal Product Manager""""Accountant"",""Director of Operations"",""Group Account Director"",""Executive Production Officer"",""Executive Producer"",""Strategy Director""]"
+Policy makers,Group,A soup to remember,Government institutions,Secondary External,Validators,,
+Pasta Producer,Group,A soup to remember,Industrial Provider,Primary Internal,Initiator,"[""Materialization""]","[""Executive Director"",""Craft Partner"",""Global Producer"",""Public Relationship""]"
+Cultural and Arts local association,Group,A soup to remember,Community,Primary External,Validators,"[""Participation""]","[""Musicians"",""ICH Practitioners""]"
+Advertising agency,Group,A soup to remember,Creative Agency,Primary External,Production,"[""Participation"",""Materialization""]","[""Executive Director"",""Brand Manager"",""Creative Director"",""Designer"",""Head of Creative Excellence"",""Accountant"",""Creative Manager"",""Copywriter"",""Head of Video Production"",""Head of Pre-Press"",""Creative Partner"",""Social Media Manager"",""Video Animator"",""Head of Social Media"",""Art Director"",""Global Producer"",""Public Relationship"",""Illustrator"",""Photographer"",""Press and Production"",""Director of Photography""]"
+Public Foundation,Group,GPT-4 for Icelandic Language,Institutions,Secondary External,Validators,"[""Participation""]",
+Language Technology company,Group,GPT-4 for Icelandic Language,Technology Provider,Secondary External,Production,"[""Glocalization""]","[""Language Support Tools Developer"",""Digital Product Developer""]"
+Language Technology Center,Group,GPT-4 for Icelandic Language,Institutions,Secondary External,Production,"[""Glocalization""]","[""Language Support Tools Developer"",""Linguistic Specialist""]"
+AI Research Organization,Group,GPT-4 for Icelandic Language,Technology Provider,Primary External,Production,"[""Glocalization""]",
+Language Community,Group,GPT-4 for Icelandic Language,Community,Secondary External,Validators,"[""Participation""]",
+Governmental Agency,Group,GPT-4 for Icelandic Language,Government institutions,Primary Internal,Initiator,"[""Participation""]",
+Community,Group,MODAS: Sas Boghes da sos Singers a Tenor,Community,Primary External,Production,"[""Participation""]",
+Cultural Association,Group,MODAS: Sas Boghes da sos Singers a Tenor,Institutions,Primary Internal,Production,"[""Participation""]",
+Regional Cultural Organization,Group,MODAS: Sas Boghes da sos Singers a Tenor,Academic,Primary Internal,Initiator,"[""Glocalization"",""Storytelling"",""Participation""]","[""Executive Producer"",""Cultural Network Coordinator"",""Technical-Scientific Coordinator"",""Sound Technician"",""Copywriter"",""Mixing and Mastering Specialist"",""Sound Designer""]"
+Cultural Practitioners Community,Group,MODAS: Sas Boghes da sos Singers a Tenor,Institutions,Primary External,Production,"[""Participation""]",
+AI Research Scientist,Individual,ReCollection,Technology Provider,Primary Internal,Production,"[""Materialization""]",
+AI Expert,Individual,ReCollection,Technology Provider,Primary Internal,Production,"[""Materialization""]",
+Academic & Creative Innovation Hub,Group,ReCollection,Institutions,Primary External,Funding,,
+New Media Artist,Individual,ReCollection,Creative Agency,Primary Internal,Initiator,"[""Materialization"",""Participation""]",
+Foundation and Research Center,Group,ReCollection,Institutions,Primary External,Funding,,
+Education & Creativity Organization,Group,Synthetic Memories,Institutions,Primary External,Validators,"[""Participation"",""Memory elicitation""]","[""Cultural Social Integrator"",""Community Engagement Manager""]"
+Innovative Cultural Funding Platform,Group,Synthetic Memories,Institutions,Secondary External,Funding,,
+Government Funding Organization,Group,Synthetic Memories,Government institutions,Secondary External,Funding,,
+Gender & Inclusion Organization,Group,Synthetic Memories,Institutions,Primary External,Validators,"[""Participation""]","[""Cultural Social Integrator"",""Community Engagement Manager""]"
+Cultural Exchange & Social Integration Organization,Group,Synthetic Memories,Institutions,Primary External,Validators,"[""Participation""]","[""Cultural Social Integrator"",""Community Engagement Manager""]"
+Funding Organization,Group,Synthetic Memories,Institutions,Secondary External,Funding,,"[""Director & Funding partner"",""Accountant""]"
+Design studio,Group,Synthetic Memories,Creative Agency,Primary Internal,Initiator,"[""Animation"",""Materialization"",""Participation"",""Memory elicitation""]","[""AI Specialist"",""Technical Lead"",""Manager Assistant"",""Sound Designer"",""General Manager"",""Creative"",""Industrial Designer"",""Project Manager"",""Creative Journalist"",""Head of Digital"",""Operations Director & Partner"",""Digital Designer"",""Visual Designer"",""Front-End Developer"",""Head of Design & Production"",""Producer""]"
+Community Development Organization,Group,Synthetic Memories,Community,Primary External,Validators,"[""Participation""]","[""Cultural Social Integrator"",""Community Engagement Manager""]"
+Archive,Group,Lisbon Under Stars,Istitution,Primary External,Production,,"[""Historian"",""Documentation Provider""]"
+Video Mapping and Interactive Projections Firm,Group,Lisbon Under Stars,Creative Agency,Primary Internal,Initiator,"[""Storytelling"",""Animation""]","[""Artistic Director"",""Project Manager"",""Technical Director"",""Narrator"",""Projection Mapping Artist"",""Sound Designer"",""Urban Artists""]"
+Former Convent,Group,Lisbon Under Stars,Institution,Primary External,Production,,
+Dance Educators,Group,Lisbon Under Stars,Institution,Primary External,Production,,"[""Dancers"",""Musicians"",""Choreographer""]"
+Video Game Development Studio,Group,RISE UP - Revitalising Languages and Safeguarding Cultural Diversity,Creative Agency,Secondary External,Production,"[""Matchmaking"",""Participation""]","[""Project Manager"",""Gamification Designer"",""Educational Content Developer""]"
+Educational Institution,Group,RISE UP - Revitalising Languages and Safeguarding Cultural Diversity,Education,Primary Internal,Initiator,"[""Crowdsourcing"",""Matchmaking"",""Participation""]","[""Communication Officer""]"
+Cultural Institution,Group,RISE UP - Revitalising Languages and Safeguarding Cultural Diversity,Academic,Primary Internal,Validators,"[""Crowdsourcing"",""Matchmaking"",""Participation""]","[""Community Engagement Manager""]"
+Youth Organization,Group,RISE UP - Revitalising Languages and Safeguarding Cultural Diversity,Institution,Secondary External,Validators,"[""Participation""]","[""Community Engagement Manager""]"
+Creative Agency,Group,RISE UP - Revitalising Languages and Safeguarding Cultural Diversity,Creative Agency,Secondary External,Production,"[""Matchmaking"",""Participation""]","[""Project Manager"",""Digital Platform Developer""]"
+Innovation consultancy,Group,RISE UP - Revitalising Languages and Safeguarding Cultural Diversity,Technology Provider,Primary External,Production,"[""Matchmaking"",""Participation""]",
+University research center,Group,RISE UP - Revitalising Languages and Safeguarding Cultural Diversity,Academic,Primary Internal,Validators,"[""Matchmaking"",""Participation""]","[""Language Revitalization Specialist""]"
+Fablab,Group,Swapmuseum,Industrial Provider,Secondary External,Production,"[""Participation""]",
+Social Cooperative,Group,Swapmuseum,Community,Primary Internal,Initiator,"[""Participation""]","[""Audience Developer"",""Tutors"",""Business Analyst"",""Facilitator"",""Project Manager"",""Community Engagement Manager"",""Social Media Manager""]"
+Cultural and Innovation Hub,Group,Swapmuseum,Institution,Primary Internal,Initiator,"[""Matchmaking"",""Participation""]",
+Cultural Association,Group,Swapmuseum,Institution,Primary Internal,Initiator,"[""Matchmaking"",""Participation""]",
+Museum,Group,Swapmuseum,Institution,Primary Internal,Initiator,"[""Participation""]",
+Cultural Association,Group,Comuniterràe,Institution,Primary Internal,Initiator,"[""Participation"",""Storytelling""]","[""Project Manager"",""Map Illustrator"",""Cultural Heritage Specialist""]"
+Community Foundation,Group,Comuniterràe,Institution,Primary External,Production,"[""Participation""]","[""Community Facilitator""]"
+National park,Group,Comuniterràe,Government institutions,Primary Internal,Initiator,"[""Participation""]","[""Communication Officer""]"
+Regional Government,Group,Comuniterràe,Government institutions,Primary External,Funding,,
+Community,Group,Comuniterràe,Community,Primary External,Production,"[""Participation""]",
+Educational Institution,Group,Design philology,Education,Primary Internal,Initiator,"[""Participation""]","[""Alumni Contributors"",""Technical support teams""]"
+University research center,Group,Design philology,Academic,Primary Internal,Initiator,"[""Virtualization"",""Participation""]","[""Project Coordinator"",""Scientific curators"",""Web designers"",""Communication Officer"",""Web developer"",""Video-testimonial designers"",""Video Producer"",""Voiceover Artist""]"
+Non-governmental Cultural Foundation,Group,MEMEX. MEMories and EXperiences for inclusive digital storytelling,Institutions,Primary Internal,Production,"[""Facilitation"",""Crowdsourcing""]","[""Community Engagement Manager""]"
+Creative Agency,Group,MEMEX. MEMories and EXperiences for inclusive digital storytelling,Creative Agency,Primary Internal,Production,"[""Facilitation"",""Crowdsourcing""]","[""Interaction Designer"",""UX/UI Designer""]"
+Cultural Mediation and Education Company,Group,MEMEX. MEMories and EXperiences for inclusive digital storytelling,Institutions,Primary Internal,Production,"[""Facilitation"",""Crowdsourcing""]","[""Community Engagement Manager""]"
+Technology Research Center,Group,MEMEX. MEMories and EXperiences for inclusive digital storytelling,Technology Provider,Primary Internal,Production,"[""Facilitation"",""Crowdsourcing""]","[""AR Developer"",""Data Scientist"",""Software Engineer"",""ICT Specialist"",""App Developer""]"
+Research and Production Agency,Group,MEMEX. MEMories and EXperiences for inclusive digital storytelling,Creative Agency,Primary Internal,Production,"[""Facilitation"",""Crowdsourcing""]","[""AI Specialist""]"
+Public Scientific and Technological Organization,Group,MEMEX. MEMories and EXperiences for inclusive digital storytelling,Technology Provider,Primary Internal,Initiator,"[""Facilitation"",""Crowdsourcing""]","[""Project Coordinator""]"
+Non-profit Research Association,Group,MEMEX. MEMories and EXperiences for inclusive digital storytelling,Academic,Primary Internal,Production,"[""Facilitation"",""Crowdsourcing""]","[""Cultural Heritage Specialist"",""Heritage Data Curator""]"
+Educational Institution,Group,MEMEX. MEMories and EXperiences for inclusive digital storytelling,Education,Primary Internal,Production,"[""Facilitation"",""Crowdsourcing""]",
+University research center,Group,MEMEX. MEMories and EXperiences for inclusive digital storytelling,Academic,Primary Internal,Production,"[""Facilitation"",""Crowdsourcing""]","[""Ethnographer""]"
+Research Organization,Group,MEMEX. MEMories and EXperiences for inclusive digital storytelling,Academic,Primary Internal,Production,"[""Facilitation"",""Crowdsourcing""]","[""Cultural Heritage Specialist"",""Heritage Data Curator""]"
+European Cultural Network,Group,MEMEX. MEMories and EXperiences for inclusive digital storytelling,Institutions,Primary Internal,Production,"[""Facilitation"",""Crowdsourcing""]","[""Policy maker""]"
+Business Consulting Firm,Group,MEMEX. MEMories and EXperiences for inclusive digital storytelling,Institutions,Primary Internal,Production,"[""Facilitation"",""Crowdsourcing""]",
+Cultural Management Center,Group,MEMEX. MEMories and EXperiences for inclusive digital storytelling,Institutions,Primary Internal,Production,"[""Facilitation"",""Crowdsourcing""]","[""Community Engagement Manager""]"
+Acoustic Design Consultancy Firm,Group,Planet Word: The First Voice-Activated Museum,Technology Provider,Secondary External,Production,"[""Participation""]",
+Exhibition and Media Design studio,Group,Planet Word: The First Voice-Activated Museum,Creative Agency,Secondary External,Production,"[""Participation""]","[""Contents Developers"",""Media Producer"",""Media Designer"",""Lead Designer"",""Media & Software Developers""]"
+Museum,Group,Planet Word: The First Voice-Activated Museum,Institutions,Primary Internal,Initiator,"[""Participation""]",
+Architecture Studio,Group,Planet Word: The First Voice-Activated Museum,Creative Agency,Secondary External,Production,"[""Participation""]","[""Lead Architect"",""Architect""]"
+Sound Design Studio,Group,Planet Word: The First Voice-Activated Museum,Creative Agency,Secondary External,Production,"[""Participation""]","[""Sound Designer"",""Sound Engineer""]"
+Motion Design Studio,Group,Planet Word: The First Voice-Activated Museum,Creative Agency,Secondary External,Production,"[""Participation""]","[""Audio-Visual (AV) Integrator""]"
+Cultural Foundation,Group,Piccolo Museo del Diario,Institution,Primary Internal,Initiator,,"""Fundraising Manager"","
+Literary Archive,Group,Piccolo Museo del Diario,Institution,Primary Internal,Initiator,,"""Researcher"""
+Multidisciplinary Design Studio,Group,Piccolo Museo del Diario,Creative Agency,Secondary External,Production,"[""Animation""]","[""Architect"",""Art Director"",""Interaction Designer"",""Curator"",""Project Manager"",""Creative Director"",""Technology Officer"",""General Manager"",""Designer"",""Exhibition Designer"",""Photographer""]"
