@@ -75,7 +75,6 @@ Made with best intentions and open-source code :heart:
 #### Fase 1
 
 - [x] Finire impostazione sito
-
   - [x] Importare CSS globale e applicare alle pagine
   - [x] Fare menu e link da index.html
     - [x] Impostare UI per navigazione sito
@@ -89,14 +88,14 @@ Made with best intentions and open-source code :heart:
   #### Fase 2
 
 - [x] Connect and host the cleaned data
-  - [ ] fare daisy chain dei script di python (execute.py -> fetchData.py -> unifyComp.py -> unifyDig.py -> createExcels.py)
+  - [x] fare daisy chain dei script di python (execute.py -> fetchData.py -> unifyComp.py -> unifyDig.py -> createExcels.py)
 - [ ] Comparison Tool
   - [ ] Migliorare etichette e UI (leggibilità e lettura)
   - [ ] Impostare gerarchia visiva differente
   - [ ] Impostazione preliminare e visiva dei data (pre-cleaning)
 - [ ] Creative Map
   - [ ] Capire come visualizzare (sketch e prove di viz)
-  - [ ] Impostazione sheet, excel, data e lettura
+  - [x] Impostazione sheet, excel, data e lettura
   - [ ] Impostazione preliminare e visiva dei data
 - [x] Competences Map
   - [x] Impostazione base (importare e pulire sheet)
@@ -109,14 +108,24 @@ Made with best intentions and open-source code :heart:
 
 - [ ] Connettere e visualizzare le visualizzazioni
   - [ ] Comparison Tool
+  - [ ] Network Tool Libro
   - [ ] Creative Map
   - [x] Competences Map
   - [ ] Digitalisation Map
+  - [ ] Ecosystem Map
 - [x] Responsive resizing (fino a min-width 660px)
 - [ ] Finire menu di navigazione
   - [ ] impostare modale search e codice (lunr.js)
     - [ ] zooming su nodi id
     - [ ] modale data quando cliccati
   - [ ] impostare modale "more" e linking
-  - [ ] label dinamiche per funzionalità bottone (animazione e titoli)
+  - [x] label dinamiche per funzionalità bottone (animazione e titoli)
   - [x] modale con "esperienza migliore con visualizzazione desktop"
+    - [ ] aggiungi modale al sito iframe
+
+### Styling
+
+- [ ] Effetto/Texture print
+- [ ] Rifai index.html con linking dinamico
+- [ ] Rifai index.html alternative di presentazione progetti
+- [ ] Pagina about con persone TRAMA

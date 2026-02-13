@@ -16,7 +16,7 @@
 
 // Thanks to Visual Cinnamon, Observable and Shirley Wu for inspiration
 // This tool is built upon d3.js and bboxCollide libraries, and visualises
-// the mapping of competences and technologies required to different fruitions output of projects
+// the mapping of competences and technologies required to make different fruitions output for ICH projects
 
 //working variable
 const DEBUG = "hidden";
@@ -476,11 +476,11 @@ const createCompetencesMap = (container) => {
           const tech_ids = connected_nodes.tech_nodes.map((t) => t.id);
           const edges_from_skills = getEdgesBetweenSkillsAndProject(
             node.id,
-            skill_ids
+            skill_ids,
           );
           const edges_to_techs = getEdgesBetweenProjectAndTechs(
             node.id,
-            tech_ids
+            tech_ids,
           );
           edges_to_show = [...edges_from_skills, ...edges_to_techs];
           highlightProjectHover(node, connected_nodes);
@@ -605,11 +605,11 @@ const createCompetencesMap = (container) => {
           const tech_ids = connected_nodes.tech_nodes.map((t) => t.id);
           const edges_from_skills = getEdgesBetweenSkillsAndProject(
             node.id,
-            skill_ids
+            skill_ids,
           );
           const edges_to_techs = getEdgesBetweenProjectAndTechs(
             node.id,
-            tech_ids
+            tech_ids,
           );
           edges_to_show = [...edges_from_skills, ...edges_to_techs];
           break;
@@ -708,7 +708,7 @@ const createCompetencesMap = (container) => {
           return locked_connected.skill_nodes?.some((n) => n.id === node.id);
         case "skill_type":
           return locked_connected.skill_type_arcs?.some(
-            (arc) => arc.data.type === node.data.type
+            (arc) => arc.data.type === node.data.type,
           );
         case "project":
           return locked_connected.projects?.some((p) => p.id === node.id);
@@ -820,7 +820,7 @@ const createCompetencesMap = (container) => {
         const skill_ids = connected.skill_nodes.map((s) => s.id);
         ghost_edges = getEdgesBetweenSkillsAndProject(
           hovered_node.id,
-          skill_ids
+          skill_ids,
         );
       } else if (clicked_type === "project" && hovered_type === "skill") {
         // Show edges to other projects from this skill
@@ -835,7 +835,7 @@ const createCompetencesMap = (container) => {
           .filter((id) => id !== clicked_node.id);
         ghost_edges = getEdgesBetweenProjectsAndTech(
           hovered_node.id,
-          project_ids
+          project_ids,
         );
       } else if (clicked_type === "project" && hovered_type === "skill_type") {
         // Do nothing - no ghost edges for skill_type
@@ -936,16 +936,16 @@ const createCompetencesMap = (container) => {
 
       // Create Sets of locked node IDs for efficient lookup
       const locked_skill_ids = new Set(
-        (locked_connected.skill_nodes || []).map((s) => s.id)
+        (locked_connected.skill_nodes || []).map((s) => s.id),
       );
       const locked_tech_ids = new Set(
-        (locked_connected.tech_nodes || []).map((t) => t.id)
+        (locked_connected.tech_nodes || []).map((t) => t.id),
       );
       const locked_project_ids = new Set(
-        (locked_connected.projects || []).map((p) => p.id)
+        (locked_connected.projects || []).map((p) => p.id),
       );
       const locked_skill_type_ids = new Set(
-        (locked_connected.skill_type_arcs || []).map((arc) => arc.data.type)
+        (locked_connected.skill_type_arcs || []).map((arc) => arc.data.type),
       );
 
       // Reset ALL skill nodes: locked to 1.0, others to 0.4
@@ -956,7 +956,7 @@ const createCompetencesMap = (container) => {
         if (!is_clicked) {
           d3.select(this).attr(
             "opacity",
-            locked_skill_ids.has(d.id) ? 1.0 : 0.4
+            locked_skill_ids.has(d.id) ? 1.0 : 0.4,
           );
         }
       });
@@ -994,7 +994,7 @@ const createCompetencesMap = (container) => {
         if (!is_clicked) {
           d3.select(this).attr(
             "opacity",
-            locked_skill_type_ids.has(d.data.type) ? 1.0 : 0.4
+            locked_skill_type_ids.has(d.data.type) ? 1.0 : 0.4,
           );
         }
       });
@@ -1119,7 +1119,7 @@ const createCompetencesMap = (container) => {
     const typeFreq = d3.rollup(
       cleaned,
       (v) => v.length,
-      (d) => d.type
+      (d) => d.type,
     );
     skillType = Array.from(typeFreq, ([name, count]) => ({
       type: name,
@@ -1142,7 +1142,7 @@ const createCompetencesMap = (container) => {
       d.projects.map((p) => ({
         source: d.skill,
         target: p,
-      }))
+      })),
     );
 
     typeToSkill = new Map(nodes_skillToproj.map((s) => [s.skill, s.type]));
@@ -1183,7 +1183,7 @@ const createCompetencesMap = (container) => {
     const techFreq = d3.rollup(
       tech,
       (v) => v.length,
-      (d) => d.tech
+      (d) => d.tech,
     );
 
     //set domain
@@ -1463,7 +1463,7 @@ const createCompetencesMap = (container) => {
         i,
         TECHNOLOGY_RADIUS - PADDING / 2.5,
         CENTRAL_HOLE_RADIUS,
-        total * 1.1
+        total * 1.1,
       );
       master.push({ x, y });
     }
@@ -1498,7 +1498,7 @@ const createCompetencesMap = (container) => {
       }
 
       const sectorIndex = slices.findIndex(
-        (s) => angle >= s.startAngle && angle < s.endAngle
+        (s) => angle >= s.startAngle && angle < s.endAngle,
       );
 
       if (sectorIndex !== -1) {
@@ -1588,7 +1588,7 @@ const createCompetencesMap = (container) => {
       .force("y", d3.forceY((d) => d.anchorY).strength(0.1))
       .force(
         "collide",
-        d3.forceCollide((d) => d.radius + 1)
+        d3.forceCollide((d) => d.radius + 1),
       )
       .force("bound", boundForce);
 
@@ -1624,7 +1624,7 @@ const createCompetencesMap = (container) => {
       donutData.data.map((d) => [
         d.data.type,
         { angle: d.angle, radius: d.inner_radius },
-      ])
+      ]),
     );
 
     // Calculate edges
@@ -1820,7 +1820,7 @@ const createCompetencesMap = (container) => {
         .force("y", d3.forceY((d) => d.anchorY).strength(0.1))
         .force(
           "collide",
-          d3.forceCollide((d) => d.radius + 1)
+          d3.forceCollide((d) => d.radius + 1),
         )
         .force("bound", boundForce);
 
@@ -2025,7 +2025,7 @@ const createCompetencesMap = (container) => {
       proj_pos.map((p) => {
         const standard_angle = atan2(p.y, p.x);
         return [p.id, { angle: standard_angle, radius: PROJECTS_RADIUS }];
-      })
+      }),
     );
 
     const tech_positions = new Map(
@@ -2033,7 +2033,7 @@ const createCompetencesMap = (container) => {
         const standard_angle = atan2(t.y, t.x);
         const actual_radius = sqrt(t.x * t.x + t.y * t.y);
         return [t.id, { angle: standard_angle, radius: actual_radius }];
-      })
+      }),
     );
 
     // Create edges
@@ -2312,7 +2312,7 @@ const createCompetencesMap = (container) => {
           const skillTypeName = d.type;
           //find corresponding skill type
           const targetArc = donutData.data.find(
-            (arc) => arc.data.type === skillTypeName
+            (arc) => arc.data.type === skillTypeName,
           );
           console.log(targetArc);
           //when clicked, click the skill type label
@@ -3263,7 +3263,7 @@ const createCompetencesMap = (container) => {
         .style("padding-top", "12px")
         .style(
           "border-top",
-          `1px solid ${d3.color(COLORS.label).copy({ opacity: 0.3 })}`
+          `1px solid ${d3.color(COLORS.label).copy({ opacity: 0.3 })}`,
         ) // Linea separatrice
         .style("text-align", "center")
         .style("width", "100%")
@@ -3464,14 +3464,14 @@ const createCompetencesMap = (container) => {
     delaunay_skills = d3.Delaunay.from(
       sk,
       (d) => d.x,
-      (d) => d.y
+      (d) => d.y,
     );
 
     // Create Delaunay diagram for techs using their x,y positions
     delaunay_techs = d3.Delaunay.from(
       tc,
       (d) => d.x,
-      (d) => d.y
+      (d) => d.y,
     );
 
     //create projects paths
@@ -3528,7 +3528,7 @@ const createCompetencesMap = (container) => {
     delaunay_skills = d3.Delaunay.from(
       skillnodes,
       (d) => d.x,
-      (d) => d.y
+      (d) => d.y,
     );
   } //rebuildSkillDelaunay()
 
@@ -3551,7 +3551,7 @@ const createCompetencesMap = (container) => {
       if (skillIdx >= 0 && skillIdx < skillNodes.length) {
         const skillNode = skillNodes[skillIdx];
         const skillDist = sqrt(
-          (skillNode.x - mx) ** 2 + (skillNode.y - my) ** 2
+          (skillNode.x - mx) ** 2 + (skillNode.y - my) ** 2,
         );
 
         // Check if within hover threshold (node radius + extra padding)
@@ -3601,14 +3601,14 @@ const createCompetencesMap = (container) => {
 
     // Filter edges that include this specific skill
     return sk_edges_curves_global.filter(
-      (edge) => edge.skills && edge.skills.includes(skill_id)
+      (edge) => edge.skills && edge.skills.includes(skill_id),
     );
   } //getEdgesFromSkill()
 
   //Get edges originating from a skill type (FORWARD)
   function getEdgesFromSkillType(skill_type) {
     return sk_edges_curves_global.filter(
-      (edge) => edge.source_id === skill_type
+      (edge) => edge.source_id === skill_type,
     );
   } //getEdgesFromSkillType()
 
@@ -3625,14 +3625,14 @@ const createCompetencesMap = (container) => {
     return sk_edges_curves_global.filter(
       (edge) =>
         edge.skills &&
-        edge.skills.some((skill) => project_skills.includes(skill))
+        edge.skills.some((skill) => project_skills.includes(skill)),
     );
   } //getEdgesToProject()
 
   //Get edges FROM a project to techs (FORWARD)
   function getEdgesFromProject(project_id) {
     return tc_edges_curves_global.filter(
-      (edge) => edge.source_id === project_id
+      (edge) => edge.source_id === project_id,
     );
   } //getEdgesFromProject()
 
@@ -3647,7 +3647,7 @@ const createCompetencesMap = (container) => {
 
     // Filter edges from those projects to this tech
     return tc_edges_curves_global.filter((edge) =>
-      projects_with_tech.includes(edge.source_id)
+      projects_with_tech.includes(edge.source_id),
     );
   } //getEdgesToTech()
 
@@ -3667,7 +3667,7 @@ const createCompetencesMap = (container) => {
       const angle_diff_wrapped = min(
         angle_diff,
         abs(angle_diff - TAU),
-        abs(angle_diff + TAU)
+        abs(angle_diff + TAU),
       );
 
       // Only include if target angle matches our project
@@ -3684,7 +3684,7 @@ const createCompetencesMap = (container) => {
         edge.source_id === project_id &&
         // Check if this edge goes to one of the connected techs
         edges_projTotech.some(
-          (e) => e.source === project_id && tech_ids_set.has(e.target)
+          (e) => e.source === project_id && tech_ids_set.has(e.target),
         )
       );
     });
@@ -3710,7 +3710,7 @@ const createCompetencesMap = (container) => {
       const angle_diff_wrapped = min(
         angle_diff,
         abs(angle_diff - TAU),
-        abs(angle_diff + TAU)
+        abs(angle_diff + TAU),
       );
 
       // Only include if target angle matches our tech
@@ -3745,7 +3745,7 @@ const createCompetencesMap = (container) => {
   function getConnectedToSkillType(skill_type) {
     // Get all skill nodes of this type
     const skill_nodes = Array.from(skill_node_by_id.values()).filter(
-      (n) => n.type === skill_type
+      (n) => n.type === skill_type,
     );
 
     // Get all skills in this type
@@ -3778,7 +3778,7 @@ const createCompetencesMap = (container) => {
 
     // Get skill types for these skills
     const skill_types = new Set(
-      skill_names.map((name) => typeToSkill.get(name))
+      skill_names.map((name) => typeToSkill.get(name)),
     );
 
     const skill_type_arcs = Array.from(skill_types)
@@ -3929,7 +3929,7 @@ const createCompetencesMap = (container) => {
         // For other hovers: set opacity for all
         const types_set = new Set(skill_types);
         cache.donut_arcs.attr("opacity", (d) =>
-          types_set.has(d.data.type) ? 1.0 : 0.4
+          types_set.has(d.data.type) ? 1.0 : 0.4,
         );
       }
     }
@@ -4057,7 +4057,7 @@ const createCompetencesMap = (container) => {
     //constructor circles
     CENTRAL_HOLE_RADIUS = round(BOUNDARY_RADIUS * 0.2); //empty central space
     SKILL_BOUNDARY_RADIUS = round(
-      (BOUNDARY_RADIUS - DONUT_RADIUS - PADDING) / 2
+      (BOUNDARY_RADIUS - DONUT_RADIUS - PADDING) / 2,
     );
 
     //Labels
@@ -4227,7 +4227,7 @@ const createCompetencesMap = (container) => {
     ) {
       svgString = svgString.replace(
         /^<svg/,
-        '<svg xmlns="http://www.w3.org/2000/svg"'
+        '<svg xmlns="http://www.w3.org/2000/svg"',
       );
     }
 
