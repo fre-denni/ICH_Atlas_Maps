@@ -162,8 +162,28 @@
                 margin-top: 10px;
             }
 
+            /* Checkbox styling */
+            .checkbox-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .checkbox-item input[type="checkbox"] {
+                cursor: pointer;
+                width: 16px;
+                height: 16px;
+            }
+
+            .checkbox-item label {
+                cursor: pointer;
+                text-transform: none !important;
+                font-size: 0.9em;
+                color: #4d4950;
+            }
+
             #project-filter {
-                max-height: 250px;
+                min-height: 250px;
                 overflow-y: auto;
                 width: 100%;
                 padding: 10px;
@@ -244,10 +264,21 @@
             <div id="dynamic-properties"></div>
 
             <div class="control-group">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="hide-central-nodes">
+                    <label for="hide-central-nodes">Hide central nodes</label>
+                </div>
+            </div>
+
+            <div class="control-group">
                 <button id="add-property">Add Property</button>
                 <button id="remove-property" style="display: none;">Remove Property</button>
             </div>
             <button id="update">Update Visualization</button>
+            
+            <div style="margin-top: 10px; padding: 8px; background-color: #f0f0f0; border-radius: 6px; font-size: 0.75em; text-align: center; color: #666;">
+                Press <kbd style="background: white; padding: 2px 6px; border-radius: 3px; border: 1px solid #ccc;">D</kbd> to download data
+            </div>
             
         </div>
         </div>
@@ -552,6 +583,9 @@
                 let selectedSecondaryProperties = []; // dynamic properties to compare
                 let visibleProjects = new Set(); // traccia i progetti visibili
                 let allProjects = []; // lista di tutti i progetti disponibili
+                let hideCentralNodes = false; // NUOVO: traccia se nascondere i nodi centrali
+                let currentNodes = []; // NUOVO: traccia i nodi correnti per il download
+                let currentLinks = []; // NUOVO: traccia i link correnti per il download
 
                 /*create the list for the selects*/
                 const properties = [
@@ -893,6 +927,28 @@
                                 }
                             });
                         });
+
+                        // NUOVO: Filtra nodi centrali se l'opzione è attiva
+                        if (hideCentralNodes) {
+                            // Rimuovi i nodi centrali
+                            const centralNodeIds = new Set(CENTRAL_NODE);
+                            const filteredNodes = nodes.filter(n => !centralNodeIds.has(n.id));
+                            
+                            // Rimuovi i link che coinvolgono nodi centrali
+                            const filteredLinks = links.filter(l => 
+                                !centralNodeIds.has(l.source) && !centralNodeIds.has(l.target)
+                            );
+                            
+                            // Sostituisci gli array originali
+                            nodes.length = 0;
+                            nodes.push(...filteredNodes);
+                            links.length = 0;
+                            links.push(...filteredLinks);
+                        }
+
+                        // NUOVO: Salva i dati correnti per il download
+                        currentNodes = [...nodes];
+                        currentLinks = [...links];
 
                         if (nodes.length === 0) {
                             displayCanvasMessage("No nodes to render.");
@@ -1278,6 +1334,73 @@
 
                 // Link the update button to the main visualization function.
                 d3.select("#update").on("click", updateVisualization);
+
+                // NUOVO: Event listener per checkbox hide central nodes
+                d3.select("#hide-central-nodes").on("change", function() {
+                    hideCentralNodes = this.checked;
+                    updateVisualization();
+                });
+
+                // NUOVO: Event listener per download con tasto D
+                d3.select("body").on("keydown", function(event) {
+                    if (event.key === 'd' || event.key === 'D') {
+                        if (currentNodes.length > 0) {
+                            downloadData();
+                        } else {
+                            console.log("No data to download. Generate a visualization first.");
+                        }
+                    }
+                });
+
+                // NUOVO: Funzione per scaricare i dati
+                function downloadData() {
+                    // Prepare nodes data
+                    const nodesCSV = [
+                        ['id', 'type', 'name', 'radius', 'color'].join(','),
+                        ...currentNodes.map(n => [
+                            `"${n.id}"`,
+                            n.type,
+                            `"${n.name || n.id}"`,
+                            n.r,
+                            n.color || (n.type === 'central' ? '#a682e8' : n.type === 'project' ? '#64d6d3' : '')
+                        ].join(','))
+                    ].join('\n');
+
+                    // Prepare links data
+                    const linksCSV = [
+                        ['source', 'target'].join(','),
+                        ...currentLinks.map(l => [
+                            `"${l.source}"`,
+                            `"${l.target}"`
+                        ].join(','))
+                    ].join('\n');
+
+                    // Download nodes
+                    const nodesBlob = new Blob([nodesCSV], { type: 'text/csv' });
+                    const nodesUrl = URL.createObjectURL(nodesBlob);
+                    const nodesLink = document.createElement('a');
+                    nodesLink.href = nodesUrl;
+                    nodesLink.download = 'network-nodes.csv';
+                    document.body.appendChild(nodesLink);
+                    nodesLink.click();
+                    document.body.removeChild(nodesLink);
+                    URL.revokeObjectURL(nodesUrl);
+
+                    // Download links (slight delay to avoid browser blocking)
+                    setTimeout(() => {
+                        const linksBlob = new Blob([linksCSV], { type: 'text/csv' });
+                        const linksUrl = URL.createObjectURL(linksBlob);
+                        const linksLink = document.createElement('a');
+                        linksLink.href = linksUrl;
+                        linksLink.download = 'network-edges.csv';
+                        document.body.appendChild(linksLink);
+                        linksLink.click();
+                        document.body.removeChild(linksLink);
+                        URL.revokeObjectURL(linksUrl);
+                    }, 100);
+
+                    console.log(`Downloaded ${currentNodes.length} nodes and ${currentLinks.length} edges`);
+                }
 
                 /* --- INITIALIZATION --- */
                 // Set the initial state when the page loads.
