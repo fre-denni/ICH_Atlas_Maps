@@ -49,8 +49,12 @@
                 gap: 15px; 
                 z-index: 10; /* Ensure it's on top */
                 max-height: calc(100vh - 40px); /* Prevent it from getting taller than the screen */
-                overflow: hidden;
+                overflow-y: auto; /* Allow vertical scrolling */
+                overflow-x: hidden; /* Prevent horizontal scrolling */
                 align-items: start;
+                background-color: white;
+                border-radius: 10px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             }
 
             #controls h3 {
@@ -71,6 +75,18 @@
               text-transform: uppercase;
               font-size: 0.9em;
               color: black;
+              display: flex;
+              align-items: center;
+              gap: 6px;
+            }
+
+            /* Color indicator circles */
+            .color-indicator {
+                display: inline-block;
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                flex-shrink: 0;
             }
 
             .control-group select {
@@ -156,14 +172,6 @@
                 border: 1px solid #e0e0e0;
             }
 
-            #project-filter .filter-header {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 10px;
-                padding-bottom: 8px;
-                border-bottom: 1px solid #e0e0e0;
-            }
-
             .project-checkbox-item {
                 display: flex;
                 align-items: center;
@@ -182,6 +190,24 @@
                 color: #4d4950 !important;
             }
 
+            #project-filter .filter-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 10px;
+                padding-bottom: 8px;
+                border-bottom: 1px solid #e0e0e0;
+            }
+
+            #project-filter .filter-header label {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                font-weight: bold;
+                font-size: 0.85em;
+                text-transform: uppercase;
+            }
+
         </style>
         <script src="../lib/d3.js"></script>
         <script src="../lib/d3-delaunay.js"></script>
@@ -195,29 +221,33 @@
         <div id="controls">
             <h3>Data Comparison</h3>
             <div class="control-group">
-                <label for="property-1">Order by</label>
+                <label for="property-1">
+                    <span class="color-indicator" style="background-color: #a682e8;"></span>
+                    Order by
+                </label>
                 <select id="property-1"></select>
                 <select id="filter-central"></select>
-                <!-- Project filter section -->
-                <div id="project-filter" style="display: none;">
-                    <div class="filter-header">
-                        <label>Filter Projects</label>
-                        <button class="select-all-btn" id="toggle-all-projects">All</button>
-                    </div>
-                    <div id="project-checkboxes"></div>
+            </div>
+
+            <!-- Project filter section -->
+            <div id="project-filter" style="display: none;">
+                <div class="filter-header">
+                    <label>
+                        <span class="color-indicator" style="background-color: #64d6d3;"></span>
+                        Filter Projects
+                    </label>
+                    <button class="select-all-btn" id="toggle-all-projects">All</button>
                 </div>
+                <div id="project-checkboxes"></div>
             </div>
 
             <div id="dynamic-properties"></div>
 
             <div class="control-group">
-                <!--<label for="property-2">and</label>
-                <select id="property-2"></select>
-                <label for="property-2">Compare with</label>-->
                 <button id="add-property">Add Property</button>
                 <button id="remove-property" style="display: none;">Remove Property</button>
             </div>
-            <button id="update">Update Visualization</button> <!-- aggiungi warning o rendilo unavaible-->
+            <button id="update">Update Visualization</button>
             
         </div>
         </div>
@@ -577,6 +607,7 @@
                 const projectFilterContainer = d3.select("#project-filter");
                 const projectCheckboxesContainer = d3.select("#project-checkboxes");
                 const toggleAllButton = d3.select("#toggle-all-projects");
+                let projectFilterCollapsed = false; // NUOVO: traccia stato collapse
 
                 function updatePropertiesSelect(selectElement, properties){
                     selectElement.selectAll('myOptions')
@@ -603,7 +634,14 @@
 
                     //manage dynamically new properties
                     const controlGroup = dynamicPropertiesContainer.append("div").attr("class", "control-group");
-                    controlGroup.append("label").text(`AND`); //vedi se va bene
+                    
+                    // Create label with color indicator
+                    const label = controlGroup.append("label");
+                    label.append("span")
+                        .attr("class", "color-indicator")
+                        .style("background-color", secondaryColors[newIndex]);
+                    label.append("span").text("AND");
+                    
                     const newSelect = controlGroup.append("select").attr("id", `property-${newIndex + 2}`);
                     updatePropertiesSelect(newSelect, second_properties);
 
@@ -649,6 +687,27 @@
                     }
                     
                     updateVisualization();
+                });
+
+                d3.select("#project-filter-header").on("click", function(event) {
+                    // Previeni il toggle se si clicca sul pulsante "All"
+                    if (event.target.id === 'toggle-all-projects' || 
+                        event.target.classList.contains('select-all-btn')) {
+                        return;
+                    }
+                    
+                    projectFilterCollapsed = !projectFilterCollapsed;
+                    
+                    const icon = d3.select("#project-filter-header .collapse-icon");
+                    const checkboxes = d3.select("#project-checkboxes");
+                    
+                    if (projectFilterCollapsed) {
+                        icon.classed("collapsed", true);
+                        checkboxes.classed("collapsed", true);
+                    } else {
+                        icon.classed("collapsed", false);
+                        checkboxes.classed("collapsed", false);
+                    }
                 });
 
                 //filter
